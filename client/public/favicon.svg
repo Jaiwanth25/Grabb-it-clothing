@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="12" fill="#111111"/>
+  <!-- Rabbit Ear Left -->
+  <path d="M 22 8 C 16 4, 12 20, 18 40 L 28 42 Z" fill="#FFFFFF" />
+  <!-- Rabbit Ear Right -->
+  <path d="M 34 6 C 28 2, 24 22, 32 44 L 40 44 Z" fill="#FFFFFF" />
+  <!-- Rabbit Head & Body Sleek Polygon -->
+  <path d="M 14 44 C 14 32, 44 32, 46 44 C 48 52, 44 60, 38 62 L 44 64 C 44 64, 40 64, 32 64 C 20 64, 14 56, 14 44 Z" fill="#FFFFFF" />
+  <!-- Rabbit Eye Accent -->
+  <circle cx="28" cy="42" r="3" fill="#111111" />
+</svg>

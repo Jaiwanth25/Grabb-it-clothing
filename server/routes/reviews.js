@@ -1,0 +1,41 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../database/db');
+const { authenticateToken } = require('../middleware/authMiddleware');
+
+// POST /api/reviews
+router.post('/', authenticateToken, (req, res) => {
+  try {
+    const { productId, rating, comment } = req.body;
+
+    if (!productId || !rating || !comment) {
+      return res.status(400).json({ error: 'Product, rating, and comment are required' });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    }
+
+    db.prepare(`
+      INSERT INTO reviews (product_id, user_id, user_name, rating, comment, is_moderated)
+      VALUES (?, ?, ?, ?, ?, 1)
+    `).run(productId, req.user.id, req.user.name, parseInt(rating), comment.trim());
+
+    // Update product rating stats
+    const stats = db.prepare('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1').get(productId);
+    if (stats) {
+      db.prepare('UPDATE products SET rating = ?, review_count = ? WHERE id = ?').run(
+        parseFloat((stats.avg_rating || 5).toFixed(1)),
+        stats.review_cnt || 0,
+        productId
+      );
+    }
+
+    res.status(201).json({ message: 'Review submitted successfully' });
+  } catch (err) {
+    console.error('Submit Review Error:', err);
+    res.status(500).json({ error: 'Failed to submit review' });
+  }
+});
+
+module.exports = router;

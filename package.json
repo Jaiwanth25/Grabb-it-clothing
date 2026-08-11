@@ -1,0 +1,17 @@
+{
+  "name": "grabb-it",
+  "version": "1.0.0",
+  "description": "GRABB-IT Full-Stack E-Commerce Clothing Website",
+  "main": "server/server.js",
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix client",
+    "seed": "node server/database/seed.js",
+    "server": "node server/server.js",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm run build --prefix client"
+  },
+  "keywords": [],
+  "author": "Antigravity",
+  "license": "ISC"
+}
