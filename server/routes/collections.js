@@ -28,7 +28,7 @@ router.get('/', (req, res) => {
     let query = 'SELECT * FROM collections WHERE is_active = 1';
     const params = [];
     if (gender) {
-      query += ' AND (gender = ? OR gender = "unisex")';
+      query += " AND (gender = ? OR gender = 'unisex')";
       params.push(gender);
     }
     query += ' ORDER BY id DESC';
