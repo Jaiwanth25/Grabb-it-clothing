@@ -52,8 +52,17 @@ cd server
 node database/seed.js
 ```
 
-### 4. Run Application
-Run the backend API server and frontend Vite development server:
+### 4. Run Application (Unified Concurrent Mode)
+Start both backend API and frontend Vite dev servers concurrently using a single command from the project root directory:
+
+```bash
+# Run from root folder
+npm run dev
+```
+
+This will automatically boot the Backend API server on port 5000 and the Frontend Client on port 3000. Open your browser and navigate to **`http://localhost:3000`**.
+
+Alternatively, you can run them in separate terminals:
 
 **Terminal 1 (Backend API Server - Port 5000):**
 ```bash
@@ -66,8 +75,6 @@ node server.js
 cd client
 npm run dev
 ```
-
-Open your browser and navigate to **`http://localhost:3000`**.
 
 ---
 
