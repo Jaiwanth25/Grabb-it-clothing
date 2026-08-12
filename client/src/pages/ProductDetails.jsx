@@ -594,7 +594,10 @@ const ProductDetails = () => {
                   product.reviews.map(rev => (
                     <div key={rev.id} style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '1.25rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                        <span style={{ fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase' }}>{rev.user_name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{ fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase' }}>{rev.user_name}</span>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent-olive)', backgroundColor: 'var(--bg-subtle)', padding: '0.15rem 0.4rem', letterSpacing: '0.5px' }}>✓ VERIFIED PURCHASE</span>
+                        </div>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>{new Date(rev.created_at).toLocaleDateString()}</span>
                       </div>
                       <div style={{ display: 'flex', gap: '2px', color: 'var(--text-main)', marginBottom: '0.5rem' }}>

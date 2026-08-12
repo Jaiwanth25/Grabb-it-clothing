@@ -173,14 +173,92 @@ const AccountPage = () => {
                       </div>
 
                       {/* Items */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', paddingBottom: '1rem' }}>
                         {order.items?.map((item, idx) => (
                           <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                            <span>{item.product_name} ({item.size} / {item.color.toUpperCase()}) x {item.quantity}</span>
+                            <span><strong>{item.product_name}</strong> ({item.size} / {item.color.toUpperCase()}) x {item.quantity}</span>
                             <span style={{ fontWeight: 700 }}>₹{Math.round(item.price * item.quantity)}</span>
                           </div>
                         ))}
                       </div>
+
+                      {/* Visual Timeline (Amazon Style) */}
+                      {order.order_status !== 'Cancelled' && order.order_status !== 'Returned' && (
+                        <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem', marginTop: '0.5rem' }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-light)', letterSpacing: '0.5px', marginBottom: '1rem', textTransform: 'uppercase' }}>
+                            Order Status Progress
+                          </div>
+                          
+                          <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', padding: '0 0.5rem' }}>
+                            {/* Connector Bar Background */}
+                            <div style={{ position: 'absolute', top: '10px', left: '8%', right: '8%', height: '3px', backgroundColor: 'var(--border-light)', zIndex: 1 }} />
+                            
+                            {/* Connector Bar Active Fill */}
+                            <div style={{ 
+                              position: 'absolute', top: '10px', left: '8%', 
+                              width: (() => {
+                                const st = order.order_status;
+                                if (st === 'Pending') return '0%';
+                                if (st === 'Confirmed') return '20%';
+                                if (st === 'Packed') return '40%';
+                                if (st === 'Shipped') return '60%';
+                                if (st === 'Out for Delivery') return '80%';
+                                if (st === 'Delivered') return '100%';
+                                return '0%';
+                              })(), 
+                              height: '3px', backgroundColor: 'var(--accent-olive)', zIndex: 2,
+                              transition: 'width 0.3s ease'
+                            }} />
+
+                            {['Placed', 'Confirmed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'].map((stepName, sIdx) => {
+                              const isDone = (() => {
+                                const st = order.order_status;
+                                if (stepName === 'Placed') return true;
+                                if (stepName === 'Confirmed') return ['Confirmed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'].includes(st);
+                                if (stepName === 'Packed') return ['Packed', 'Shipped', 'Out for Delivery', 'Delivered'].includes(st);
+                                if (stepName === 'Shipped') return ['Shipped', 'Out for Delivery', 'Delivered'].includes(st);
+                                if (stepName === 'Out for Delivery') return ['Out for Delivery', 'Delivered'].includes(st);
+                                if (stepName === 'Delivered') return st === 'Delivered';
+                                return false;
+                              })();
+
+                              return (
+                                <div key={stepName} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 3, width: '15%' }}>
+                                  <div style={{
+                                    width: '22px', height: '22px', borderRadius: '50%',
+                                    backgroundColor: isDone ? 'var(--accent-olive)' : '#ffffff',
+                                    border: isDone ? '2px solid var(--accent-olive)' : '2px solid var(--border-light)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: isDone ? '#ffffff' : 'var(--text-light)', fontSize: '0.7rem', fontWeight: 900
+                                  }}>
+                                    {isDone ? '✓' : sIdx + 1}
+                                  </div>
+                                  <span style={{ fontSize: '0.65rem', fontWeight: isDone ? 800 : 500, color: isDone ? 'var(--text-main)' : 'var(--text-light)', marginTop: '0.4rem', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.2px' }}>
+                                    {stepName}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Courier & Tracking Details */}
+                      {['Shipped', 'Out for Delivery', 'Delivered'].includes(order.order_status) && (
+                        <div style={{ backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-light)', padding: '1rem', marginTop: '1.25rem', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div><strong>Courier partner:</strong> {order.courier || 'Delhivery Express'}</div>
+                            <div><strong>Tracking ID:</strong> <code>{order.tracking_number}</code></div>
+                          </div>
+                          {order.tracking_url ? (
+                            <a href={order.tracking_url} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.75rem' }}>
+                              TRACK SHIPMENT
+                            </a>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', fontStyle: 'italic' }}>Live tracking initialized</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

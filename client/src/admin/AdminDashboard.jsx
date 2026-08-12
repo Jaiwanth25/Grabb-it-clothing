@@ -968,6 +968,42 @@ const AdminDashboard = () => {
                           </div>
                         ))}
                       </div>
+
+                      {/* Tracking details form inside admin dashboard card */}
+                      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed var(--border-light)', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', backgroundColor: 'var(--bg-subtle)', padding: '0.75rem' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800 }}>SHIPMENT TRACKING:</span>
+                        <input 
+                          type="text" 
+                          placeholder="Courier Partner"
+                          className="form-select"
+                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', width: '130px', border: '1px solid var(--border-dark)', borderRadius: '0px', backgroundColor: '#ffffff' }}
+                          defaultValue={order.courier || ''}
+                          onBlur={(e) => handleUpdateOrderStatus(order.id, { courier: e.target.value })}
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="Tracking ID"
+                          className="form-select"
+                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', width: '140px', border: '1px solid var(--border-dark)', borderRadius: '0px', backgroundColor: '#ffffff' }}
+                          defaultValue={order.tracking_number || ''}
+                          onBlur={(e) => handleUpdateOrderStatus(order.id, { tracking_number: e.target.value })}
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="Tracking Link URL"
+                          className="form-select"
+                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', flex: 1, minWidth: '180px', border: '1px solid var(--border-dark)', borderRadius: '0px', backgroundColor: '#ffffff' }}
+                          defaultValue={order.tracking_url || ''}
+                          onBlur={(e) => handleUpdateOrderStatus(order.id, { tracking_url: e.target.value })}
+                        />
+                        <button 
+                          className="btn-primary" 
+                          style={{ padding: '0.35rem 0.75rem', fontSize: '0.72rem' }}
+                          onClick={() => alert('Tracking details successfully updated!')}
+                        >
+                          Save
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

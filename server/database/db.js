@@ -13,6 +13,14 @@ function initDb() {
   if (fs.existsSync(schemaPath)) {
     const schemaSql = fs.readFileSync(schemaPath, 'utf-8');
     db.exec(schemaSql);
+    
+    // Inline schema migrations
+    try {
+      db.exec("ALTER TABLE orders ADD COLUMN courier TEXT");
+    } catch (err) {}
+    try {
+      db.exec("ALTER TABLE orders ADD COLUMN tracking_url TEXT");
+    } catch (err) {}
   }
 }
 

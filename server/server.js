@@ -29,6 +29,7 @@ const couponRoutes = require('./routes/coupons');
 const orderRoutes = require('./routes/orders');
 const reviewRoutes = require('./routes/reviews');
 const adminRoutes = require('./routes/admin');
+const notificationsRoutes = require('./routes/notifications');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -42,6 +43,7 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Serve client static build in production if available
 const clientBuildPath = path.join(__dirname, '../client/dist');

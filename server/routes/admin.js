@@ -303,12 +303,51 @@ router.get('/orders', (req, res) => {
 // PUT /api/admin/orders/:id/status
 router.put('/orders/:id/status', (req, res) => {
   try {
-    const { order_status, payment_status } = req.body;
+    const { order_status, payment_status, tracking_number, courier, tracking_url } = req.body;
     if (order_status) {
       db.prepare('UPDATE orders SET order_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(order_status, req.params.id);
+      
+      const order = db.prepare('SELECT user_id, order_number FROM orders WHERE id = ?').get(req.params.id);
+      if (order && order.user_id) {
+        let title = 'Order Update';
+        let message = `Your order #${order.order_number} status has been updated to ${order_status}.`;
+        
+        if (order_status === 'Confirmed') {
+          title = 'Order Confirmed';
+          message = `Your order has been confirmed.`;
+        } else if (order_status === 'Packed') {
+          title = 'Order Packed';
+          message = `Your order has been packed.`;
+        } else if (order_status === 'Shipped') {
+          title = 'Order Shipped';
+          message = `Your order is on the way.`;
+        } else if (order_status === 'Out for Delivery') {
+          title = 'Out for Delivery';
+          message = `Your order is out for delivery.`;
+        } else if (order_status === 'Delivered') {
+          title = 'Order Delivered';
+          message = `Your order has been delivered.`;
+        }
+        
+        db.prepare('INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)').run(order.user_id, title, message);
+
+        if (order_status === 'Delivered') {
+          db.prepare('INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)')
+            .run(order.user_id, 'Rate Your Purchase', `How did you like your purchase? Tell us how your items fitted! Leave a review on the product details page.`);
+        }
+      }
     }
     if (payment_status) {
       db.prepare('UPDATE orders SET payment_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(payment_status, req.params.id);
+    }
+    if (tracking_number !== undefined) {
+      db.prepare('UPDATE orders SET tracking_number = ? WHERE id = ?').run(tracking_number, req.params.id);
+    }
+    if (courier !== undefined) {
+      db.prepare('UPDATE orders SET courier = ? WHERE id = ?').run(courier, req.params.id);
+    }
+    if (tracking_url !== undefined) {
+      db.prepare('UPDATE orders SET tracking_url = ? WHERE id = ?').run(tracking_url, req.params.id);
     }
     res.json({ message: 'Order status updated' });
   } catch (err) {

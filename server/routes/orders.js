@@ -60,7 +60,31 @@ router.post('/', optionalToken, (req, res) => {
         });
       }
 
-      const totalAmount = Math.max(0, subtotal - discount_amount + shipping_fee);
+      let verifiedDiscount = 0;
+      if (coupon_code) {
+        const coupon = db.prepare('SELECT * FROM coupons WHERE UPPER(code) = ? AND is_active = 1').get(coupon_code.toUpperCase().trim());
+        if (!coupon) {
+          throw new Error('Invalid or expired coupon code.');
+        }
+        if (coupon.expiry_date && new Date(coupon.expiry_date) < new Date()) {
+          throw new Error('This coupon code has expired.');
+        }
+        if (coupon.times_used >= coupon.usage_limit) {
+          throw new Error('Coupon code usage limit exceeded.');
+        }
+        if (subtotal < coupon.min_order_amount) {
+          throw new Error(`Minimum order amount of ₹${coupon.min_order_amount} required for this coupon.`);
+        }
+        if (coupon.discount_type === 'percentage') {
+          verifiedDiscount = (subtotal * coupon.discount_value) / 100;
+        } else {
+          verifiedDiscount = coupon.discount_value;
+        }
+        verifiedDiscount = Math.min(verifiedDiscount, subtotal);
+      }
+
+      const verifiedShipping = subtotal >= 999 ? 0 : 99;
+      const totalAmount = Math.max(0, subtotal - verifiedDiscount + verifiedShipping);
       const orderNumber = 'GRB-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
       const trackingNumber = 'TRK' + Math.floor(100000000 + Math.random() * 900000000);
 
@@ -76,8 +100,8 @@ router.post('/', optionalToken, (req, res) => {
         phone,
         shipping_address,
         subtotal,
-        discount_amount,
-        shipping_fee,
+        verifiedDiscount,
+        verifiedShipping,
         totalAmount,
         payment_method,
         trackingNumber
@@ -116,6 +140,14 @@ router.post('/', optionalToken, (req, res) => {
         db.prepare('DELETE FROM cart_items WHERE cart_id = ?').run(cart.id);
       }
 
+      // Create Order Placed Notification
+      if (userId) {
+        db.prepare(`
+          INSERT INTO notifications (user_id, title, message)
+          VALUES (?, 'Order Placed Successfully', ?)
+        `).run(userId, `Your Grabb-it order #${orderNumber} has been placed successfully.`);
+      }
+
       return {
         id: orderId,
         order_number: orderNumber,
@@ -125,8 +157,8 @@ router.post('/', optionalToken, (req, res) => {
         phone,
         shipping_address,
         subtotal,
-        discount_amount,
-        shipping_fee,
+        discount_amount: verifiedDiscount,
+        shipping_fee: verifiedShipping,
         total_amount: totalAmount,
         order_status: 'Confirmed',
         payment_status: 'Paid',

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, User, ShoppingBag, Heart, X, Shield, ArrowRight } from 'lucide-react';
+import { Menu, Search, User, ShoppingBag, Heart, X, Shield, ArrowRight, Bell } from 'lucide-react';
 import { useGender } from '../context/GenderContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,11 +8,79 @@ import { useAuth } from '../context/AuthContext';
 const Header = () => {
   const { gender, setGender } = useGender();
   const { count } = useCart();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, token } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user || !token) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+    
+    const fetchNotifications = () => {
+      fetch('/api/notifications', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(res => {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .then(data => {
+          setNotifications(data);
+          const unread = data.filter(n => n.is_read === 0).length;
+          setUnreadCount(unread);
+        })
+        .catch(err => console.error('Fetch notifications failed:', err));
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 15000);
+    return () => clearInterval(interval);
+  }, [user, token]);
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      const res = await fetch(`/api/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: 1 } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const res = await fetch(`/api/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: 1 })));
+        setUnreadCount(0);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleGenderSelect = (selectedGender) => {
     setGender(selectedGender);
@@ -116,6 +184,67 @@ const Header = () => {
           <Link to="/wishlist" className="icon-btn" title="Wishlist">
             <Heart size={22} />
           </Link>
+
+          {/* Notifications Bell */}
+          {user && (
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <button 
+                className="icon-btn" 
+                onClick={() => setShowNotifications(!showNotifications)}
+                title="Notifications"
+                style={{ position: 'relative' }}
+              >
+                <Bell size={22} />
+                {unreadCount > 0 && <span className="cart-count-badge" style={{ backgroundColor: 'var(--accent-badge)' }}>{unreadCount}</span>}
+              </button>
+              
+              {showNotifications && (
+                <div style={{
+                  position: 'absolute', top: '100%', right: 0, width: '320px', 
+                  backgroundColor: '#ffffff', border: '1px solid var(--border-dark)', 
+                  zIndex: 2000, padding: '1rem', boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '400px', overflowY: 'auto',
+                  marginTop: '0.75rem', textAlign: 'left'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.8rem', letterSpacing: '0.5px' }}>NOTIFICATIONS</span>
+                    {unreadCount > 0 && (
+                      <button onClick={handleMarkAllRead} style={{ fontSize: '0.72rem', color: 'var(--text-light)', textDecoration: 'underline', fontWeight: 700 }}>
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-light)', fontSize: '0.75rem', fontStyle: 'italic' }}>
+                      No new notifications.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                      {notifications.map(n => (
+                        <div 
+                          key={n.id} 
+                          onClick={() => n.is_read === 0 && handleMarkAsRead(n.id)}
+                          style={{
+                            padding: '0.5rem', borderBottom: '1px solid var(--border-light)',
+                            backgroundColor: n.is_read === 0 ? 'var(--bg-subtle)' : 'transparent',
+                            cursor: n.is_read === 0 ? 'pointer' : 'default',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.15rem' }}>
+                            <span style={{ fontWeight: n.is_read === 0 ? 800 : 600, color: 'var(--text-main)' }}>{n.title}</span>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-light)' }}>{new Date(n.created_at).toLocaleDateString()}</span>
+                          </div>
+                          <p style={{ color: 'var(--text-muted)', lineHeight: '1.3', margin: 0 }}>{n.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Cart */}
           <Link to="/cart" className="icon-btn" title="Shopping Cart">

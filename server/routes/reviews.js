@@ -16,6 +16,18 @@ router.post('/', authenticateToken, (req, res) => {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
     }
 
+    // Verify customer purchase and delivery state
+    const purchase = db.prepare(`
+      SELECT o.id FROM orders o
+      JOIN order_items oi ON o.id = oi.order_id
+      WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'Delivered'
+      LIMIT 1
+    `).get(req.user.id, productId);
+
+    if (!purchase) {
+      return res.status(403).json({ error: 'You can only review products you have purchased and had delivered.' });
+    }
+
     db.prepare(`
       INSERT INTO reviews (product_id, user_id, user_name, rating, comment, is_moderated)
       VALUES (?, ?, ?, ?, ?, 1)
