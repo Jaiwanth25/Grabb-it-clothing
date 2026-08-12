@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { Shield, Lock, ArrowRight } from 'lucide-react';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('admin@grabb-it.com');
-  const [password, setPassword] = useState('Admin@123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -74,12 +74,6 @@ const AdminLogin = () => {
         <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.9rem' }} disabled={loading}>
           {loading ? 'AUTHENTICATING...' : 'LOGIN TO ADMIN PANEL'} <ArrowRight size={16} />
         </button>
-
-        <div style={{ backgroundColor: '#f5f5f5', padding: '0.75rem', marginTop: '1.5rem', fontSize: '0.75rem', border: '1px dashed #999' }}>
-          <strong>Default Admin Credentials:</strong><br />
-          Email: admin@grabb-it.com<br />
-          Password: Admin@123456
-        </div>
       </form>
     </main>
   );

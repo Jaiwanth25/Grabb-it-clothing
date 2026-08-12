@@ -243,6 +243,23 @@ const AccountPage = () => {
                         </div>
                       )}
 
+                      {/* Detailed status logs timeline */}
+                      {order.history && order.history.length > 0 && (
+                        <div style={{ marginTop: '1.25rem', padding: '0.75rem', backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-light)', fontSize: '0.75rem' }}>
+                          <span style={{ fontWeight: 800, color: 'var(--text-light)', letterSpacing: '0.5px', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>Status History Events</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            {order.history.map((h, hIdx) => (
+                              <div key={hIdx} style={{ display: 'flex', justifyContent: 'space-between', borderLeft: '2px solid var(--accent-olive)', paddingLeft: '0.5rem' }}>
+                                <span><strong>{h.status.toUpperCase()}</strong>: {h.notes}</span>
+                                <span style={{ color: 'var(--text-light)' }}>
+                                  {new Date(h.created_at).toLocaleString([], { hour: '2-digit', minute: '2-digit', year: 'numeric', month: 'short', day: 'numeric' })}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Courier & Tracking Details */}
                       {['Shipped', 'Out for Delivery', 'Delivered'].includes(order.order_status) && (
                         <div style={{ backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-light)', padding: '1rem', marginTop: '1.25rem', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

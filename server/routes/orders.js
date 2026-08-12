@@ -148,6 +148,12 @@ router.post('/', optionalToken, (req, res) => {
         `).run(userId, `Your Grabb-it order #${orderNumber} has been placed successfully.`);
       }
 
+      // Create Order Status History Log
+      db.prepare(`
+        INSERT INTO order_status_history (order_id, status, notes)
+        VALUES (?, 'Placed', ?)
+      `).run(orderId, 'Your order was successfully placed and verified.');
+
       return {
         id: orderId,
         order_number: orderNumber,
@@ -181,7 +187,8 @@ router.get('/my-orders', authenticateToken, (req, res) => {
     const orders = db.prepare('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC').all(req.user.id);
     const ordersWithItems = orders.map((ord) => {
       const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(ord.id);
-      return { ...ord, items };
+      const history = db.prepare('SELECT * FROM order_status_history WHERE order_id = ? ORDER BY created_at ASC').all(ord.id);
+      return { ...ord, items, history };
     });
 
     res.json(ordersWithItems);
@@ -198,7 +205,8 @@ router.get('/:orderNumber', (req, res) => {
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
     const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
-    res.json({ ...order, items });
+    const history = db.prepare('SELECT * FROM order_status_history WHERE order_id = ? ORDER BY created_at ASC').all(order.id);
+    res.json({ ...order, items, history });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch order details' });
   }

@@ -307,6 +307,11 @@ router.put('/orders/:id/status', (req, res) => {
     if (order_status) {
       db.prepare('UPDATE orders SET order_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(order_status, req.params.id);
       
+      db.prepare(`
+        INSERT INTO order_status_history (order_id, status, notes)
+        VALUES (?, ?, ?)
+      `).run(req.params.id, order_status, `Status updated to ${order_status}.`);
+
       const order = db.prepare('SELECT user_id, order_number FROM orders WHERE id = ?').get(req.params.id);
       if (order && order.user_id) {
         let title = 'Order Update';

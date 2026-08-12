@@ -121,6 +121,18 @@ npm run dev
 
 ---
 
+## Documentation Guides
+
+For detailed setup, operations, security, and schema specifications, refer to the following guides:
+- [Local Setup Guide](file:///C:/Users/mv240/.gemini/antigravity/scratch/LOCAL_SETUP.md) — Steps to install, seed, and run the development environment.
+- [Database Architecture Schema](file:///C:/Users/mv240/.gemini/antigravity/scratch/DATABASE_ARCHITECTURE.md) — SQLite schema tables and relationship definitions.
+- [Security Specifications & Auditing](file:///C:/Users/mv240/.gemini/antigravity/scratch/SECURITY.md) — Encryption hashes, authorization gates, and token cookie security.
+- [Store Owner Admin Guide](file:///C:/Users/mv240/.gemini/antigravity/scratch/ADMIN_GUIDE.md) — Operational instructions for products, collections, inventory, and orders management.
+- [Production Deployment Checklist](file:///C:/Users/mv240/.gemini/antigravity/scratch/PRODUCTION_CHECKLIST.md) — Steps required before launching to cloud production environments.
+- [E2E Testing & Verification Report](file:///C:/Users/mv240/.gemini/antigravity/scratch/GRABB_IT_TEST_REPORT.md) — Full feature matrix status check record.
+
+---
+
 ## Connecting External Services in Production
 
 ### 1. Cloud Image Storage

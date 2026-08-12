@@ -4,7 +4,18 @@ const JWT_SECRET = process.env.JWT_SECRET || 'grabb_it_jwt_secret_key_2026_fashi
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  let token = authHeader && authHeader.split(' ')[1];
+
+  if (!token && req.headers.cookie) {
+    const cookies = req.headers.cookie.split(';').reduce((acc, cookie) => {
+      const parts = cookie.trim().split('=');
+      const key = parts[0];
+      const val = parts.slice(1).join('=');
+      acc[key] = val;
+      return acc;
+    }, {});
+    token = cookies.grabb_it_token;
+  }
 
   if (!token) {
     return res.status(401).json({ error: 'Authentication required' });
@@ -31,7 +42,19 @@ function requireAdmin(req, res, next) {
 
 function optionalToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  let token = authHeader && authHeader.split(' ')[1];
+
+  if (!token && req.headers.cookie) {
+    const cookies = req.headers.cookie.split(';').reduce((acc, cookie) => {
+      const parts = cookie.trim().split('=');
+      const key = parts[0];
+      const val = parts.slice(1).join('=');
+      acc[key] = val;
+      return acc;
+    }, {});
+    token = cookies.grabb_it_token;
+  }
+
   if (token) {
     jwt.verify(token, JWT_SECRET, (err, user) => {
       if (!err) {

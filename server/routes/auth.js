@@ -29,6 +29,13 @@ router.post('/register', (req, res) => {
     const user = { id: userId, name: name.trim(), email: email.toLowerCase().trim(), role: 'customer', phone };
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: '7d' });
 
+    res.cookie('grabb_it_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
     res.status(201).json({ user, token, message: 'Account registered successfully' });
   } catch (err) {
     console.error('Register Error:', err);
@@ -65,11 +72,24 @@ router.post('/login', (req, res) => {
 
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: '7d' });
 
+    res.cookie('grabb_it_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
     res.json({ user, token, message: 'Logged in successfully' });
   } catch (err) {
     console.error('Login Error:', err);
     res.status(500).json({ error: 'Failed to log in' });
   }
+});
+
+// POST /api/auth/logout
+router.post('/logout', (req, res) => {
+  res.clearCookie('grabb_it_token');
+  res.json({ success: true, message: 'Logged out successfully' });
 });
 
 // GET /api/auth/me
