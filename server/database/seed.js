@@ -15,6 +15,10 @@ function seedDatabase() {
   db.prepare('DELETE FROM wishlists').run();
   db.prepare('DELETE FROM cart_items').run();
   db.prepare('DELETE FROM carts').run();
+  db.prepare('DELETE FROM collection_products').run();
+  db.prepare('DELETE FROM collections').run();
+  db.prepare('DELETE FROM look_products').run();
+  db.prepare('DELETE FROM looks').run();
   db.prepare('DELETE FROM product_images').run();
   db.prepare('DELETE FROM product_variants').run();
   db.prepare('DELETE FROM products').run();

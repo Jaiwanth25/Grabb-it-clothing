@@ -4,7 +4,7 @@ const db = require('../database/db');
 const { authenticateToken } = require('../middleware/authMiddleware');
 
 // POST /api/reviews
-router.post('/', authenticateToken, (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const { productId, rating, comment } = req.body;
 
@@ -17,27 +17,27 @@ router.post('/', authenticateToken, (req, res) => {
     }
 
     // Verify customer purchase and delivery state
-    const purchase = db.prepare(`
+    const purchase = await db.queryOne(`
       SELECT o.id FROM orders o
       JOIN order_items oi ON o.id = oi.order_id
       WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'Delivered'
       LIMIT 1
-    `).get(req.user.id, productId);
+    `, [req.user.id, productId]);
 
     if (!purchase) {
       return res.status(403).json({ error: 'You can only review products you have purchased and had delivered.' });
     }
 
-    db.prepare(`
+    await db.queryOne(`
       INSERT INTO reviews (product_id, user_id, user_name, rating, comment, is_moderated)
       VALUES (?, ?, ?, ?, ?, 1)
     `).run(productId, req.user.id, req.user.name, parseInt(rating), comment.trim());
 
     // Update product rating stats
-    const stats = db.prepare('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1').get(productId);
+    const stats = await db.run('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1', [productId]);
     if (stats) {
-      db.prepare('UPDATE products SET rating = ?, review_count = ? WHERE id = ?').run(
-        parseFloat((stats.avg_rating || 5).toFixed(1)),
+      db.prepare('UPDATE products SET rating = ?, review_count = ? WHERE id = ?', [
+        parseFloat((stats.avg_rating || 5]).toFixed(1)),
         stats.review_cnt || 0,
         productId
       );

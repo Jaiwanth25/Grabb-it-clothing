@@ -5,14 +5,14 @@ const { authenticateToken } = require('../middleware/authMiddleware');
 
 // GET /api/notifications
 // Retrieves authenticated user's notifications
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
-    const notifications = db.prepare(`
+    const notifications = await db.query(`
       SELECT * FROM notifications 
       WHERE user_id = ? 
       ORDER BY created_at DESC 
       LIMIT 50
-    `).all(req.user.id);
+    `, [req.user.id]);
     res.json(notifications);
   } catch (err) {
     console.error('Fetch Notifications Error:', err);
@@ -22,13 +22,13 @@ router.get('/', authenticateToken, (req, res) => {
 
 // PUT /api/notifications/:id/read
 // Marks a single notification as read
-router.put('/:id/read', authenticateToken, (req, res) => {
+router.put('/:id/read', authenticateToken, async (req, res) => {
   try {
-    const result = db.prepare(`
+    const result = await db.run(`
       UPDATE notifications 
       SET is_read = 1 
       WHERE id = ? AND user_id = ?
-    `).run(req.params.id, req.user.id);
+    `, [req.params.id, req.user.id]);
 
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Notification not found or access denied.' });
@@ -42,13 +42,13 @@ router.put('/:id/read', authenticateToken, (req, res) => {
 
 // POST /api/notifications/mark-all-read
 // Marks all user's notifications as read
-router.post('/mark-all-read', authenticateToken, (req, res) => {
+router.post('/mark-all-read', authenticateToken, async (req, res) => {
   try {
-    db.prepare(`
+    await db.run(`
       UPDATE notifications 
       SET is_read = 1 
       WHERE user_id = ?
-    `).run(req.user.id);
+    `, [req.user.id]);
     res.json({ success: true, message: 'All notifications marked as read.' });
   } catch (err) {
     console.error('Mark All Read Error:', err);
@@ -58,12 +58,12 @@ router.post('/mark-all-read', authenticateToken, (req, res) => {
 
 // DELETE /api/notifications
 // Clears read notifications
-router.delete('/', authenticateToken, (req, res) => {
+router.delete('/', authenticateToken, async (req, res) => {
   try {
-    db.prepare(`
+    await db.run(`
       DELETE FROM notifications 
       WHERE user_id = ? AND is_read = 1
-    `).run(req.user.id);
+    `, [req.user.id]);
     res.json({ success: true, message: 'Read notifications cleared.' });
   } catch (err) {
     console.error('Delete Notifications Error:', err);

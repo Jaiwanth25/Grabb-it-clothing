@@ -3,12 +3,12 @@ const router = express.Router();
 const db = require('../database/db');
 
 // POST /api/coupons/validate
-router.post('/validate', (req, res) => {
+router.post('/validate', async (req, res) => {
   try {
     const { code, subtotal } = req.body;
     if (!code) return res.status(400).json({ error: 'Coupon code is required' });
 
-    const coupon = db.prepare('SELECT * FROM coupons WHERE UPPER(code) = ? AND is_active = 1').get(code.toUpperCase().trim());
+    const coupon = await db.queryOne('SELECT * FROM coupons WHERE UPPER(code) = ? AND is_active = 1', [code.toUpperCase(]).trim());
 
     if (!coupon) {
       return res.status(400).json({ error: 'Invalid or expired coupon code' });

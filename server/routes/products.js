@@ -3,12 +3,12 @@ const router = express.Router();
 const db = require('../database/db');
 
 // Helper to fetch images and variants for products
-function attachProductDetails(product) {
+async function attachProductDetails(product) {
   if (!product) return null;
-  const images = db.prepare('SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY display_order ASC').all(product.id);
-  const variants = db.prepare('SELECT id, size, color, color_hex, stock FROM product_variants WHERE product_id = ?').all(product.id);
-  const category = db.prepare('SELECT id, name, slug, gender FROM categories WHERE id = ?').get(product.category_id);
-  const reviews = db.prepare('SELECT id, user_name, rating, comment, created_at FROM reviews WHERE product_id = ? AND is_moderated = 1 ORDER BY created_at DESC').all(product.id);
+  const images = await db.query('SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY display_order ASC', [product.id]);
+  const variants = await db.query('SELECT id, size, color, color_hex, stock FROM product_variants WHERE product_id = ?', [product.id]);
+  const category = await db.queryOne('SELECT id, name, slug, gender FROM categories WHERE id = ?', [product.category_id]);
+  const reviews = await db.query('SELECT id, user_name, rating, comment, created_at FROM reviews WHERE product_id = ? AND is_moderated = 1 ORDER BY created_at DESC', [product.id]);
 
   return {
     ...product,
@@ -23,7 +23,7 @@ function attachProductDetails(product) {
 
 // GET /api/products
 // Query parameters: gender ('men'|'women'), category (slug), collection (slug), search, minPrice, maxPrice, size, color, isNew, isTrending, isFeatured, discount, rating, inStock, sort
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { gender, category, collection, search, minPrice, maxPrice, size, color, isNew, isTrending, isFeatured, discount, rating, inStock, sort } = req.query;
 
@@ -135,8 +135,8 @@ router.get('/', (req, res) => {
         break;
     }
 
-    const rawProducts = db.prepare(query).all(...params);
-    const fullProducts = rawProducts.map(attachProductDetails);
+    const rawProducts = await db.query(query, params);
+    const fullProducts = await Promise.all(rawProducts.map(attachProductDetails));
 
     res.json(fullProducts);
   } catch (err) {
@@ -146,7 +146,7 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/products/shipping/check
-router.get('/shipping/check', (req, res) => {
+router.get('/shipping/check', async (req, res) => {
   try {
     const { pincode } = req.query;
     if (!pincode || !/^\d{6}$/.test(pincode)) {
@@ -183,18 +183,18 @@ router.get('/shipping/check', (req, res) => {
 });
 
 // GET /api/products/:slug
-router.get('/:slug', (req, res) => {
+router.get('/:slug', async (req, res) => {
   try {
-    const product = db.prepare('SELECT * FROM products WHERE (slug = ? OR id = ?) AND is_active = 1').get(req.params.slug, req.params.slug);
+    const product = await db.queryOne('SELECT * FROM products WHERE (slug = ? OR id = ?) AND is_active = 1', [req.params.slug, req.params.slug]);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    const fullProduct = attachProductDetails(product);
+    const fullProduct = await attachProductDetails(product);
 
     // Fetch related products in same category
-    const relatedRaw = db.prepare('SELECT * FROM products WHERE category_id = ? AND id != ? AND is_active = 1 LIMIT 4').all(product.category_id, product.id);
-    const related = relatedRaw.map(attachProductDetails);
+    const relatedRaw = await db.query('SELECT * FROM products WHERE category_id = ? AND id != ? AND is_active = 1 LIMIT 4', [product.category_id, product.id]);
+    const related = await Promise.all(relatedRaw.map(attachProductDetails));
 
     res.json({ ...fullProduct, related });
   } catch (err) {

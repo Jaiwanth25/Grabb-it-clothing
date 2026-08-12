@@ -5,10 +5,10 @@ const db = require('../database/db');
 // Helper to attach product details
 function attachProductDetails(product) {
   if (!product) return null;
-  const images = db.prepare('SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY display_order ASC').all(product.id);
-  const variants = db.prepare('SELECT id, size, color, color_hex, stock FROM product_variants WHERE product_id = ?').all(product.id);
-  const category = db.prepare('SELECT id, name, slug, gender FROM categories WHERE id = ?').get(product.category_id);
-  const reviews = db.prepare('SELECT id, user_name, rating, comment, created_at FROM reviews WHERE product_id = ? AND is_moderated = 1 ORDER BY created_at DESC').all(product.id);
+  const images = await db.queryOne('SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY display_order ASC').all(product.id);
+  const variants = await db.query('SELECT id, size, color, color_hex, stock FROM product_variants WHERE product_id = ?', [product.id]);
+  const category = await db.query('SELECT id, name, slug, gender FROM categories WHERE id = ?', [product.category_id]);
+  const reviews = await db.queryOne('SELECT id, user_name, rating, comment, created_at FROM reviews WHERE product_id = ? AND is_moderated = 1 ORDER BY created_at DESC', [product.id]);
 
   return {
     ...product,
@@ -22,7 +22,7 @@ function attachProductDetails(product) {
 }
 
 // GET /api/collections
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { gender } = req.query;
     let query = 'SELECT * FROM collections WHERE is_active = 1';
@@ -32,7 +32,7 @@ router.get('/', (req, res) => {
       params.push(gender);
     }
     query += ' ORDER BY id DESC';
-    const collections = db.prepare(query).all(...params);
+    const collections = await db.query(query, [...params]);
     res.json(collections);
   } catch (err) {
     console.error('Fetch Collections Error:', err);
@@ -41,9 +41,9 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/collections/:slug
-router.get('/:slug', (req, res) => {
+router.get('/:slug', async (req, res) => {
   try {
-    const collection = db.prepare('SELECT * FROM collections WHERE slug = ? AND is_active = 1').get(req.params.slug);
+    const collection = await db.query('SELECT * FROM collections WHERE slug = ? AND is_active = 1', [req.params.slug]);
     if (!collection) {
       return res.status(404).json({ error: 'Collection not found' });
     }
@@ -52,7 +52,7 @@ router.get('/:slug', (req, res) => {
       SELECT p.* FROM products p
       JOIN collection_products cp ON p.id = cp.product_id
       WHERE cp.collection_id = ? AND p.is_active = 1
-    `).all(collection.id);
+    `, [collection.id]);
 
     const fullProducts = products.map(attachProductDetails);
 

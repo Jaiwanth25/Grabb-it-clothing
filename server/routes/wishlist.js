@@ -4,9 +4,9 @@ const db = require('../database/db');
 const { authenticateToken } = require('../middleware/authMiddleware');
 
 // GET /api/wishlist
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
-    const rawProducts = db.prepare(`
+    const rawProducts = await db.queryOne(`
       SELECT p.*
       FROM wishlists w
       JOIN products p ON w.product_id = p.id
@@ -15,8 +15,8 @@ router.get('/', authenticateToken, (req, res) => {
     `).all(req.user.id);
 
     const fullProducts = rawProducts.map((p) => {
-      const images = db.prepare('SELECT image_url, is_primary FROM product_images WHERE product_id = ? ORDER BY display_order ASC').all(p.id);
-      const variants = db.prepare('SELECT id, size, color, stock FROM product_variants WHERE product_id = ?').all(p.id);
+      const images = await db.query('SELECT image_url, is_primary FROM product_images WHERE product_id = ? ORDER BY display_order ASC', [p.id]);
+      const variants = await db.query('SELECT id, size, color, stock FROM product_variants WHERE product_id = ?', [p.id]);
       return {
         ...p,
         images,
@@ -33,18 +33,18 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // POST /api/wishlist/toggle
-router.post('/toggle', authenticateToken, (req, res) => {
+router.post('/toggle', authenticateToken, async (req, res) => {
   try {
     const { productId } = req.body;
     if (!productId) return res.status(400).json({ error: 'ProductId is required' });
 
-    const existing = db.prepare('SELECT id FROM wishlists WHERE user_id = ? AND product_id = ?').get(req.user.id, productId);
+    const existing = await db.query('SELECT id FROM wishlists WHERE user_id = ? AND product_id = ?', [req.user.id, productId]);
 
     if (existing) {
-      db.prepare('DELETE FROM wishlists WHERE id = ?').run(existing.id);
+      await db.run('DELETE FROM wishlists WHERE id = ?', [existing.id]);
       res.json({ inWishlist: false, message: 'Removed from wishlist' });
     } else {
-      db.prepare('INSERT INTO wishlists (user_id, product_id) VALUES (?, ?)').run(req.user.id, productId);
+      await db.run('INSERT INTO wishlists (user_id, product_id) VALUES (?, ?)', [req.user.id, productId]);
       res.json({ inWishlist: true, message: 'Added to wishlist' });
     }
   } catch (err) {
@@ -54,9 +54,9 @@ router.post('/toggle', authenticateToken, (req, res) => {
 });
 
 // GET /api/wishlist/ids (Quick array check)
-router.get('/ids', authenticateToken, (req, res) => {
+router.get('/ids', authenticateToken, async (req, res) => {
   try {
-    const rows = db.prepare('SELECT product_id FROM wishlists WHERE user_id = ?').all(req.user.id);
+    const rows = db.prepare('SELECT product_id FROM wishlists WHERE user_id = ?', [req.user.id]);
     const ids = rows.map(r => r.product_id);
     res.json(ids);
   } catch (err) {

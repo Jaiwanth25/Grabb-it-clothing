@@ -454,6 +454,68 @@ const AdminDashboard = () => {
     }
   };
 
+  // Payment Actions (Verify / Reject / Refund)
+  const handleVerifyPayment = async (orderId) => {
+    if (!window.confirm('Confirm and verify payment for this order?')) return;
+    try {
+      const res = await fetch('/api/payments/verify-manual', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ orderId })
+      });
+      if (res.ok) fetchData();
+      else alert('Failed to verify payment');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRejectPayment = async (orderId) => {
+    const reason = window.prompt('Enter rejection reason:');
+    if (!reason) return;
+    try {
+      const res = await fetch('/api/payments/reject-manual', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ orderId, reason })
+      });
+      if (res.ok) fetchData();
+      else alert('Failed to reject payment');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRefundPayment = async (orderId, totalAmount) => {
+    const reason = window.prompt('Enter refund reason:');
+    if (!reason) return;
+    try {
+      const res = await fetch('/api/payments/refund', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ orderId, amount: totalAmount, reason })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`Refund initiated! Ref: ${data.refundReference}`);
+        fetchData();
+      } else {
+        alert(data.error || 'Refund failed');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Save Settings
   const handleSaveSettings = (e) => {
     e.preventDefault();

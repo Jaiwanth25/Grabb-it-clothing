@@ -5,9 +5,9 @@ const db = require('../database/db');
 // Helper to attach product details
 function attachProductDetails(product) {
   if (!product) return null;
-  const images = db.prepare('SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY display_order ASC').all(product.id);
-  const variants = db.prepare('SELECT id, size, color, color_hex, stock FROM product_variants WHERE product_id = ?').all(product.id);
-  const category = db.prepare('SELECT id, name, slug, gender FROM categories WHERE id = ?').get(product.category_id);
+  const images = await db.queryOne('SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY display_order ASC').all(product.id);
+  const variants = await db.query('SELECT id, size, color, color_hex, stock FROM product_variants WHERE product_id = ?', [product.id]);
+  const category = await db.query('SELECT id, name, slug, gender FROM categories WHERE id = ?', [product.category_id]);
 
   return {
     ...product,
@@ -20,7 +20,7 @@ function attachProductDetails(product) {
 }
 
 // GET /api/looks
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { gender } = req.query;
     let query = 'SELECT * FROM looks WHERE is_active = 1';
@@ -30,14 +30,14 @@ router.get('/', (req, res) => {
       params.push(gender);
     }
     query += ' ORDER BY id DESC';
-    const looks = db.prepare(query).all(...params);
+    const looks = db.prepare(query, [...params]);
 
     const looksWithProducts = looks.map(look => {
-      const products = db.prepare(`
+      const products = await db.query(`
         SELECT p.* FROM products p
         JOIN look_products lp ON p.id = lp.product_id
         WHERE lp.look_id = ? AND p.is_active = 1
-      `).all(look.id);
+      `, [look.id]);
       return {
         ...look,
         products: products.map(attachProductDetails)
