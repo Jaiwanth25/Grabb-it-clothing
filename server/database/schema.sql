@@ -83,8 +83,12 @@ CREATE TABLE IF NOT EXISTS banners (
   button_text TEXT DEFAULT 'SHOP NOW',
   button_link TEXT DEFAULT '/men',
   image_url TEXT NOT NULL,
+  mobile_image_url TEXT,
+  gender TEXT, -- 'men', 'women' or NULL
   display_order INTEGER DEFAULT 0,
   is_active INTEGER DEFAULT 1,
+  start_date DATETIME,
+  end_date DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -176,4 +180,44 @@ CREATE TABLE IF NOT EXISTS reviews (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS collections (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description TEXT,
+  cover_image TEXT,
+  banner_image TEXT,
+  gender TEXT NOT NULL, -- 'men', 'women', 'unisex'
+  is_active INTEGER DEFAULT 1,
+  start_date DATETIME,
+  end_date DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS collection_products (
+  collection_id INTEGER NOT NULL,
+  product_id INTEGER NOT NULL,
+  PRIMARY KEY (collection_id, product_id),
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS looks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  image_url TEXT NOT NULL,
+  gender TEXT NOT NULL, -- 'men', 'women'
+  is_active INTEGER DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS look_products (
+  look_id INTEGER NOT NULL,
+  product_id INTEGER NOT NULL,
+  PRIMARY KEY (look_id, product_id),
+  FOREIGN KEY (look_id) REFERENCES looks(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );

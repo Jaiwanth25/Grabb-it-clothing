@@ -22,10 +22,10 @@ function attachProductDetails(product) {
 }
 
 // GET /api/products
-// Query parameters: gender ('men'|'women'), category (slug), search, minPrice, maxPrice, size, color, isNew, isTrending, isFeatured, sort
+// Query parameters: gender ('men'|'women'), category (slug), collection (slug), search, minPrice, maxPrice, size, color, isNew, isTrending, isFeatured, discount, rating, inStock, sort
 router.get('/', (req, res) => {
   try {
-    const { gender, category, search, minPrice, maxPrice, size, color, isNew, isTrending, isFeatured, sort } = req.query;
+    const { gender, category, collection, search, minPrice, maxPrice, size, color, isNew, isTrending, isFeatured, discount, rating, inStock, sort } = req.query;
 
     let query = `
       SELECT DISTINCT p.* 
@@ -46,6 +46,12 @@ router.get('/', (req, res) => {
     if (category) {
       query += ` AND c.slug = ? `;
       params.push(category);
+    }
+
+    // Collection Filter
+    if (collection) {
+      query += ` AND p.id IN (SELECT product_id FROM collection_products cp JOIN collections col ON cp.collection_id = col.id WHERE col.slug = ?) `;
+      params.push(collection);
     }
 
     // Search Filter
@@ -73,6 +79,24 @@ router.get('/', (req, res) => {
     if (color) {
       query += ` AND LOWER(pv.color) = ? `;
       params.push(color.toLowerCase());
+    }
+
+    // Discount Filter (e.g. 10 means 10% or more discount)
+    if (discount) {
+      const minDiscount = parseFloat(discount);
+      query += ` AND p.sale_price IS NOT NULL AND ((p.price - p.sale_price) / p.price * 100) >= ? `;
+      params.push(minDiscount);
+    }
+
+    // Rating Filter (e.g. 4 means 4★ and above)
+    if (rating) {
+      query += ` AND p.rating >= ? `;
+      params.push(parseFloat(rating));
+    }
+
+    // Availability/Stock Filter
+    if (inStock === '1' || inStock === 'true') {
+      query += ` AND (SELECT SUM(stock) FROM product_variants WHERE product_id = p.id) > 0 `;
     }
 
     // Flags
@@ -103,6 +127,9 @@ router.get('/', (req, res) => {
       case 'popularity':
         query += ` ORDER BY p.review_count DESC `;
         break;
+      case 'discount':
+        query += ` ORDER BY CASE WHEN p.sale_price IS NOT NULL THEN ((p.price - p.sale_price) / p.price) ELSE 0 END DESC `;
+        break;
       default:
         query += ` ORDER BY p.display_order ASC, p.id DESC `;
         break;
@@ -115,6 +142,43 @@ router.get('/', (req, res) => {
   } catch (err) {
     console.error('Fetch Products Error:', err);
     res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
+
+// GET /api/products/shipping/check
+router.get('/shipping/check', (req, res) => {
+  try {
+    const { pincode } = req.query;
+    if (!pincode || !/^\d{6}$/.test(pincode)) {
+      return res.status(400).json({ error: 'Valid 6-digit pincode is required' });
+    }
+
+    const firstDigit = pincode[0];
+    let estimatedDays = 3;
+    let shippingCharge = 99;
+    let codAvailable = true;
+
+    if (firstDigit === '1' || firstDigit === '2') {
+      estimatedDays = 2; // North India
+    } else if (firstDigit === '3' || firstDigit === '4') {
+      estimatedDays = 3; // West/Central India
+    } else if (firstDigit === '5' || firstDigit === '6') {
+      estimatedDays = 4; // South India
+    } else {
+      estimatedDays = 5; // East/Northeast India
+    }
+
+    codAvailable = firstDigit !== '9'; // Simulate COD availability
+
+    res.json({
+      pincode,
+      estimatedDays,
+      shippingCharge,
+      codAvailable,
+      carrier: 'Grabb-it Express Logistics'
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to check shipping availability' });
   }
 });
 

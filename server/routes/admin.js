@@ -222,17 +222,18 @@ router.get('/banners', (req, res) => {
 // POST /api/admin/banners
 router.post('/banners', (req, res) => {
   try {
-    const { title, subtitle, button_text, button_link, image_url, display_order = 0, is_active = 1 } = req.body;
+    const { title, subtitle, button_text, button_link, image_url, mobile_image_url, gender, start_date, end_date, display_order = 0, is_active = 1 } = req.body;
     if (!title || !image_url) {
       return res.status(400).json({ error: 'Title and image URL are required' });
     }
     db.prepare(`
-      INSERT INTO banners (title, subtitle, button_text, button_link, image_url, display_order, is_active)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(title, subtitle || '', button_text || 'SHOP NOW', button_link || '/men', image_url, display_order, is_active ? 1 : 0);
+      INSERT INTO banners (title, subtitle, button_text, button_link, image_url, mobile_image_url, gender, start_date, end_date, display_order, is_active)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(title, subtitle || '', button_text || 'SHOP NOW', button_link || '/men', image_url, mobile_image_url || null, gender || null, start_date || null, end_date || null, display_order, is_active ? 1 : 0);
 
     res.status(201).json({ message: 'Banner created' });
   } catch (err) {
+    console.error('Create Banner Error:', err);
     res.status(400).json({ error: 'Failed to create banner' });
   }
 });
@@ -240,13 +241,17 @@ router.post('/banners', (req, res) => {
 // PUT /api/admin/banners/:id
 router.put('/banners/:id', (req, res) => {
   try {
-    const { title, subtitle, button_text, button_link, image_url, display_order, is_active } = req.body;
+    const { title, subtitle, button_text, button_link, image_url, mobile_image_url, gender, start_date, end_date, display_order, is_active } = req.body;
     db.prepare(`
-      UPDATE banners SET title = ?, subtitle = ?, button_text = ?, button_link = ?, image_url = ?, display_order = ?, is_active = ? WHERE id = ?
-    `).run(title, subtitle, button_text, button_link, image_url, display_order, is_active ? 1 : 0, req.params.id);
+      UPDATE banners SET 
+        title = ?, subtitle = ?, button_text = ?, button_link = ?, image_url = ?, mobile_image_url = ?, 
+        gender = ?, start_date = ?, end_date = ?, display_order = ?, is_active = ? 
+      WHERE id = ?
+    `).run(title, subtitle, button_text, button_link, image_url, mobile_image_url, gender, start_date, end_date, display_order, is_active ? 1 : 0, req.params.id);
 
     res.json({ message: 'Banner updated' });
   } catch (err) {
+    console.error('Update Banner Error:', err);
     res.status(500).json({ error: 'Failed to update banner' });
   }
 });
@@ -387,6 +392,324 @@ router.post('/coupons', (req, res) => {
 router.delete('/coupons/:id', (req, res) => {
   db.prepare('DELETE FROM coupons WHERE id = ?').run(req.params.id);
   res.json({ message: 'Coupon deleted' });
+});
+
+// --- COLLECTIONS MANAGEMENT ---
+
+// GET /api/admin/collections
+router.get('/collections', (req, res) => {
+  try {
+    const collections = db.prepare('SELECT * FROM collections ORDER BY id DESC').all();
+    const fullCollections = collections.map(col => {
+      const products = db.prepare(`
+        SELECT p.id, p.name, p.sku 
+        FROM products p
+        JOIN collection_products cp ON p.id = cp.product_id
+        WHERE cp.collection_id = ?
+      `).all(col.id);
+      return { ...col, products };
+    });
+    res.json(fullCollections);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch collections' });
+  }
+});
+
+// POST /api/admin/collections
+router.post('/collections', (req, res) => {
+  try {
+    const { name, description, cover_image, banner_image, gender, is_active = 1, products = [] } = req.body;
+    if (!name || !gender) {
+      return res.status(400).json({ error: 'Name and gender are required' });
+    }
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4);
+
+    const tx = db.transaction(() => {
+      const stmt = db.prepare(`
+        INSERT INTO collections (name, slug, description, cover_image, banner_image, gender, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(name, slug, description || '', cover_image || '', banner_image || '', gender.toLowerCase(), is_active ? 1 : 0);
+
+      const colId = stmt.lastInsertRowid;
+      const insertProd = db.prepare('INSERT INTO collection_products (collection_id, product_id) VALUES (?, ?)');
+      products.forEach(pId => insertProd.run(colId, pId));
+      return colId;
+    });
+
+    const newId = tx();
+    res.status(201).json({ id: newId, message: 'Collection created successfully' });
+  } catch (err) {
+    console.error('Create Collection Error:', err);
+    res.status(400).json({ error: err.message || 'Failed to create collection' });
+  }
+});
+
+// PUT /api/admin/collections/:id
+router.put('/collections/:id', (req, res) => {
+  try {
+    const { name, description, cover_image, banner_image, gender, is_active, products = [] } = req.body;
+    const colId = req.params.id;
+
+    const tx = db.transaction(() => {
+      db.prepare(`
+        UPDATE collections SET
+          name = ?, description = ?, cover_image = ?, banner_image = ?, gender = ?, is_active = ?
+        WHERE id = ?
+      `).run(name, description, cover_image, banner_image, gender.toLowerCase(), is_active ? 1 : 0, colId);
+
+      db.prepare('DELETE FROM collection_products WHERE collection_id = ?').run(colId);
+      const insertProd = db.prepare('INSERT INTO collection_products (collection_id, product_id) VALUES (?, ?)');
+      products.forEach(pId => insertProd.run(colId, pId));
+    });
+
+    tx();
+    res.json({ message: 'Collection updated successfully' });
+  } catch (err) {
+    console.error('Update Collection Error:', err);
+    res.status(500).json({ error: 'Failed to update collection' });
+  }
+});
+
+// DELETE /api/admin/collections/:id
+router.delete('/collections/:id', (req, res) => {
+  try {
+    db.prepare('DELETE FROM collections WHERE id = ?').run(req.params.id);
+    res.json({ message: 'Collection deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete collection' });
+  }
+});
+
+// --- LOOKS (SHOP THE LOOK) MANAGEMENT ---
+
+// GET /api/admin/looks
+router.get('/looks', (req, res) => {
+  try {
+    const looks = db.prepare('SELECT * FROM looks ORDER BY id DESC').all();
+    const fullLooks = looks.map(look => {
+      const products = db.prepare(`
+        SELECT p.id, p.name, p.sku
+        FROM products p
+        JOIN look_products lp ON p.id = lp.product_id
+        WHERE lp.look_id = ?
+      `).all(look.id);
+      return { ...look, products };
+    });
+    res.json(fullLooks);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch looks' });
+  }
+});
+
+// POST /api/admin/looks
+router.post('/looks', (req, res) => {
+  try {
+    const { name, description, image_url, gender, is_active = 1, products = [] } = req.body;
+    if (!name || !image_url || !gender) {
+      return res.status(400).json({ error: 'Name, image URL, and gender are required' });
+    }
+
+    const tx = db.transaction(() => {
+      const stmt = db.prepare(`
+        INSERT INTO looks (name, description, image_url, gender, is_active)
+        VALUES (?, ?, ?, ?, ?)
+      `).run(name, description || '', image_url, gender.toLowerCase(), is_active ? 1 : 0);
+
+      const lookId = stmt.lastInsertRowid;
+      const insertProd = db.prepare('INSERT INTO look_products (look_id, product_id) VALUES (?, ?)');
+      products.forEach(pId => insertProd.run(lookId, pId));
+      return lookId;
+    });
+
+    const newId = tx();
+    res.status(201).json({ id: newId, message: 'Look created successfully' });
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'Failed to create look' });
+  }
+});
+
+// PUT /api/admin/looks/:id
+router.put('/looks/:id', (req, res) => {
+  try {
+    const { name, description, image_url, gender, is_active, products = [] } = req.body;
+    const lookId = req.params.id;
+
+    const tx = db.transaction(() => {
+      db.prepare(`
+        UPDATE looks SET
+          name = ?, description = ?, image_url = ?, gender = ?, is_active = ?
+        WHERE id = ?
+      `).run(name, description, image_url, gender.toLowerCase(), is_active ? 1 : 0, lookId);
+
+      db.prepare('DELETE FROM look_products WHERE look_id = ?').run(lookId);
+      const insertProd = db.prepare('INSERT INTO look_products (look_id, product_id) VALUES (?, ?)');
+      products.forEach(pId => insertProd.run(lookId, pId));
+    });
+
+    tx();
+    res.json({ message: 'Look updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update look' });
+  }
+});
+
+// DELETE /api/admin/looks/:id
+router.delete('/looks/:id', (req, res) => {
+  try {
+    db.prepare('DELETE FROM looks WHERE id = ?').run(req.params.id);
+    res.json({ message: 'Look deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete look' });
+  }
+});
+
+// --- REVIEWS MODERATION ---
+
+// GET /api/admin/reviews
+router.get('/reviews', (req, res) => {
+  try {
+    const reviews = db.prepare(`
+      SELECT r.*, p.name as product_name, p.sku as product_sku
+      FROM reviews r
+      JOIN products p ON r.product_id = p.id
+      ORDER BY r.created_at DESC
+    `).all();
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch reviews' });
+  }
+});
+
+// PUT /api/admin/reviews/:id/moderate
+router.put('/reviews/:id/moderate', (req, res) => {
+  try {
+    const { is_moderated } = req.body;
+    const reviewId = req.params.id;
+
+    db.prepare('UPDATE reviews SET is_moderated = ? WHERE id = ?').run(is_moderated ? 1 : 0, reviewId);
+
+    // Get the product_id for this review
+    const review = db.prepare('SELECT product_id FROM reviews WHERE id = ?').get(reviewId);
+    if (review) {
+      // Re-calculate rating stats for the product
+      const stats = db.prepare('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1').get(review.product_id);
+      db.prepare('UPDATE products SET rating = ?, review_count = ? WHERE id = ?').run(
+        parseFloat((stats.avg_rating || 5).toFixed(1)),
+        stats.review_cnt || 0,
+        review.product_id
+      );
+    }
+
+    res.json({ message: 'Review moderation updated' });
+  } catch (err) {
+    console.error('Moderate Review Error:', err);
+    res.status(500).json({ error: 'Failed to moderate review' });
+  }
+});
+
+// DELETE /api/admin/reviews/:id
+router.delete('/reviews/:id', (req, res) => {
+  try {
+    const reviewId = req.params.id;
+    const review = db.prepare('SELECT product_id FROM reviews WHERE id = ?').get(reviewId);
+
+    db.prepare('DELETE FROM reviews WHERE id = ?').run(reviewId);
+
+    if (review) {
+      // Re-calculate rating stats for the product
+      const stats = db.prepare('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1').get(review.product_id);
+      db.prepare('UPDATE products SET rating = ?, review_count = ? WHERE id = ?').run(
+        parseFloat((stats.avg_rating || 5).toFixed(1)),
+        stats.review_cnt || 0,
+        review.product_id
+      );
+    }
+
+    res.json({ message: 'Review deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete review' });
+  }
+});
+
+// --- BULK PRODUCT IMPORT CSV DATA ---
+
+// POST /api/admin/products/bulk-csv
+router.post('/products/bulk-csv', (req, res) => {
+  try {
+    const { products } = req.body; // Array of product JSON objects parsed from CSV
+    if (!products || !Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ error: 'No product records found' });
+    }
+
+    const tx = db.transaction(() => {
+      let importedCount = 0;
+      const errors = [];
+
+      products.forEach((prod, index) => {
+        const { SKU, name, description, gender, category_id, price, sale_price, size = 'M', color = 'Standard', color_hex = '#111111', stock = 10, image_url } = prod;
+
+        if (!SKU || !name || !gender || !category_id || !price) {
+          errors.push(`Row ${index + 1}: Missing required fields (SKU, name, gender, category_id, price).`);
+          return;
+        }
+
+        // Validate price and sale price
+        const itemPrice = parseFloat(price);
+        const itemSalePrice = sale_price ? parseFloat(sale_price) : null;
+        if (itemSalePrice !== null && itemSalePrice > itemPrice) {
+          errors.push(`Row ${index + 1}: Sale price (${itemSalePrice}) cannot be greater than MRP (${itemPrice}).`);
+          return;
+        }
+
+        // Validate SKU uniqueness
+        const existingSku = db.prepare('SELECT id FROM products WHERE sku = ?').get(SKU);
+        if (existingSku) {
+          errors.push(`Row ${index + 1}: Product with SKU ${SKU} already exists.`);
+          return;
+        }
+
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4) + '-' + index;
+
+        // Insert product
+        const prodInsert = db.prepare(`
+          INSERT INTO products (name, slug, description, gender, category_id, price, sale_price, sku, is_new, is_trending, is_featured, is_active, display_order)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 0, 0, 1, 99)
+        `).run(name, slug, description || '', gender.toLowerCase(), parseInt(category_id), itemPrice, itemSalePrice, SKU);
+
+        const newProductId = prodInsert.lastInsertRowid;
+
+        // Insert variant
+        db.prepare(`
+          INSERT INTO product_variants (product_id, size, color, color_hex, stock)
+          VALUES (?, ?, ?, ?, ?)
+        `).run(newProductId, size, color, color_hex, parseInt(stock));
+
+        // Insert image
+        const fallbackImg = image_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80';
+        db.prepare(`
+          INSERT INTO product_images (product_id, image_url, is_primary, display_order)
+          VALUES (?, ?, 1, 1)
+        `).run(newProductId, fallbackImg);
+
+        importedCount++;
+      });
+
+      return { importedCount, errors };
+    });
+
+    const result = tx();
+    if (result.errors.length > 0 && result.importedCount === 0) {
+      return res.status(400).json({ error: 'Import failed', details: result.errors });
+    }
+
+    res.json({
+      message: `Successfully imported ${result.importedCount} products.`,
+      warnings: result.errors
+    });
+  } catch (err) {
+    console.error('CSV Bulk Import Error:', err);
+    res.status(500).json({ error: 'Failed to import products' });
+  }
 });
 
 // --- IMAGE UPLOAD API FOR ADMIN ---

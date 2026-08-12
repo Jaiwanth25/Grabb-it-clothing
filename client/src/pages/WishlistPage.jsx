@@ -22,8 +22,8 @@ const WishlistPage = () => {
 
   return (
     <main className="section-space container">
-      <h1 style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '2rem', borderBottom: '2px solid #111', paddingBottom: '0.75rem' }}>
-        MY WISHLIST ({wishlistItems.length} ITEMS)
+      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 400, textTransform: 'uppercase', marginBottom: '2rem', borderBottom: '1px solid var(--text-main)', paddingBottom: '1rem' }}>
+        MY WISHLIST ({wishlistItems.length} DROPS)
       </h1>
 
       <div className="product-grid">

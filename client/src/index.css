@@ -1,26 +1,29 @@
-/* GRABB-IT Modern Minimal Fashion Design System (STRICT NO GRADIENTS) */
+/* GRABB-IT Modern Premium Editorial Fashion Design System */
 :root {
-  --bg-main: #ffffff;
-  --bg-subtle: #f8f9fa;
-  --bg-card: #f5f5f5;
-  --bg-dark: #111111;
-  --text-main: #111111;
-  --text-muted: #666666;
-  --text-light: #999999;
+  --bg-main: #faf9f6; /* Warm White */
+  --bg-subtle: #f5f2eb; /* Soft Warm Gray */
+  --bg-card: #ffffff;
+  --bg-dark: #121212; /* Deep Charcoal */
+  --text-main: #121212;
+  --text-muted: #555450;
+  --text-light: #9c9a94;
   --text-white: #ffffff;
-  --border-light: #e5e5e5;
-  --border-dark: #333333;
-  --accent-badge: #e53935;
-  --accent-badge-bg: #ffebee;
-  --accent-gold: #f5a623;
-  --focus-ring: #000000;
+  --border-light: #e6e3dc;
+  --border-dark: #2c2c2a;
+  --accent-badge: #c05c46; /* Terracotta Accents */
+  --accent-badge-bg: #faedea;
+  --accent-olive: #4b5320; /* Olive Accent */
+  --accent-gold: #c5a880; /* Stone Accent */
+  --focus-ring: #121212;
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.25s ease;
-  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --header-height: 72px;
-  --border-radius-btn: 8px; /* Curvy button styling */
-  --border-radius-card: 12px;
+  --font-title: 'Outfit', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-subtle: 0 4px 20px rgba(18, 18, 18, 0.03);
+  --header-height: 80px;
+  --border-radius-btn: 0px; /* Sharp premium modern tailoring */
+  --border-radius-card: 0px;
 }
 
 * {
@@ -864,3 +867,246 @@ input, select, textarea {
   font-size: 0.8rem;
   color: #888888;
 }
+
+/* Custom Editorial Layout Elements */
+.font-editorial {
+  font-family: var(--font-serif);
+}
+
+.font-display {
+  font-family: var(--font-title);
+  letter-spacing: 0.5px;
+}
+
+/* Hero Carousel Custom Editorial Styling */
+.banner-carousel {
+  background-color: var(--bg-dark);
+}
+
+.banner-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 4rem;
+  line-height: 1.1;
+  letter-spacing: -1px;
+}
+
+@media (max-width: 768px) {
+  .banner-title {
+    font-size: 2.25rem;
+  }
+}
+
+.banner-subtitle {
+  font-family: var(--font-family);
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  font-size: 1.1rem;
+  color: #dddddd;
+  max-width: 600px;
+  margin: 1rem auto 2rem auto;
+}
+
+/* Section Titles styling */
+.section-title {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 2.25rem;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+/* Shop the Look / Outfit combinations styling */
+.shop-the-look-section {
+  background-color: var(--bg-subtle);
+  padding: 5rem 0;
+}
+
+.look-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 3.5rem;
+  align-items: center;
+}
+
+@media (max-width: 992px) {
+  .look-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.look-card {
+  position: relative;
+  background-color: #000;
+  overflow: hidden;
+}
+
+.look-img {
+  width: 100%;
+  height: 600px;
+  object-fit: cover;
+  opacity: 0.9;
+  transition: transform var(--transition-normal);
+}
+
+.look-card:hover .look-img {
+  transform: scale(1.03);
+}
+
+.look-products {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.look-prod-item {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background-color: var(--bg-card);
+  padding: 1.25rem;
+  border: 1px solid var(--border-light);
+  transition: transform var(--transition-fast);
+}
+
+.look-prod-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--text-main);
+}
+
+.look-prod-img {
+  width: 70px;
+  height: 90px;
+  object-fit: cover;
+}
+
+/* Color Swatches Grid */
+.color-swatches-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.color-swatch-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 2px;
+  transition: var(--transition-fast);
+}
+
+.color-swatch-circle:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch-circle.selected {
+  border-color: var(--text-main);
+}
+
+.color-swatch-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Size charts guide modal */
+.size-guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+}
+
+.size-guide-table th, .size-guide-table td {
+  border: 1px solid var(--border-light);
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.size-guide-table th {
+  background-color: var(--bg-subtle);
+  font-weight: 700;
+}
+
+/* Delivery checker component */
+.delivery-checker-box {
+  border: 1px solid var(--border-light);
+  padding: 1.25rem;
+  background-color: #ffffff;
+  margin: 1.5rem 0;
+}
+
+.delivery-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Free Shipping Progress bar */
+.shipping-progress-container {
+  background-color: var(--bg-subtle);
+  padding: 1rem;
+  border: 1px solid var(--border-light);
+  margin-bottom: 1.5rem;
+}
+
+.shipping-progress-bar-bg {
+  background-color: var(--border-light);
+  height: 6px;
+  width: 100%;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.shipping-progress-bar-fill {
+  background-color: var(--text-main);
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+/* Multi-step checkout navigation */
+.checkout-steps-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 1rem;
+}
+
+.checkout-step-indicator {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.checkout-step-indicator.active {
+  color: var(--text-main);
+  font-weight: 800;
+  border-bottom: 2px solid var(--text-main);
+  padding-bottom: 1rem;
+  margin-bottom: -1.05rem;
+}
+
+/* Sticky PDP Variant Selection Panel on mobile */
+@media (max-width: 768px) {
+  .mobile-sticky-action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    border-top: 1px solid var(--border-light);
+    padding: 0.75rem 1rem;
+    z-index: 999;
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+

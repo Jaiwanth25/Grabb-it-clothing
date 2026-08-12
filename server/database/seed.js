@@ -138,8 +138,8 @@ function seedDatabase() {
       slug: 'men-essential-oversized-heavyweight-tee',
       gender: 'men',
       categorySlug: 'men-t-shirts',
-      price: 39.99,
-      salePrice: 29.99,
+      price: 1299.00,
+      salePrice: 999.00,
       sku: 'GRB-M-TSH-001',
       description: 'Crafted from 240 GSM organic combed cotton, this boxy oversized t-shirt offers structure and breathability. Features reinforced collar ribbing and drop shoulders.',
       rating: 4.8,
@@ -159,8 +159,8 @@ function seedDatabase() {
       slug: 'men-minimalist-relaxed-cuban-collar-shirt',
       gender: 'men',
       categorySlug: 'men-shirts',
-      price: 59.99,
-      salePrice: 49.99,
+      price: 1999.00,
+      salePrice: 1499.00,
       sku: 'GRB-M-SHR-002',
       description: 'Airy cotton-blend woven shirt with a retro camp collar. Designed for warm weekend breezes and laid-back sophistication.',
       rating: 4.6,
@@ -180,8 +180,8 @@ function seedDatabase() {
       slug: 'men-japanese-selvedge-tapered-fit-jeans',
       gender: 'men',
       categorySlug: 'men-jeans',
-      price: 89.99,
-      salePrice: 74.99,
+      price: 2999.00,
+      salePrice: 2499.00,
       sku: 'GRB-M-JNS-003',
       description: '13.5 oz indigo raw denim cut in a modern relaxed-taper silhouette. Clean contrast stitching and silver hardware finish.',
       rating: 4.9,
@@ -201,7 +201,7 @@ function seedDatabase() {
       slug: 'men-tailored-pleated-straight-trousers',
       gender: 'men',
       categorySlug: 'men-pants',
-      price: 69.99,
+      price: 2499.00,
       salePrice: null,
       sku: 'GRB-M-PNT-004',
       description: 'Versatile smart-casual trousers featuring twin front pleats, hidden elastic waistband, and clean cropped hem.',
@@ -222,8 +222,8 @@ function seedDatabase() {
       slug: 'men-structured-fleece-heavyweight-joggers',
       gender: 'men',
       categorySlug: 'men-joggers',
-      price: 49.99,
-      salePrice: 39.99,
+      price: 1799.00,
+      salePrice: 1299.00,
       sku: 'GRB-M-JOG-005',
       description: 'Plush brushed fleece interior with sleek tailored outer stitching. Features deep zipped pockets and ribbed ankle cuffs.',
       rating: 4.8,
@@ -243,8 +243,8 @@ function seedDatabase() {
       slug: 'men-pure-french-linen-resort-shirt',
       gender: 'men',
       categorySlug: 'men-linen',
-      price: 64.99,
-      salePrice: 54.99,
+      price: 2299.00,
+      salePrice: 1799.00,
       sku: 'GRB-M-LIN-006',
       description: '100% natural flax French linen shirt. Lightweight, moisture-wicking, and garment-washed for ultra-soft hand feel.',
       rating: 4.9,
@@ -264,8 +264,8 @@ function seedDatabase() {
       slug: 'men-utility-padded-canvas-bomber-jacket',
       gender: 'men',
       categorySlug: 'men-outerwear',
-      price: 119.99,
-      salePrice: 99.99,
+      price: 3999.00,
+      salePrice: 2999.00,
       sku: 'GRB-M-OUT-007',
       description: 'Rugged cotton canvas shell insulated with lightweight thermal padding. Heavy-duty dual metal zip and storm flap.',
       rating: 4.9,
@@ -280,15 +280,14 @@ function seedDatabase() {
       colors: [{ name: 'Matte Black', hex: '#1C1C1C' }, { name: 'Army Green', hex: '#4B5320' }],
       sizes: ['S', 'M', 'L', 'XL']
     },
-
     // WOMEN PRODUCTS
     {
       name: 'Organic Slub Cotton Crewneck Tee',
       slug: 'women-organic-slub-cotton-crewneck-tee',
       gender: 'women',
       categorySlug: 'women-t-shirts',
-      price: 34.99,
-      salePrice: 24.99,
+      price: 999.00,
+      salePrice: 799.00,
       sku: 'GRB-W-TSH-008',
       description: 'Super-soft lightweight organic cotton jersey with subtle slub texture. Relaxed fit ideal for effortless layering.',
       rating: 4.8,
@@ -308,8 +307,8 @@ function seedDatabase() {
       slug: 'women-oversized-poplin-button-down-shirt',
       gender: 'women',
       categorySlug: 'women-shirts',
-      price: 54.99,
-      salePrice: 44.99,
+      price: 1799.00,
+      salePrice: 1299.00,
       sku: 'GRB-W-SHR-009',
       description: 'Crisp 100% cotton poplin cut with a relaxed boyfriend silhouette, curved hemline, and shell-look buttons.',
       rating: 4.7,
@@ -329,8 +328,8 @@ function seedDatabase() {
       slug: 'women-high-waisted-straight-wide-leg-jeans',
       gender: 'women',
       categorySlug: 'women-jeans',
-      price: 79.99,
-      salePrice: 64.99,
+      price: 2499.00,
+      salePrice: 1999.00,
       sku: 'GRB-W-JNS-010',
       description: 'Vintage-inspired high-rise denim hugging the waist and easing into an elegant wide leg contour.',
       rating: 4.9,
@@ -350,7 +349,7 @@ function seedDatabase() {
       slug: 'women-pleated-high-rise-wide-tailored-pants',
       gender: 'women',
       categorySlug: 'women-pants',
-      price: 69.99,
+      price: 2299.00,
       salePrice: null,
       sku: 'GRB-W-PNT-011',
       description: 'Fluid drape trousers featuring twin front darts, discreet side slant pockets, and back welt accents.',
@@ -371,8 +370,8 @@ function seedDatabase() {
       slug: 'women-minimal-soft-knit-lounge-joggers',
       gender: 'women',
       categorySlug: 'women-joggers',
-      price: 44.99,
-      salePrice: 34.99,
+      price: 1499.00,
+      salePrice: 1199.00,
       sku: 'GRB-W-JOG-012',
       description: 'Ultra-plush modal blend lounge pants with high drawstring waist and tapered elastic cuffs.',
       rating: 4.8,
@@ -392,8 +391,8 @@ function seedDatabase() {
       slug: 'women-ribbed-seamless-square-neck-tank-top',
       gender: 'women',
       categorySlug: 'women-tops',
-      price: 29.99,
-      salePrice: 19.99,
+      price: 899.00,
+      salePrice: 699.00,
       sku: 'GRB-W-TOP-013',
       description: 'Contouring 4-way stretch ribbed knit top with structured square neckline and clean edge finish.',
       rating: 4.9,
@@ -413,8 +412,8 @@ function seedDatabase() {
       slug: 'women-high-rise-tailored-linen-blend-shorts',
       gender: 'women',
       categorySlug: 'women-shorts',
-      price: 39.99,
-      salePrice: 29.99,
+      price: 1299.00,
+      salePrice: 999.00,
       sku: 'GRB-W-SRT-014',
       description: 'Chic high-waisted linen shorts featuring front pleats, matching fabric belt, and turn-up hems.',
       rating: 4.7,
@@ -434,8 +433,8 @@ function seedDatabase() {
       slug: 'women-cropped-raw-hem-denim-trucker-jacket',
       gender: 'women',
       categorySlug: 'women-denims',
-      price: 84.99,
-      salePrice: 69.99,
+      price: 2999.00,
+      salePrice: 2299.00,
       sku: 'GRB-W-DEN-015',
       description: 'Boxy crop denim jacket with subtle distressing and unfinished frayed raw hemline.',
       rating: 4.9,
@@ -452,6 +451,65 @@ function seedDatabase() {
     }
   ];
 
+  // 5. Collections
+  const insertCollection = db.prepare(`
+    INSERT INTO collections (name, slug, description, cover_image, banner_image, gender, is_active)
+    VALUES (?, ?, ?, ?, ?, ?, 1)
+  `);
+  const insertCollectionProduct = db.prepare(`
+    INSERT INTO collection_products (collection_id, product_id)
+    VALUES (?, ?)
+  `);
+
+  const coll1 = insertCollection.run(
+    'The Everyday Edit',
+    'everyday-edit',
+    'Curated premium basics for your daily wardrobe.',
+    'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=1600&auto=format&fit=crop&q=80',
+    'men'
+  );
+  const coll2 = insertCollection.run(
+    'Street Essentials',
+    'street-essentials',
+    'Urban silhouettes, heavy drops, and streetwear essentials.',
+    'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=1600&auto=format&fit=crop&q=80',
+    'men'
+  );
+  const coll3 = insertCollection.run(
+    'Summer Edit 2026',
+    'summer-edit-2026',
+    'Lightweight linens, bright colors, and breezy silhouettes.',
+    'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=1600&auto=format&fit=crop&q=80',
+    'women'
+  );
+
+  // 6. Looks (Shop the Look)
+  const insertLook = db.prepare(`
+    INSERT INTO looks (name, description, image_url, gender)
+    VALUES (?, ?, ?, ?)
+  `);
+  const insertLookProduct = db.prepare(`
+    INSERT INTO look_products (look_id, product_id)
+    VALUES (?, ?)
+  `);
+
+  const look1 = insertLook.run(
+    'Look 01: Street Vibe',
+    'Oversized Heavyweight Tee + Japanese Tapered Jeans',
+    'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&auto=format&fit=crop&q=80',
+    'men'
+  );
+  const look2 = insertLook.run(
+    'Look 02: Summer Chic',
+    'Oversized Poplin Shirt + Wide-Leg Jeans',
+    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80',
+    'women'
+  );
+
+  // Seeding Products and mappings
   rawProducts.forEach((prod, pIdx) => {
     const categoryId = categoryMap[prod.categorySlug];
     if (!categoryId) return;
@@ -483,10 +541,32 @@ function seedDatabase() {
     // Add Variants (sizes x colors)
     prod.colors.forEach((col) => {
       prod.sizes.forEach((sz) => {
-        const stockQty = Math.floor(Math.random() * 25) + 5; // 5 to 30 stock
+        const stockQty = Math.floor(Math.random() * 25) + 10; // 10 to 35 stock
         insertVariant.run(productId, sz, col.name, col.hex, stockQty);
       });
     });
+
+    // Link Products to Collections / Looks
+    if (prod.name === 'Essential Oversized Heavyweight Tee') {
+      insertCollectionProduct.run(coll1.lastInsertRowid, productId);
+      insertCollectionProduct.run(coll2.lastInsertRowid, productId);
+      insertLookProduct.run(look1.lastInsertRowid, productId);
+    }
+    if (prod.name === 'Minimalist Relaxed Cuban Collar Shirt') {
+      insertCollectionProduct.run(coll1.lastInsertRowid, productId);
+      insertLookProduct.run(look1.lastInsertRowid, productId);
+    }
+    if (prod.name === 'Japanese Selvedge Tapered Fit Jeans') {
+      insertCollectionProduct.run(coll2.lastInsertRowid, productId);
+    }
+    if (prod.name === 'Oversized Poplin Button-Down Shirt') {
+      insertCollectionProduct.run(coll3.lastInsertRowid, productId);
+      insertLookProduct.run(look2.lastInsertRowid, productId);
+    }
+    if (prod.name === 'High-Waisted Straight Wide-Leg Jeans') {
+      insertCollectionProduct.run(coll3.lastInsertRowid, productId);
+      insertLookProduct.run(look2.lastInsertRowid, productId);
+    }
 
     // Add Sample Reviews
     if (prod.reviewCount > 0) {
@@ -503,19 +583,20 @@ function seedDatabase() {
     }
   });
 
-  // 5. Coupons
+  // 7. Coupons
   const insertCoupon = db.prepare(`
     INSERT INTO coupons (code, discount_type, discount_value, min_order_amount, expiry_date, usage_limit, is_active)
     VALUES (?, ?, ?, ?, ?, ?, 1)
   `);
 
   insertCoupon.run('GRABB10', 'percentage', 10, 0, '2027-12-31', 500);
-  insertCoupon.run('WELCOME20', 'fixed', 20, 60, '2027-12-31', 100);
-  insertCoupon.run('FASHION15', 'percentage', 15, 40, '2027-12-31', 200);
+  insertCoupon.run('WELCOME500', 'fixed', 500, 2499, '2027-12-31', 100);
+  insertCoupon.run('FASHION15', 'percentage', 15, 999, '2027-12-31', 200);
 
-  console.log('Database seeded successfully!');
+  console.log('Database seeded successfully in INR!');
   console.log('Admin Login: admin@grabb-it.com / Admin@123456');
   console.log('Customer Login: customer@grabb-it.com / Customer@123');
 }
 
 seedDatabase();
+

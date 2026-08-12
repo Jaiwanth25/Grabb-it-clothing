@@ -81,11 +81,11 @@ const QuickViewModal = ({ product, onClose }) => {
             {/* Price */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <span style={{ fontSize: '1.4rem', fontWeight: 900 }}>
-                ${(product.sale_price !== null ? product.sale_price : product.price).toFixed(2)}
+                ₹{Math.round(product.sale_price !== null ? product.sale_price : product.price)}
               </span>
               {product.sale_price !== null && (
                 <span style={{ fontSize: '1rem', color: '#999', textDecoration: 'line-through' }}>
-                  ${product.price.toFixed(2)}
+                  ₹{Math.round(product.price)}
                 </span>
               )}
             </div>

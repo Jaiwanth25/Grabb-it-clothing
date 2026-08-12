@@ -100,13 +100,47 @@ const ProductCard = ({ product, onQuickView }) => {
           </div>
         </div>
 
-        <Link to={`/product/${product.slug}`} className="product-title">
+        <Link to={`/product/${product.slug}`} className="product-title" style={{ fontFamily: 'var(--font-title)', fontWeight: 600 }}>
           {product.name}
         </Link>
 
+        {/* Color Indicators */}
+        {(() => {
+          const uniqueColors = [];
+          const seenColors = new Set();
+          if (product.variants) {
+            product.variants.forEach(v => {
+              if (v.color && !seenColors.has(v.color.toLowerCase())) {
+                seenColors.add(v.color.toLowerCase());
+                uniqueColors.push(v);
+              }
+            });
+          }
+          if (uniqueColors.length > 0) {
+            return (
+              <div style={{ display: 'flex', gap: '4px', margin: '4px 0 6px 0' }}>
+                {uniqueColors.map((col, idx) => (
+                  <span 
+                    key={idx} 
+                    title={col.color} 
+                    style={{ 
+                      width: '10px', 
+                      height: '10px', 
+                      borderRadius: '50%', 
+                      backgroundColor: col.color_hex || '#000',
+                      border: '1px solid rgba(0,0,0,0.15)' 
+                    }} 
+                  />
+                ))}
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         <div className="product-price-row">
-          <span className="price-current">${currentPrice.toFixed(2)}</span>
-          {hasDiscount && <span className="price-original">${product.price.toFixed(2)}</span>}
+          <span className="price-current" style={{ fontWeight: 800 }}>₹{Math.round(currentPrice)}</span>
+          {hasDiscount && <span className="price-original" style={{ textDecoration: 'line-through', color: 'var(--text-light)', marginLeft: '0.5rem', fontSize: '0.85rem' }}>₹{Math.round(product.price)}</span>}
         </div>
       </div>
     </div>

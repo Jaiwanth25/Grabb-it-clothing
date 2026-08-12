@@ -33,53 +33,68 @@ const Header = () => {
     <header className="header-sticky">
       {/* Top Banner Bar */}
       <div className="header-top-bar">
-        FREE EXPRESS SHIPPING ON ORDERS OVER $75 • USE CODE: <strong>GRABB10</strong> FOR 10% OFF
+        FREE SHIPPING ABOVE ₹999 • USE CODE: <strong>GRABB10</strong> FOR 10% OFF
       </div>
 
       {/* Main Responsive Header */}
-      <nav className="header-nav">
-        {/* LEFT SECTION */}
-        <div className="header-left">
+      <nav className="header-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        {/* LEFT: Branding & Hamburger */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button
-            className="icon-btn"
+            className="icon-btn mobile-only"
             onClick={() => setDrawerOpen(true)}
             aria-label="Open Navigation Menu"
             title="Menu"
           >
             <Menu size={24} />
           </button>
-
-          {/* Desktop Gender Switcher */}
-          <div className="gender-switcher desktop-only" style={{ display: 'flex', gap: '0.25rem' }}>
-            <button
-              className={`gender-btn ${gender === 'men' ? 'active' : ''}`}
-              onClick={() => handleGenderSelect('men')}
-            >
-              MEN
-            </button>
-            <button
-              className={`gender-btn ${gender === 'women' ? 'active' : ''}`}
-              onClick={() => handleGenderSelect('women')}
-            >
-              WOMEN
-            </button>
-          </div>
+          
+          <Link to="/" className="header-center" style={{ justifyContent: 'flex-start', gap: '0.5rem' }}>
+            <img
+              src="/assets/grabb-it-logo.png"
+              alt="Grabb-it Logo"
+              className="header-logo-img"
+              onError={(e) => {
+                e.target.src = '/assets/grabb-it-logo.svg';
+              }}
+            />
+            <span className="header-brand-title" style={{ fontFamily: 'var(--font-title)' }}>GRABB-IT</span>
+          </Link>
         </div>
 
-        {/* CENTER SECTION: Official Rabbit Logo + GRABB-IT */}
-        <Link to="/" className="header-center">
-          <img
-            src="/assets/grabb-it-logo.png"
-            alt="Grabb-it Logo"
-            className="header-logo-img"
-            onError={(e) => {
-              e.target.src = '/assets/grabb-it-logo.svg';
-            }}
-          />
-          <span className="header-brand-title">GRABB-IT</span>
-        </Link>
+        {/* CENTER: Desktop Menu Links */}
+        <div className="desktop-only" style={{ display: 'flex', gap: '1.25rem' }}>
+          <Link to="/men" className={`gender-btn ${gender === 'men' ? 'active' : ''}`} onClick={() => setGender('men')}>
+            MEN
+          </Link>
+          <Link to="/women" className={`gender-btn ${gender === 'women' ? 'active' : ''}`} onClick={() => setGender('women')}>
+            WOMEN
+          </Link>
+          <Link to={`/${gender}?isNew=true`} className="gender-btn">
+            NEW ARRIVALS
+          </Link>
+          <Link to={`/${gender}?isTrending=true`} className="gender-btn">
+            TRENDING
+          </Link>
+          <a href="#collections" className="gender-btn" onClick={(e) => {
+            e.preventDefault();
+            if (location.pathname !== '/') {
+              navigate('/');
+              setTimeout(() => {
+                document.getElementById('collections')?.scrollIntoView({ behavior: 'smooth' });
+              }, 300);
+            } else {
+              document.getElementById('collections')?.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}>
+            COLLECTIONS
+          </a>
+          <Link to="/offers" className="gender-btn">
+            OFFERS
+          </Link>
+        </div>
 
-        {/* RIGHT SECTION */}
+        {/* RIGHT: Search & Icons */}
         <div className="header-right">
           {/* Desktop Search */}
           <form onSubmit={handleSearchSubmit} className="search-input-box desktop-only">
@@ -98,7 +113,7 @@ const Header = () => {
           </Link>
 
           {/* Wishlist */}
-          <Link to="/wishlist" className="icon-btn desktop-only" title="Wishlist">
+          <Link to="/wishlist" className="icon-btn" title="Wishlist">
             <Heart size={22} />
           </Link>
 

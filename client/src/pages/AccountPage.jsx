@@ -168,7 +168,7 @@ const AccountPage = () => {
                           <span style={{ backgroundColor: order.order_status === 'Delivered' ? '#e8f5e9' : '#fff3e0', color: order.order_status === 'Delivered' ? '#2e7d32' : '#e65100', padding: '0.2rem 0.6rem', fontSize: '0.75rem', fontWeight: 800 }}>
                             {order.order_status.toUpperCase()}
                           </span>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 900, marginTop: '0.25rem' }}>${order.total_amount.toFixed(2)}</div>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 900, marginTop: '0.25rem' }}>₹{Math.round(order.total_amount)}</div>
                         </div>
                       </div>
 
@@ -176,8 +176,8 @@ const AccountPage = () => {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                         {order.items?.map((item, idx) => (
                           <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                            <span>{item.product_name} ({item.size} / {item.color}) x {item.quantity}</span>
-                            <span style={{ fontWeight: 700 }}>${(item.price * item.quantity).toFixed(2)}</span>
+                            <span>{item.product_name} ({item.size} / {item.color.toUpperCase()}) x {item.quantity}</span>
+                            <span style={{ fontWeight: 700 }}>₹{Math.round(item.price * item.quantity)}</span>
                           </div>
                         ))}
                       </div>
