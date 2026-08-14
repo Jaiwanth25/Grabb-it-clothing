@@ -10,26 +10,26 @@ router.use(requireAdmin);
 // GET /api/admin/stats
 router.get('/stats', async (req, res) => {
   try {
-    const totalSalesRow = await db.queryOne("SELECT SUM(total_amount) as total FROM orders WHERE payment_status = 'Paid'", []);
+    const totalSalesRow = await db.queryOne("SELECT SUM(total_amount) as total FROM orders WHERE payment_status = 'PAYMENT_VERIFIED' OR payment_status = 'Paid'", []);
     const totalOrdersRow = await db.queryOne("SELECT COUNT(*) as count FROM orders", []);
     const totalCustomersRow = await db.queryOne("SELECT COUNT(*) as count FROM users WHERE role = 'customer'", []);
     const totalProductsRow = await db.queryOne("SELECT COUNT(*) as count FROM products", []);
     const lowStockRow = await db.queryOne("SELECT COUNT(*) as count FROM product_variants WHERE stock <= 5", []);
-    const pendingOrdersRow = await db.queryOne("SELECT COUNT(*) as count FROM orders WHERE order_status = 'Pending'", []);
+    const pendingOrdersRow = await db.queryOne("SELECT COUNT(*) as count FROM orders WHERE order_status = 'Pending' OR order_status = 'Pending Verification'", []);
     const activeBannersRow = await db.queryOne("SELECT COUNT(*) as count FROM banners WHERE is_active = 1", []);
     const trendingProductsRow = await db.queryOne("SELECT COUNT(*) as count FROM products WHERE is_trending = 1", []);
 
-    const recentOrders = await db.queryOne("SELECT id, order_number, customer_name, total_amount, order_status, created_at FROM orders ORDER BY created_at DESC LIMIT 5").all();
+    const recentOrders = await db.query("SELECT id, order_number, customer_name, total_amount, order_status, created_at FROM orders ORDER BY created_at DESC LIMIT 5");
 
     res.json({
-      totalSales: totalSalesRow.total || 0,
-      totalOrders: totalOrdersRow.count || 0,
-      totalCustomers: totalCustomersRow.count || 0,
-      totalProducts: totalProductsRow.count || 0,
-      lowStockCount: lowStockRow.count || 0,
-      pendingOrders: pendingOrdersRow.count || 0,
-      activeBanners: activeBannersRow.count || 0,
-      trendingProducts: trendingProductsRow.count || 0,
+      totalSales: totalSalesRow?.total || 0,
+      totalOrders: totalOrdersRow?.count || 0,
+      totalCustomers: totalCustomersRow?.count || 0,
+      totalProducts: totalProductsRow?.count || 0,
+      lowStockCount: lowStockRow?.count || 0,
+      pendingOrders: pendingOrdersRow?.count || 0,
+      activeBanners: activeBannersRow?.count || 0,
+      trendingProducts: trendingProductsRow?.count || 0,
       recentOrders
     });
   } catch (err) {
@@ -52,14 +52,15 @@ router.get('/products', async (req, res) => {
       ORDER BY p.display_order ASC, p.id DESC
     `, []);
 
-    const fullProducts = products.map((p) => {
+    const fullProducts = await Promise.all(products.map(async (p) => {
       const variants = await db.query('SELECT * FROM product_variants WHERE product_id = ?', [p.id]);
       const images = await db.query('SELECT * FROM product_images WHERE product_id = ? ORDER BY display_order ASC', [p.id]);
       return { ...p, variants, images };
-    });
+    }));
 
     res.json(fullProducts);
   } catch (err) {
+    console.error('Fetch Admin Products Error:', err);
     res.status(500).json({ error: 'Failed to fetch admin products' });
   }
 });
@@ -79,35 +80,40 @@ router.post('/products', async (req, res) => {
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4);
 
-    const tx = await db.transaction(async () => {
-      const res = await db.query(`
+    const productId = await db.transaction(async (tx) => {
+      const prodRes = await tx.insert(`
         INSERT INTO products (name, slug, description, gender, category_id, price, sale_price, sku, is_new, is_trending, is_featured, is_active, display_order)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 99)
-      `).run(name, slug, description || '', gender.toLowerCase(), category_id, price, sale_price || null, sku, is_new ? 1 : 0, is_trending ? 1 : 0, is_featured ? 1 : 0, is_active ? 1 : 0);
+      `, [name, slug, description || '', gender.toLowerCase(), category_id, price, sale_price || null, sku, is_new ? 1 : 0, is_trending ? 1 : 0, is_featured ? 1 : 0, is_active ? 1 : 0]);
 
-      const productId = res.lastInsertRowid;
+      const pId = prodRes.id;
 
       // Variants
-      const insertVar = await db.run('INSERT INTO product_variants (product_id, size, color, color_hex, stock) VALUES (?, ?, ?, ?, ?)');
       if (variants && variants.length) {
-        variants.forEach(v => insertVar.run(productId, v.size, v.color, v.color_hex || '#000000', v.stock || 10));
+        for (const v of variants) {
+          await tx.run('INSERT INTO product_variants (product_id, size, color, color_hex, stock) VALUES (?, ?, ?, ?, ?)', [pId, v.size, v.color, v.color_hex || '#000000', v.stock || 10]);
+        }
       } else {
-        ['S', 'M', 'L', 'XL'].forEach(sz => insertVar.run(productId, sz, 'Standard', '#111111', 15));
+        for (const sz of ['S', 'M', 'L', 'XL']) {
+          await tx.run('INSERT INTO product_variants (product_id, size, color, color_hex, stock) VALUES (?, ?, ?, ?, ?)', [pId, sz, 'Standard', '#111111', 15]);
+        }
       }
 
       // Images
-      const insertImg = db.prepare('INSERT INTO product_images (product_id, image_url, is_primary, display_order) VALUES (?, ?, ?, ?)');
       if (images && images.length) {
-        images.forEach((img, idx) => insertImg.run(productId, typeof img === 'string' ? img : img.image_url, idx === 0 ? 1 : 0, idx + 1));
+        for (let idx = 0; idx < images.length; idx++) {
+          const img = images[idx];
+          const imgUrl = typeof img === 'string' ? img : img.image_url;
+          await tx.run('INSERT INTO product_images (product_id, image_url, is_primary, display_order) VALUES (?, ?, ?, ?)', [pId, imgUrl, idx === 0 ? 1 : 0, idx + 1]);
+        }
       } else {
-        insertImg.run(productId, 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80', 1, 1);
+        await tx.run('INSERT INTO product_images (product_id, image_url, is_primary, display_order) VALUES (?, ?, 1, 1)', [pId, 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80']);
       }
 
-      return productId;
+      return pId;
     });
 
-    const newId = tx();
-    res.status(201).json({ id: newId, message: 'Product created successfully' });
+    res.status(201).json({ id: productId, message: 'Product created successfully' });
   } catch (err) {
     console.error('Create Admin Product Error:', err);
     res.status(400).json({ error: err.message || 'Failed to create product' });
@@ -124,28 +130,31 @@ router.put('/products/:id', async (req, res) => {
 
     const productId = req.params.id;
 
-    const tx = await db.transaction(async () => {
-      db.prepare(`
+    await db.transaction(async (tx) => {
+      await tx.run(`
         UPDATE products SET
           name = ?, description = ?, gender = ?, category_id = ?, price = ?, sale_price = ?,
           sku = ?, is_new = ?, is_trending = ?, is_featured = ?, is_active = ?, display_order = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `, [name, description, gender, category_id, price, sale_price || null, sku, is_new ? 1 : 0, is_trending ? 1 : 0, is_featured ? 1 : 0, is_active ? 1 : 0, display_order || 0, productId]);
 
-      if (variants) {
-        await db.run('DELETE FROM product_variants WHERE product_id = ?', [productId]);
-        const insertVar = await db.run('INSERT INTO product_variants (product_id, size, color, color_hex, stock) VALUES (?, ?, ?, ?, ?)');
-        variants.forEach(v => insertVar.run(productId, v.size, v.color, v.color_hex || '#000000', v.stock || 0));
+      if (variants && Array.isArray(variants)) {
+        await tx.run('DELETE FROM product_variants WHERE product_id = ?', [productId]);
+        for (const v of variants) {
+          await tx.run('INSERT INTO product_variants (product_id, size, color, color_hex, stock) VALUES (?, ?, ?, ?, ?)', [productId, v.size, v.color, v.color_hex || '#000000', v.stock || 0]);
+        }
       }
 
-      if (images) {
-        db.prepare('DELETE FROM product_images WHERE product_id = ?', [productId]);
-        const insertImg = await db.run('INSERT INTO product_images (product_id, image_url, is_primary, display_order) VALUES (?, ?, ?, ?)');
-        images.forEach((img, idx) => insertImg.run(productId, typeof img === 'string' ? img : img.image_url, idx === 0 ? 1 : 0, idx + 1));
+      if (images && Array.isArray(images)) {
+        await tx.run('DELETE FROM product_images WHERE product_id = ?', [productId]);
+        for (let idx = 0; idx < images.length; idx++) {
+          const img = images[idx];
+          const imgUrl = typeof img === 'string' ? img : img.image_url;
+          await tx.run('INSERT INTO product_images (product_id, image_url, is_primary, display_order) VALUES (?, ?, ?, ?)', [productId, imgUrl, idx === 0 ? 1 : 0, idx + 1]);
+        }
       }
     });
 
-    tx();
     res.json({ message: 'Product updated successfully' });
   } catch (err) {
     console.error('Update Admin Product Error:', err);
@@ -156,7 +165,7 @@ router.put('/products/:id', async (req, res) => {
 // DELETE /api/admin/products/:id
 router.delete('/products/:id', async (req, res) => {
   try {
-    db.prepare('DELETE FROM products WHERE id = ?', [req.params.id]);
+    await db.run('DELETE FROM products WHERE id = ?', [req.params.id]);
     res.json({ message: 'Product deleted' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete product' });
@@ -167,8 +176,12 @@ router.delete('/products/:id', async (req, res) => {
 
 // GET /api/admin/categories
 router.get('/categories', async (req, res) => {
-  const categories = await db.run('SELECT * FROM categories ORDER BY gender ASC, display_order ASC', []);
-  res.json(categories);
+  try {
+    const categories = await db.query('SELECT * FROM categories ORDER BY gender ASC, display_order ASC', []);
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch admin categories' });
+  }
 });
 
 // POST /api/admin/categories
@@ -180,10 +193,10 @@ router.post('/categories', async (req, res) => {
     }
     const slug = gender.toLowerCase() + '-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-    await db.query(`
+    await db.insert(`
       INSERT INTO categories (name, slug, gender, image_url, display_order, is_active)
       VALUES (?, ?, ?, ?, ?, ?)
-    `, [name, slug, gender.toLowerCase(]), image_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80', display_order, is_active ? 1 : 0);
+    `, [name, slug, gender.toLowerCase(), image_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80', display_order, is_active ? 1 : 0]);
 
     res.status(201).json({ message: 'Category created' });
   } catch (err) {
@@ -197,7 +210,7 @@ router.put('/categories/:id', async (req, res) => {
     const { name, gender, image_url, display_order, is_active } = req.body;
     await db.run(`
       UPDATE categories SET name = ?, gender = ?, image_url = ?, display_order = ?, is_active = ? WHERE id = ?
-    `, [name, gender.toLowerCase(]), image_url, display_order, is_active ? 1 : 0, req.params.id);
+    `, [name, gender.toLowerCase(), image_url, display_order, is_active ? 1 : 0, req.params.id]);
 
     res.json({ message: 'Category updated' });
   } catch (err) {
@@ -207,16 +220,24 @@ router.put('/categories/:id', async (req, res) => {
 
 // DELETE /api/admin/categories/:id
 router.delete('/categories/:id', async (req, res) => {
-  await db.run('DELETE FROM categories WHERE id = ?', [req.params.id]);
-  res.json({ message: 'Category deleted' });
+  try {
+    await db.run('DELETE FROM categories WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Category deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete category' });
+  }
 });
 
 // --- BANNER MANAGEMENT ---
 
 // GET /api/admin/banners
 router.get('/banners', async (req, res) => {
-  const banners = await db.run('SELECT * FROM banners ORDER BY display_order ASC, id DESC', []);
-  res.json(banners);
+  try {
+    const banners = await db.query('SELECT * FROM banners ORDER BY display_order ASC, id DESC', []);
+    res.json(banners);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch admin banners' });
+  }
 });
 
 // POST /api/admin/banners
@@ -226,7 +247,7 @@ router.post('/banners', async (req, res) => {
     if (!title || !image_url) {
       return res.status(400).json({ error: 'Title and image URL are required' });
     }
-    await db.query(`
+    await db.insert(`
       INSERT INTO banners (title, subtitle, button_text, button_link, image_url, mobile_image_url, gender, start_date, end_date, display_order, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [title, subtitle || '', button_text || 'SHOP NOW', button_link || '/men', image_url, mobile_image_url || null, gender || null, start_date || null, end_date || null, display_order, is_active ? 1 : 0]);
@@ -258,14 +279,18 @@ router.put('/banners/:id', async (req, res) => {
 
 // DELETE /api/admin/banners/:id
 router.delete('/banners/:id', async (req, res) => {
-  await db.run('DELETE FROM banners WHERE id = ?', [req.params.id]);
-  res.json({ message: 'Banner deleted' });
+  try {
+    await db.run('DELETE FROM banners WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Banner deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete banner' });
+  }
 });
 
 // --- REORDER ENDPOINT (Banners, Products, Categories) ---
 router.post('/reorder', async (req, res) => {
   try {
-    const { entity, orders } = req.body; // orders: [{ id, display_order }]
+    const { entity, orders } = req.body;
     if (!entity || !orders || !Array.isArray(orders)) {
       return res.status(400).json({ error: 'Entity and orders array required' });
     }
@@ -276,11 +301,11 @@ router.post('/reorder', async (req, res) => {
     else if (entity === 'categories') tableName = 'categories';
     else return res.status(400).json({ error: 'Invalid entity type' });
 
-    const stmt = await db.run(`UPDATE ${tableName} SET display_order = ? WHERE id = ?`);
-    const tx = await db.transaction(async () => {
-      orders.forEach(item => stmt.run(item.display_order, item.id));
+    await db.transaction(async (tx) => {
+      for (const item of orders) {
+        await tx.run(`UPDATE ${tableName} SET display_order = ? WHERE id = ?`, [item.display_order, item.id]);
+      }
     });
-    tx();
 
     res.json({ message: `${entity} reordered successfully` });
   } catch (err) {
@@ -292,12 +317,17 @@ router.post('/reorder', async (req, res) => {
 
 // GET /api/admin/orders
 router.get('/orders', async (req, res) => {
-  const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC', []);
-  const ordersWithItems = orders.map(ord => ({
-    ...ord,
-    items: await db.query('SELECT * FROM order_items WHERE order_id = ?', [ord.id])
-  }));
-  res.json(ordersWithItems);
+  try {
+    const orders = await db.query('SELECT * FROM orders ORDER BY created_at DESC', []);
+    const ordersWithItems = await Promise.all(orders.map(async (ord) => {
+      const items = await db.query('SELECT * FROM order_items WHERE order_id = ?', [ord.id]);
+      return { ...ord, items };
+    }));
+    res.json(ordersWithItems);
+  } catch (err) {
+    console.error('Fetch Admin Orders Error:', err);
+    res.status(500).json({ error: 'Failed to fetch admin orders' });
+  }
 });
 
 // PUT /api/admin/orders/:id/status
@@ -305,14 +335,14 @@ router.put('/orders/:id/status', async (req, res) => {
   try {
     const { order_status, payment_status, tracking_number, courier, tracking_url } = req.body;
     if (order_status) {
-      await db.query('UPDATE orders SET order_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [order_status, req.params.id]);
+      await db.run('UPDATE orders SET order_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [order_status, req.params.id]);
       
       await db.run(`
-        INSERT INTO order_status_history (order_id, status, notes)
-        VALUES (?, ?, ?)
-      `, [req.params.id, order_status, `Status updated to ${order_status}.`]);
+        INSERT INTO order_status_history (order_id, status, notes, changed_by)
+        VALUES (?, ?, ?, ?)
+      `, [req.params.id, order_status, `Status updated to ${order_status}.`, req.user.id]);
 
-      const order = await db.run('SELECT user_id, order_number FROM orders WHERE id = ?', [req.params.id]);
+      const order = await db.queryOne('SELECT user_id, order_number FROM orders WHERE id = ?', [req.params.id]);
       if (order && order.user_id) {
         let title = 'Order Update';
         let message = `Your order #${order.order_number} status has been updated to ${order_status}.`;
@@ -334,16 +364,18 @@ router.put('/orders/:id/status', async (req, res) => {
           message = `Your order has been delivered.`;
         }
         
-        await db.queryOne('INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)', [order.user_id, title, message]);
+        await db.run('INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)', [order.user_id, title, message]);
 
         if (order_status === 'Delivered') {
-          await db.run('INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)')
-            .run(order.user_id, 'Rate Your Purchase', `How did you like your purchase? Tell us how your items fitted! Leave a review on the product details page.`);
+          await db.run('INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)', [
+            order.user_id, 'Rate Your Purchase', 'How did you like your purchase? Leave a review on the product details page.'
+          ]);
         }
       }
     }
+
     if (payment_status) {
-      db.prepare('UPDATE orders SET payment_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [payment_status, req.params.id]);
+      await db.run('UPDATE orders SET payment_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [payment_status, req.params.id]);
     }
     if (tracking_number !== undefined) {
       await db.run('UPDATE orders SET tracking_number = ? WHERE id = ?', [tracking_number, req.params.id]);
@@ -354,8 +386,10 @@ router.put('/orders/:id/status', async (req, res) => {
     if (tracking_url !== undefined) {
       await db.run('UPDATE orders SET tracking_url = ? WHERE id = ?', [tracking_url, req.params.id]);
     }
+
     res.json({ message: 'Order status updated' });
   } catch (err) {
+    console.error('Update Admin Order Status Error:', err);
     res.status(500).json({ error: 'Failed to update order status' });
   }
 });
@@ -364,15 +398,19 @@ router.put('/orders/:id/status', async (req, res) => {
 
 // GET /api/admin/inventory
 router.get('/inventory', async (req, res) => {
-  const inventory = await db.run(`
-    SELECT pv.id as variant_id, pv.size, pv.color, pv.color_hex, pv.stock,
-           p.id as product_id, p.name as product_name, p.sku, p.gender, c.name as category_name
-    FROM product_variants pv
-    JOIN products p ON pv.product_id = p.id
-    JOIN categories c ON p.category_id = c.id
-    ORDER BY pv.stock ASC, p.name ASC
-  `, []);
-  res.json(inventory);
+  try {
+    const inventory = await db.query(`
+      SELECT pv.id as variant_id, pv.size, pv.color, pv.color_hex, pv.stock,
+             p.id as product_id, p.name as product_name, p.sku, p.gender, c.name as category_name
+      FROM product_variants pv
+      JOIN products p ON pv.product_id = p.id
+      JOIN categories c ON p.category_id = c.id
+      ORDER BY pv.stock ASC, p.name ASC
+    `, []);
+    res.json(inventory);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch inventory' });
+  }
 });
 
 // PUT /api/admin/inventory/:variantId
@@ -381,7 +419,7 @@ router.put('/inventory/:variantId', async (req, res) => {
     const { stock } = req.body;
     if (stock === undefined || stock < 0) return res.status(400).json({ error: 'Valid stock number required' });
 
-    await db.query('UPDATE product_variants SET stock = ? WHERE id = ?', [parseInt(stock]), req.params.variantId);
+    await db.run('UPDATE product_variants SET stock = ? WHERE id = ?', [parseInt(stock), req.params.variantId]);
     res.json({ message: 'Stock updated successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update stock' });
@@ -392,25 +430,33 @@ router.put('/inventory/:variantId', async (req, res) => {
 
 // GET /api/admin/customers
 router.get('/customers', async (req, res) => {
-  const customers = await db.run(`
-    SELECT u.id, u.name, u.email, u.phone, u.created_at,
-           COUNT(o.id) as order_count,
-           COALESCE(SUM(o.total_amount), 0) as total_spent
-    FROM users u
-    LEFT JOIN orders o ON u.id = o.user_id
-    WHERE u.role = 'customer'
-    GROUP BY u.id
-    ORDER BY u.created_at DESC
-  `, []);
-  res.json(customers);
+  try {
+    const customers = await db.query(`
+      SELECT u.id, u.name, u.email, u.phone, u.created_at,
+             COUNT(o.id) as order_count,
+             COALESCE(SUM(o.total_amount), 0) as total_spent
+      FROM users u
+      LEFT JOIN orders o ON u.id = o.user_id
+      WHERE u.role = 'customer'
+      GROUP BY u.id, u.name, u.email, u.phone, u.created_at
+      ORDER BY u.created_at DESC
+    `, []);
+    res.json(customers);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch admin customers' });
+  }
 });
 
 // --- COUPON MANAGEMENT ---
 
 // GET /api/admin/coupons
 router.get('/coupons', async (req, res) => {
-  const coupons = await db.query('SELECT * FROM coupons ORDER BY created_at DESC', []);
-  res.json(coupons);
+  try {
+    const coupons = await db.query('SELECT * FROM coupons ORDER BY created_at DESC', []);
+    res.json(coupons);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch admin coupons' });
+  }
 });
 
 // POST /api/admin/coupons
@@ -421,10 +467,10 @@ router.post('/coupons', async (req, res) => {
       return res.status(400).json({ error: 'Code, discount type, and value are required' });
     }
 
-    await db.query(`
+    await db.insert(`
       INSERT INTO coupons (code, discount_type, discount_value, min_order_amount, expiry_date, usage_limit, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [code.toUpperCase(]).trim(), discount_type, parseFloat(discount_value), parseFloat(min_order_amount), expiry_date || null, parseInt(usage_limit), is_active ? 1 : 0);
+    `, [code.toUpperCase().trim(), discount_type, parseFloat(discount_value), parseFloat(min_order_amount), expiry_date || null, parseInt(usage_limit), is_active ? 1 : 0]);
 
     res.status(201).json({ message: 'Coupon created' });
   } catch (err) {
@@ -434,8 +480,12 @@ router.post('/coupons', async (req, res) => {
 
 // DELETE /api/admin/coupons/:id
 router.delete('/coupons/:id', async (req, res) => {
-  await db.run('DELETE FROM coupons WHERE id = ?', [req.params.id]);
-  res.json({ message: 'Coupon deleted' });
+  try {
+    await db.run('DELETE FROM coupons WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Coupon deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete coupon' });
+  }
 });
 
 // --- COLLECTIONS MANAGEMENT ---
@@ -443,8 +493,8 @@ router.delete('/coupons/:id', async (req, res) => {
 // GET /api/admin/collections
 router.get('/collections', async (req, res) => {
   try {
-    const collections = await db.run('SELECT * FROM collections ORDER BY id DESC', []);
-    const fullCollections = collections.map(col => {
+    const collections = await db.query('SELECT * FROM collections ORDER BY id DESC', []);
+    const fullCollections = await Promise.all(collections.map(async (col) => {
       const products = await db.query(`
         SELECT p.id, p.name, p.sku 
         FROM products p
@@ -452,7 +502,7 @@ router.get('/collections', async (req, res) => {
         WHERE cp.collection_id = ?
       `, [col.id]);
       return { ...col, products };
-    });
+    }));
     res.json(fullCollections);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch collections' });
@@ -468,20 +518,20 @@ router.post('/collections', async (req, res) => {
     }
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4);
 
-    const tx = await db.transaction(async () => {
-      const stmt = await db.query(`
+    const colId = await db.transaction(async (tx) => {
+      const stmt = await tx.insert(`
         INSERT INTO collections (name, slug, description, cover_image, banner_image, gender, is_active)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [name, slug, description || '', cover_image || '', banner_image || '', gender.toLowerCase(]), is_active ? 1 : 0);
+      `, [name, slug, description || '', cover_image || '', banner_image || '', gender.toLowerCase(), is_active ? 1 : 0]);
 
-      const colId = stmt.lastInsertRowid;
-      const insertProd = await db.run('INSERT INTO collection_products (collection_id, product_id) VALUES (?, ?)');
-      products.forEach(pId => insertProd.run(colId, pId));
-      return colId;
+      const cId = stmt.id;
+      for (const pId of products) {
+        await tx.run('INSERT INTO collection_products (collection_id, product_id) VALUES (?, ?)', [cId, pId]);
+      }
+      return cId;
     });
 
-    const newId = tx();
-    res.status(201).json({ id: newId, message: 'Collection created successfully' });
+    res.status(201).json({ id: colId, message: 'Collection created successfully' });
   } catch (err) {
     console.error('Create Collection Error:', err);
     res.status(400).json({ error: err.message || 'Failed to create collection' });
@@ -494,19 +544,19 @@ router.put('/collections/:id', async (req, res) => {
     const { name, description, cover_image, banner_image, gender, is_active, products = [] } = req.body;
     const colId = req.params.id;
 
-    const tx = await db.transaction(async () => {
-      db.prepare(`
+    await db.transaction(async (tx) => {
+      await tx.run(`
         UPDATE collections SET
           name = ?, description = ?, cover_image = ?, banner_image = ?, gender = ?, is_active = ?
         WHERE id = ?
-      `, [name, description, cover_image, banner_image, gender.toLowerCase(]), is_active ? 1 : 0, colId);
+      `, [name, description, cover_image, banner_image, gender.toLowerCase(), is_active ? 1 : 0, colId]);
 
-      await db.run('DELETE FROM collection_products WHERE collection_id = ?', [colId]);
-      const insertProd = await db.run('INSERT INTO collection_products (collection_id, product_id) VALUES (?, ?)');
-      products.forEach(pId => insertProd.run(colId, pId));
+      await tx.run('DELETE FROM collection_products WHERE collection_id = ?', [colId]);
+      for (const pId of products) {
+        await tx.run('INSERT INTO collection_products (collection_id, product_id) VALUES (?, ?)', [colId, pId]);
+      }
     });
 
-    tx();
     res.json({ message: 'Collection updated successfully' });
   } catch (err) {
     console.error('Update Collection Error:', err);
@@ -517,7 +567,7 @@ router.put('/collections/:id', async (req, res) => {
 // DELETE /api/admin/collections/:id
 router.delete('/collections/:id', async (req, res) => {
   try {
-    db.prepare('DELETE FROM collections WHERE id = ?', [req.params.id]);
+    await db.run('DELETE FROM collections WHERE id = ?', [req.params.id]);
     res.json({ message: 'Collection deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete collection' });
@@ -529,8 +579,8 @@ router.delete('/collections/:id', async (req, res) => {
 // GET /api/admin/looks
 router.get('/looks', async (req, res) => {
   try {
-    const looks = await db.run('SELECT * FROM looks ORDER BY id DESC', []);
-    const fullLooks = looks.map(look => {
+    const looks = await db.query('SELECT * FROM looks ORDER BY id DESC', []);
+    const fullLooks = await Promise.all(looks.map(async (look) => {
       const products = await db.query(`
         SELECT p.id, p.name, p.sku
         FROM products p
@@ -538,7 +588,7 @@ router.get('/looks', async (req, res) => {
         WHERE lp.look_id = ?
       `, [look.id]);
       return { ...look, products };
-    });
+    }));
     res.json(fullLooks);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch looks' });
@@ -553,20 +603,20 @@ router.post('/looks', async (req, res) => {
       return res.status(400).json({ error: 'Name, image URL, and gender are required' });
     }
 
-    const tx = await db.transaction(async () => {
-      const stmt = await db.query(`
+    const lookId = await db.transaction(async (tx) => {
+      const stmt = await tx.insert(`
         INSERT INTO looks (name, description, image_url, gender, is_active)
         VALUES (?, ?, ?, ?, ?)
-      `, [name, description || '', image_url, gender.toLowerCase(]), is_active ? 1 : 0);
+      `, [name, description || '', image_url, gender.toLowerCase(), is_active ? 1 : 0]);
 
-      const lookId = stmt.lastInsertRowid;
-      const insertProd = await db.run('INSERT INTO look_products (look_id, product_id) VALUES (?, ?)');
-      products.forEach(pId => insertProd.run(lookId, pId));
-      return lookId;
+      const lId = stmt.id;
+      for (const pId of products) {
+        await tx.run('INSERT INTO look_products (look_id, product_id) VALUES (?, ?)', [lId, pId]);
+      }
+      return lId;
     });
 
-    const newId = tx();
-    res.status(201).json({ id: newId, message: 'Look created successfully' });
+    res.status(201).json({ id: lookId, message: 'Look created successfully' });
   } catch (err) {
     res.status(400).json({ error: err.message || 'Failed to create look' });
   }
@@ -578,19 +628,19 @@ router.put('/looks/:id', async (req, res) => {
     const { name, description, image_url, gender, is_active, products = [] } = req.body;
     const lookId = req.params.id;
 
-    const tx = await db.transaction(async () => {
-      db.prepare(`
+    await db.transaction(async (tx) => {
+      await tx.run(`
         UPDATE looks SET
           name = ?, description = ?, image_url = ?, gender = ?, is_active = ?
         WHERE id = ?
-      `, [name, description, image_url, gender.toLowerCase(]), is_active ? 1 : 0, lookId);
+      `, [name, description, image_url, gender.toLowerCase(), is_active ? 1 : 0, lookId]);
 
-      await db.run('DELETE FROM look_products WHERE look_id = ?', [lookId]);
-      const insertProd = await db.run('INSERT INTO look_products (look_id, product_id) VALUES (?, ?)');
-      products.forEach(pId => insertProd.run(lookId, pId));
+      await tx.run('DELETE FROM look_products WHERE look_id = ?', [lookId]);
+      for (const pId of products) {
+        await tx.run('INSERT INTO look_products (look_id, product_id) VALUES (?, ?)', [lookId, pId]);
+      }
     });
 
-    tx();
     res.json({ message: 'Look updated successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update look' });
@@ -600,7 +650,7 @@ router.put('/looks/:id', async (req, res) => {
 // DELETE /api/admin/looks/:id
 router.delete('/looks/:id', async (req, res) => {
   try {
-    db.prepare('DELETE FROM looks WHERE id = ?', [req.params.id]);
+    await db.run('DELETE FROM looks WHERE id = ?', [req.params.id]);
     res.json({ message: 'Look deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete look' });
@@ -612,7 +662,7 @@ router.delete('/looks/:id', async (req, res) => {
 // GET /api/admin/reviews
 router.get('/reviews', async (req, res) => {
   try {
-    const reviews = await db.run(`
+    const reviews = await db.query(`
       SELECT r.*, p.name as product_name, p.sku as product_sku
       FROM reviews r
       JOIN products p ON r.product_id = p.id
@@ -630,18 +680,16 @@ router.put('/reviews/:id/moderate', async (req, res) => {
     const { is_moderated } = req.body;
     const reviewId = req.params.id;
 
-    db.prepare('UPDATE reviews SET is_moderated = ? WHERE id = ?', [is_moderated ? 1 : 0, reviewId]);
+    await db.run('UPDATE reviews SET is_moderated = ? WHERE id = ?', [is_moderated ? 1 : 0, reviewId]);
 
-    // Get the product_id for this review
-    const review = await db.run('SELECT product_id FROM reviews WHERE id = ?', [reviewId]);
+    const review = await db.queryOne('SELECT product_id FROM reviews WHERE id = ?', [reviewId]);
     if (review) {
-      // Re-calculate rating stats for the product
       const stats = await db.queryOne('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1', [review.product_id]);
-      await db.queryOne('UPDATE products SET rating = ?, review_count = ? WHERE id = ?', [
-        parseFloat((stats.avg_rating || 5]).toFixed(1)),
-        stats.review_cnt || 0,
+      await db.run('UPDATE products SET rating = ?, review_count = ? WHERE id = ?', [
+        parseFloat((stats?.avg_rating || 5).toFixed(1)),
+        stats?.review_cnt || 0,
         review.product_id
-      );
+      ]);
     }
 
     res.json({ message: 'Review moderation updated' });
@@ -655,18 +703,17 @@ router.put('/reviews/:id/moderate', async (req, res) => {
 router.delete('/reviews/:id', async (req, res) => {
   try {
     const reviewId = req.params.id;
-    const review = await db.run('SELECT product_id FROM reviews WHERE id = ?', [reviewId]);
+    const review = await db.queryOne('SELECT product_id FROM reviews WHERE id = ?', [reviewId]);
 
-    await db.queryOne('DELETE FROM reviews WHERE id = ?', [reviewId]);
+    await db.run('DELETE FROM reviews WHERE id = ?', [reviewId]);
 
     if (review) {
-      // Re-calculate rating stats for the product
-      const stats = await db.run('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1', [review.product_id]);
-      await db.queryOne('UPDATE products SET rating = ?, review_count = ? WHERE id = ?', [
-        parseFloat((stats.avg_rating || 5]).toFixed(1)),
-        stats.review_cnt || 0,
+      const stats = await db.queryOne('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1', [review.product_id]);
+      await db.run('UPDATE products SET rating = ?, review_count = ? WHERE id = ?', [
+        parseFloat((stats?.avg_rating || 5).toFixed(1)),
+        stats?.review_cnt || 0,
         review.product_id
-      );
+      ]);
     }
 
     res.json({ message: 'Review deleted successfully' });
@@ -680,68 +727,63 @@ router.delete('/reviews/:id', async (req, res) => {
 // POST /api/admin/products/bulk-csv
 router.post('/products/bulk-csv', async (req, res) => {
   try {
-    const { products } = req.body; // Array of product JSON objects parsed from CSV
+    const { products } = req.body;
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ error: 'No product records found' });
     }
 
-    const tx = await db.transaction(async () => {
+    const result = await db.transaction(async (tx) => {
       let importedCount = 0;
       const errors = [];
 
-      products.forEach((prod, index) => {
+      for (let index = 0; index < products.length; index++) {
+        const prod = products[index];
         const { SKU, name, description, gender, category_id, price, sale_price, size = 'M', color = 'Standard', color_hex = '#111111', stock = 10, image_url } = prod;
 
         if (!SKU || !name || !gender || !category_id || !price) {
           errors.push(`Row ${index + 1}: Missing required fields (SKU, name, gender, category_id, price).`);
-          return;
+          continue;
         }
 
-        // Validate price and sale price
         const itemPrice = parseFloat(price);
         const itemSalePrice = sale_price ? parseFloat(sale_price) : null;
         if (itemSalePrice !== null && itemSalePrice > itemPrice) {
           errors.push(`Row ${index + 1}: Sale price (${itemSalePrice}) cannot be greater than MRP (${itemPrice}).`);
-          return;
+          continue;
         }
 
-        // Validate SKU uniqueness
-        const existingSku = await db.run('SELECT id FROM products WHERE sku = ?', [SKU]);
+        const existingSku = await tx.queryOne('SELECT id FROM products WHERE sku = ?', [SKU]);
         if (existingSku) {
           errors.push(`Row ${index + 1}: Product with SKU ${SKU} already exists.`);
-          return;
+          continue;
         }
 
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4) + '-' + index;
 
-        // Insert product
-        const prodInsert = db.prepare(`
+        const prodInsert = await tx.insert(`
           INSERT INTO products (name, slug, description, gender, category_id, price, sale_price, sku, is_new, is_trending, is_featured, is_active, display_order)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 0, 0, 1, 99)
-        `, [name, slug, description || '', gender.toLowerCase(]), parseInt(category_id), itemPrice, itemSalePrice, SKU);
+        `, [name, slug, description || '', gender.toLowerCase(), parseInt(category_id), itemPrice, itemSalePrice, SKU]);
 
-        const newProductId = prodInsert.lastInsertRowid;
+        const newProductId = prodInsert.id;
 
-        // Insert variant
-        await db.run(`
+        await tx.run(`
           INSERT INTO product_variants (product_id, size, color, color_hex, stock)
           VALUES (?, ?, ?, ?, ?)
-        `, [newProductId, size, color, color_hex, parseInt(stock]));
+        `, [newProductId, size, color, color_hex, parseInt(stock)]);
 
-        // Insert image
         const fallbackImg = image_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80';
-        await db.run(`
+        await tx.run(`
           INSERT INTO product_images (product_id, image_url, is_primary, display_order)
           VALUES (?, ?, 1, 1)
         `, [newProductId, fallbackImg]);
 
         importedCount++;
-      });
+      }
 
       return { importedCount, errors };
     });
 
-    const result = tx();
     if (result.errors.length > 0 && result.importedCount === 0) {
       return res.status(400).json({ error: 'Import failed', details: result.errors });
     }
@@ -761,7 +803,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file uploaded' });
   }
-  const imageUrl = `/uploads/${req.file.filename}`;
+  const imageUrl = req.file.path || `/uploads/${req.file.filename}`;
   res.json({ imageUrl });
 });
 

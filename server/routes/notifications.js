@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 const { authenticateToken } = require('../middleware/authMiddleware');
+const sse = require('./sse');
+
+// Ticket & Stream aliases under /api/notifications
+router.post('/ticket', authenticateToken, (req, res, next) => {
+  return router.handle(req, res, next);
+});
 
 // GET /api/notifications
 // Retrieves authenticated user's notifications

@@ -3,11 +3,11 @@ const router = express.Router();
 const db = require('../database/db');
 
 // Helper to attach product details
-function attachProductDetails(product) {
+async function attachProductDetails(product) {
   if (!product) return null;
-  const images = await db.queryOne('SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY display_order ASC').all(product.id);
+  const images = await db.query('SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY display_order ASC', [product.id]);
   const variants = await db.query('SELECT id, size, color, color_hex, stock FROM product_variants WHERE product_id = ?', [product.id]);
-  const category = await db.query('SELECT id, name, slug, gender FROM categories WHERE id = ?', [product.category_id]);
+  const category = await db.queryOne('SELECT id, name, slug, gender FROM categories WHERE id = ?', [product.category_id]);
 
   return {
     ...product,
@@ -27,22 +27,23 @@ router.get('/', async (req, res) => {
     const params = [];
     if (gender) {
       query += ' AND gender = ?';
-      params.push(gender);
+      params.push(gender.toLowerCase());
     }
     query += ' ORDER BY id DESC';
-    const looks = db.prepare(query, [...params]);
+    const looks = await db.query(query, params);
 
-    const looksWithProducts = looks.map(look => {
+    const looksWithProducts = await Promise.all(looks.map(async (look) => {
       const products = await db.query(`
         SELECT p.* FROM products p
         JOIN look_products lp ON p.id = lp.product_id
         WHERE lp.look_id = ? AND p.is_active = 1
       `, [look.id]);
+      const fullProducts = await Promise.all(products.map(attachProductDetails));
       return {
         ...look,
-        products: products.map(attachProductDetails)
+        products: fullProducts
       };
-    });
+    }));
 
     res.json(looksWithProducts);
   } catch (err) {

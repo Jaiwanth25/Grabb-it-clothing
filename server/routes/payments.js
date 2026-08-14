@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const db = require('../database/db');
-const { optionalToken, authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
+const { optionalToken, requireAdmin } = require('../middleware/authMiddleware');
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
@@ -24,7 +24,7 @@ if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
 // GET /api/payments/settings (Public payment configurations for checkout UI)
 router.get('/settings', async (req, res) => {
   try {
-    const getSetting = (key, fallback) => {
+    const getSetting = async (key, fallback) => {
       const row = await db.queryOne('SELECT setting_value FROM payment_settings WHERE setting_key = ?', [key]);
       return row ? row.setting_value : fallback;
     };
@@ -36,18 +36,18 @@ router.get('/settings', async (req, res) => {
         keyId: RAZORPAY_KEY_ID || 'rzp_test_GrabbItClothing2026'
       },
       upi: {
-        enabled: getSetting('upi_enabled', 'true') === 'true',
-        upiId: getSetting('upi_id', 'grabb-it@upi'),
-        displayName: getSetting('upi_display_name', 'GRABB-IT CLOTHING PVT LTD'),
-        qrCodeUrl: getSetting('upi_qr_url', 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=grabb-it@upi&pn=GrabbItClothing')
+        enabled: (await getSetting('upi_enabled', 'true')) === 'true',
+        upiId: await getSetting('upi_id', 'grabb-it@upi'),
+        displayName: await getSetting('upi_display_name', 'GRABB-IT CLOTHING PVT LTD'),
+        qrCodeUrl: await getSetting('upi_qr_url', 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=grabb-it@upi&pn=GrabbItClothing')
       },
       bankTransfer: {
-        enabled: getSetting('bank_enabled', 'true') === 'true',
-        bankName: getSetting('bank_name', 'HDFC Bank Ltd'),
-        accountHolder: getSetting('bank_account_holder', 'GRABB-IT CLOTHING PVT LTD'),
-        accountNumberMasked: getSetting('bank_account_number_masked', '•••• •••• 5821'),
-        ifscCode: getSetting('bank_ifsc', 'HDFC0001234'),
-        branch: getSetting('bank_branch', 'Indiranagar 100ft Road, Bengaluru')
+        enabled: (await getSetting('bank_enabled', 'true')) === 'true',
+        bankName: await getSetting('bank_name', 'HDFC Bank Ltd'),
+        accountHolder: await getSetting('bank_account_holder', 'GRABB-IT CLOTHING PVT LTD'),
+        accountNumberMasked: await getSetting('bank_account_number_masked', '•••• •••• 5821'),
+        ifscCode: await getSetting('bank_ifsc', 'HDFC0001234'),
+        branch: await getSetting('bank_branch', 'Indiranagar 100ft Road, Bengaluru')
       }
     });
   } catch (err) {
@@ -72,7 +72,6 @@ router.post('/create-razorpay-order', optionalToken, async (req, res) => {
     const amountInPaise = Math.round(order.total_amount * 100);
 
     if (razorpay) {
-      // Live or Sandbox Razorpay Order Creation
       const rzpOrder = await razorpay.orders.create({
         amount: amountInPaise,
         currency: 'INR',
@@ -83,7 +82,7 @@ router.post('/create-razorpay-order', optionalToken, async (req, res) => {
         }
       });
 
-      await db.queryOne('UPDATE orders SET razorpay_order_id = ? WHERE id = ?').run(rzpOrder.id, order.id);
+      await db.run('UPDATE orders SET razorpay_order_id = ? WHERE id = ?', [rzpOrder.id, order.id]);
 
       return res.json({
         success: true,
@@ -93,7 +92,6 @@ router.post('/create-razorpay-order', optionalToken, async (req, res) => {
         key: RAZORPAY_KEY_ID
       });
     } else {
-      // Test mode simulated Razorpay order
       const testRzpOrderId = `order_test_${Date.now()}`;
       await db.run('UPDATE orders SET razorpay_order_id = ? WHERE id = ?', [testRzpOrderId, order.id]);
 
@@ -121,13 +119,12 @@ router.post('/verify-razorpay', optionalToken, async (req, res) => {
       return res.status(400).json({ error: 'Missing required payment verification details' });
     }
 
-    const order = await db.run('SELECT * FROM orders WHERE order_number = ?', [order_number]);
+    const order = await db.queryOne('SELECT * FROM orders WHERE order_number = ?', [order_number]);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
     if (RAZORPAY_KEY_SECRET && razorpay_signature) {
-      // Verify HMAC signature
       const body = razorpay_order_id + '|' + razorpay_payment_id;
       const expectedSignature = crypto
         .createHmac('sha256', RAZORPAY_KEY_SECRET)
@@ -135,12 +132,11 @@ router.post('/verify-razorpay', optionalToken, async (req, res) => {
         .digest('hex');
 
       if (expectedSignature !== razorpay_signature) {
-        await db.queryOne("UPDATE orders SET payment_status = 'PAYMENT_FAILED' WHERE id = ?", [order.id]);
+        await db.run("UPDATE orders SET payment_status = 'PAYMENT_FAILED' WHERE id = ?", [order.id]);
         return res.status(400).json({ error: 'Invalid Razorpay payment signature' });
       }
     }
 
-    // Mark Order as Verified and Confirmed
     await db.run(`
       UPDATE orders SET 
         payment_status = 'PAYMENT_VERIFIED',
@@ -173,12 +169,20 @@ router.post('/submit-manual', optionalToken, async (req, res) => {
       return res.status(400).json({ error: 'Order number and Transaction Reference/UTR are required' });
     }
 
-    const order = await db.run('SELECT * FROM orders WHERE order_number = ?', [order_number]);
+    const cleanRef = reference_number.trim();
+
+    const order = await db.queryOne('SELECT * FROM orders WHERE order_number = ?', [order_number]);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    await db.queryOne(`
+    // Check against duplicate UTR / Reference submission across other orders
+    const duplicateRef = await db.queryOne('SELECT id FROM orders WHERE payment_reference = ? AND id != ?', [cleanRef, order.id]);
+    if (duplicateRef) {
+      return res.status(400).json({ error: 'This payment reference/UTR number has already been submitted for another order.' });
+    }
+
+    await db.run(`
       UPDATE orders SET
         payment_method = ?,
         payment_status = 'MANUAL_PAYMENT_PENDING',
@@ -186,12 +190,12 @@ router.post('/submit-manual', optionalToken, async (req, res) => {
         payment_proof_url = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `, [payment_method || 'UPI / Manual Transfer', reference_number.trim(]), proof_url || null, order.id);
+    `, [payment_method || 'UPI / Manual Transfer', cleanRef, proof_url || null, order.id]);
 
     await db.run(`
       INSERT INTO order_status_history (order_id, status, notes)
       VALUES (?, 'Pending Verification', ?)
-    `, [order.id, `Manual payment reference ${reference_number.trim(])} submitted by customer. Awaiting Admin verification.`);
+    `, [order.id, `Manual payment reference ${cleanRef} submitted by customer. Awaiting Admin verification.`]);
 
     res.json({
       success: true,
@@ -225,9 +229,9 @@ router.post('/webhook', async (req, res) => {
       const razorpayOrderId = paymentEntity.order_id;
       const razorpayPaymentId = paymentEntity.id;
 
-      const order = await db.run('SELECT * FROM orders WHERE razorpay_order_id = ?', [razorpayOrderId]);
+      const order = await db.queryOne('SELECT * FROM orders WHERE razorpay_order_id = ?', [razorpayOrderId]);
       if (order && order.payment_status !== 'PAYMENT_VERIFIED') {
-        await db.queryOne(`
+        await db.run(`
           UPDATE orders SET
             payment_status = 'PAYMENT_VERIFIED',
             order_status = 'Confirmed',
@@ -249,10 +253,10 @@ router.post('/webhook', async (req, res) => {
 router.post('/verify-manual', requireAdmin, async (req, res) => {
   try {
     const { orderId } = req.body;
-    const order = await db.run('SELECT * FROM orders WHERE id = ?', [orderId]);
+    const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
-    await db.queryOne(`
+    await db.run(`
       UPDATE orders SET payment_status = 'PAYMENT_VERIFIED', order_status = 'Confirmed', updated_at = CURRENT_TIMESTAMP WHERE id = ?
     `, [orderId]);
 
@@ -275,10 +279,10 @@ router.post('/verify-manual', requireAdmin, async (req, res) => {
 router.post('/reject-manual', requireAdmin, async (req, res) => {
   try {
     const { orderId, reason } = req.body;
-    const order = await db.run('SELECT * FROM orders WHERE id = ?', [orderId]);
+    const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
-    await db.queryOne(`
+    await db.run(`
       UPDATE orders SET payment_status = 'PAYMENT_FAILED', order_status = 'Cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?
     `, [orderId]);
 
@@ -301,15 +305,24 @@ router.post('/reject-manual', requireAdmin, async (req, res) => {
 router.post('/refund', requireAdmin, async (req, res) => {
   try {
     const { orderId, amount, reason } = req.body;
-    const order = await db.run('SELECT * FROM orders WHERE id = ?', [orderId]);
+    const order = await db.queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
     if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    if (order.payment_status === 'PAYMENT_REFUNDED') {
+      return res.status(400).json({ error: 'Order has already been refunded.' });
+    }
+
+    const refundAmount = amount ? parseFloat(amount) : parseFloat(order.total_amount);
+    if (refundAmount > parseFloat(order.total_amount)) {
+      return res.status(400).json({ error: 'Refund amount cannot exceed original total order amount.' });
+    }
 
     const refundRef = `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     if (order.razorpay_payment_id && razorpay) {
       try {
         await razorpay.payments.refund(order.razorpay_payment_id, {
-          amount: Math.round((amount || order.total_amount) * 100),
+          amount: Math.round(refundAmount * 100),
           notes: { reason: reason || 'Customer refund request' }
         });
       } catch (rzpErr) {
@@ -317,7 +330,7 @@ router.post('/refund', requireAdmin, async (req, res) => {
       }
     }
 
-    db.prepare(`
+    await db.run(`
       UPDATE orders SET
         payment_status = 'PAYMENT_REFUNDED',
         order_status = 'Refunded',
@@ -327,12 +340,12 @@ router.post('/refund', requireAdmin, async (req, res) => {
         refund_at = CURRENT_TIMESTAMP,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `, [refundRef, amount || order.total_amount, reason || 'Admin initiated refund', orderId]);
+    `, [refundRef, refundAmount, reason || 'Admin initiated refund', orderId]);
 
     await db.run(`
       INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
       VALUES (?, 'REFUND_ORDER', 'ORDER', ?, ?)
-    `, [req.user.id, orderId, `Refunded ₹${amount || order.total_amount} for order #${order.order_number}. Ref: ${refundRef}`]);
+    `, [req.user.id, orderId, `Refunded ₹${refundAmount} for order #${order.order_number}. Ref: ${refundRef}`]);
 
     res.json({ success: true, refundReference: refundRef, message: 'Refund initiated successfully' });
   } catch (err) {

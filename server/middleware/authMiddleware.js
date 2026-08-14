@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'grabb_it_jwt_secret_key_2026_fashion_super_secure';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' 
+  ? (() => { throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable must be set in production!'); })() 
+  : 'grabb_it_dev_jwt_secret_key_change_in_prod_2026');
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];

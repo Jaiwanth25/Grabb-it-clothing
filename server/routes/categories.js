@@ -16,16 +16,16 @@ router.get('/', async (req, res) => {
 
     query += ' ORDER BY display_order ASC, name ASC';
 
-    const categories = await db.queryOne(query).all(...params);
+    const categories = await db.query(query, params);
 
     // Attach product count per category
-    const categoriesWithCount = categories.map((cat) => {
-      const countRow = db.prepare('SELECT COUNT(*) as count FROM products WHERE category_id = ? AND is_active = 1', [cat.id]);
+    const categoriesWithCount = await Promise.all(categories.map(async (cat) => {
+      const countRow = await db.queryOne('SELECT COUNT(*) as count FROM products WHERE category_id = ? AND is_active = 1', [cat.id]);
       return {
         ...cat,
-        product_count: countRow ? countRow.count : 0
+        product_count: countRow ? parseInt(countRow.count) : 0
       };
-    });
+    }));
 
     res.json(categoriesWithCount);
   } catch (err) {

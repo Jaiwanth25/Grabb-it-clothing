@@ -67,12 +67,24 @@ async function migrate() {
       'collection_products',
       'looks',
       'look_products',
-      'notifications'
+      'notifications',
+      'payment_settings',
+      'stock_reservations',
+      'audit_logs'
     ];
+
+    const booleanCols = new Set([
+      'email_verified', 'is_default', 'is_active', 'is_new', 'is_trending',
+      'is_featured', 'is_primary', 'is_moderated', 'is_read', 'revoked'
+    ]);
 
     await client.query('BEGIN');
 
     for (const table of tables) {
+      // Check if table exists in SQLite
+      const tableExists = sqlite.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`).get(table);
+      if (!tableExists) continue;
+
       const rows = sqlite.prepare(`SELECT * FROM ${table}`).all();
       if (rows.length === 0) {
         console.log(`Skipping empty table: ${table}`);
@@ -89,8 +101,10 @@ async function migrate() {
       
       for (const row of rows) {
         const values = keys.map(k => {
-          const val = row[k];
-          // Handle SQLite boolean 1/0 to JS boolean if needed
+          let val = row[k];
+          if (booleanCols.has(k) && val !== null && val !== undefined) {
+            val = Boolean(val);
+          }
           return val;
         });
         
@@ -99,11 +113,20 @@ async function migrate() {
         await client.query(query, values);
       }
 
-      // Reset auto-increment sequence in PostgreSQL
-      try {
-        await client.query(`SELECT setval(pg_get_serial_sequence('${table}', 'id'), COALESCE(MAX(id), 1)) FROM ${table}`);
-      } catch (seqErr) {
-        // Table might not have an id column or sequence (e.g. junction tables)
+      // Reset auto-increment sequence in PostgreSQL safely so nextval doesn't duplicate MAX(id)
+      if (keys.includes('id')) {
+        try {
+          await client.query(`SELECT setval(pg_get_serial_sequence('${table}', 'id'), COALESCE((SELECT MAX(id) FROM ${table}), 0) + 1, false)`);
+        } catch (seqErr) {
+          // Table might not have an id column or sequence
+        }
+      }
+
+      // Verify row count match
+      const pgCountRes = await client.query(`SELECT COUNT(*) FROM ${table}`);
+      const pgCount = parseInt(pgCountRes.rows[0].count, 10);
+      if (pgCount !== rows.length) {
+        throw new Error(`Row count mismatch for ${table}: SQLite has ${rows.length}, PG has ${pgCount}`);
       }
     }
 

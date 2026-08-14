@@ -3,8 +3,18 @@ const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+const db = require('./database/db');
+const { startReservationCleanupScheduler } = require('./services/stock_reservation_cleanup');
 
 dotenv.config();
+
+// Startup validation for production
+if (process.env.NODE_ENV === 'production') {
+  if (!process.env.JWT_SECRET) {
+    console.error('FATAL ERROR: JWT_SECRET environment variable is missing in production mode!');
+    process.exit(1);
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,7 +24,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 try {
   const helmet = require('helmet');
   app.use(helmet({
-    contentSecurityPolicy: false, // Let client handles CSP or static SPA rules
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
   }));
 } catch (e) {
@@ -22,10 +32,18 @@ try {
 }
 
 // Strict CORS
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? [FRONTEND_URL, 'https://grabb-it-clothing.vercel.app'].filter(Boolean)
+  : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://localhost:5000'];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [FRONTEND_URL, 'https://grabb-it-clothing.vercel.app'] 
-    : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow configured origins
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id']
@@ -43,7 +61,7 @@ try {
 
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 25,
+    max: 30,
     message: { error: 'Too many authentication attempts, please try again in 15 minutes.' }
   });
   app.use('/api/auth/login', authLimiter);
@@ -61,11 +79,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health Check Endpoint
-app.get('/api/health', (req, res) => {
-  const db = require('./database/db');
+app.get('/api/health', async (req, res) => {
   let dbStatus = 'connected';
   try {
-    db.prepare('SELECT 1').get();
+    await db.queryOne('SELECT 1');
   } catch (e) {
     dbStatus = 'disconnected';
   }
@@ -74,6 +91,7 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     service: 'grabb-it-api',
     database: dbStatus,
+    databaseType: db.isPg ? 'PostgreSQL' : 'SQLite',
     uptime: Math.floor(process.uptime()),
     timestamp: new Date().toISOString()
   });
@@ -124,7 +142,7 @@ app.get('*', (req, res, next) => {
   if (require('fs').existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res.send('GRABB-IT API Server Running. Start client dev server on port 3000.');
+    res.send('GRABB-IT API Server Running.');
   }
 });
 
@@ -137,11 +155,30 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
+// Start Stock Reservation Cleanup Scheduler
+startReservationCleanupScheduler(60000);
+
+const server = app.listen(PORT, () => {
   console.log(`=================================`);
   console.log(`GRABB-IT Backend Server Active`);
   console.log(`Port: ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Database Mode: ${db.isPg ? 'PostgreSQL' : 'SQLite'}`);
   console.log(`API Root: http://localhost:${PORT}/api`);
   console.log(`=================================`);
 });
+
+// Graceful Shutdown
+const gracefulShutdown = (signal) => {
+  console.log(`\n${signal} signal received. Closing HTTP server...`);
+  server.close(async () => {
+    if (db.isPg && db.pool) {
+      await db.pool.end();
+    }
+    console.log('Server and database connections closed. Process exiting cleanly.');
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

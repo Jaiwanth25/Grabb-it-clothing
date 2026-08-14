@@ -12,8 +12,9 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Product, rating, and comment are required' });
     }
 
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    const ratingNum = parseInt(rating, 10);
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      return res.status(400).json({ error: 'Rating must be an integer between 1 and 5' });
     }
 
     // Verify customer purchase and delivery state
@@ -28,19 +29,17 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'You can only review products you have purchased and had delivered.' });
     }
 
-    await db.queryOne(`
+    await db.insert(`
       INSERT INTO reviews (product_id, user_id, user_name, rating, comment, is_moderated)
       VALUES (?, ?, ?, ?, ?, 1)
-    `).run(productId, req.user.id, req.user.name, parseInt(rating), comment.trim());
+    `, [productId, req.user.id, req.user.name, ratingNum, comment.trim()]);
 
     // Update product rating stats
-    const stats = await db.run('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1', [productId]);
+    const stats = await db.queryOne('SELECT AVG(rating) as avg_rating, COUNT(*) as review_cnt FROM reviews WHERE product_id = ? AND is_moderated = 1', [productId]);
     if (stats) {
-      db.prepare('UPDATE products SET rating = ?, review_count = ? WHERE id = ?', [
-        parseFloat((stats.avg_rating || 5]).toFixed(1)),
-        stats.review_cnt || 0,
-        productId
-      );
+      const avgRating = stats.avg_rating !== null && stats.avg_rating !== undefined ? parseFloat(parseFloat(stats.avg_rating).toFixed(1)) : 5.0;
+      const count = stats.review_cnt ? parseInt(stats.review_cnt, 10) : 0;
+      await db.run('UPDATE products SET rating = ?, review_count = ? WHERE id = ?', [avgRating, count, productId]);
     }
 
     res.status(201).json({ message: 'Review submitted successfully' });

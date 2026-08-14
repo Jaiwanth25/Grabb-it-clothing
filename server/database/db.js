@@ -26,7 +26,7 @@ class DBAbstraction {
     if (fs.existsSync(schemaPath)) {
       const schemaSql = fs.readFileSync(schemaPath, 'utf-8');
       this.sqliteDb.exec(schemaSql);
-      // Inline schema migrations
+      // Inline schema migrations for SQLite development
       try { this.sqliteDb.exec("ALTER TABLE orders ADD COLUMN courier TEXT"); } catch (err) {}
       try { this.sqliteDb.exec("ALTER TABLE orders ADD COLUMN tracking_url TEXT"); } catch (err) {}
       try { this.sqliteDb.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0"); } catch(err) {}
@@ -57,43 +57,67 @@ class DBAbstraction {
     return sql.replace(/\?/g, () => `$${i++}`);
   }
 
-  async query(sql, params = []) {
+  async query(sql, params = [], executor = null) {
     if (this.isPg) {
-      const res = await this.pool.query(this.formatPgSql(sql), params);
+      const client = executor || this.pool;
+      const res = await client.query(this.formatPgSql(sql), params);
       return res.rows;
     } else {
       return this.sqliteDb.prepare(sql).all(...params);
     }
   }
 
-  async queryOne(sql, params = []) {
+  async queryOne(sql, params = [], executor = null) {
     if (this.isPg) {
-      const res = await this.pool.query(this.formatPgSql(sql), params);
-      return res.rows[0];
+      const client = executor || this.pool;
+      const res = await client.query(this.formatPgSql(sql), params);
+      return res.rows[0] || null;
     } else {
-      return this.sqliteDb.prepare(sql).get(...params);
+      return this.sqliteDb.prepare(sql).get(...params) || null;
     }
   }
 
-  async run(sql, params = []) {
+  async run(sql, params = [], executor = null) {
     if (this.isPg) {
-      // For PG we might not get lastInsertRowid exactly as SQLite does unless RETURNING is used, 
-      // but we will try to return rowCount at least.
-      const res = await this.pool.query(this.formatPgSql(sql), params);
-      return { changes: res.rowCount, lastInsertRowid: null }; 
-      // Warning: lastInsertRowid won't work in PG without RETURNING, but this is a best-effort wrapper.
+      const client = executor || this.pool;
+      const res = await client.query(this.formatPgSql(sql), params);
+      return { changes: res.rowCount, lastInsertRowid: null };
     } else {
       const info = this.sqliteDb.prepare(sql).run(...params);
       return { changes: info.changes, lastInsertRowid: info.lastInsertRowid };
     }
   }
 
+  async insert(sql, params = [], executor = null) {
+    if (this.isPg) {
+      const client = executor || this.pool;
+      let pgSql = sql.trim();
+      if (!/RETURNING\s+/i.test(pgSql)) {
+        pgSql += ' RETURNING id';
+      }
+      const res = await client.query(this.formatPgSql(pgSql), params);
+      const insertedRow = res.rows[0] || {};
+      const insertedId = insertedRow.id !== undefined ? insertedRow.id : Object.values(insertedRow)[0];
+      return { changes: res.rowCount, lastInsertRowid: insertedId, id: insertedId, row: insertedRow };
+    } else {
+      const info = this.sqliteDb.prepare(sql).run(...params);
+      return { changes: info.changes, lastInsertRowid: info.lastInsertRowid, id: info.lastInsertRowid };
+    }
+  }
+
   async transaction(callback) {
     if (this.isPg) {
       const client = await this.pool.connect();
+      const txWrapper = {
+        query: (sql, params = []) => this.query(sql, params, client),
+        queryOne: (sql, params = []) => this.queryOne(sql, params, client),
+        run: (sql, params = []) => this.run(sql, params, client),
+        insert: (sql, params = []) => this.insert(sql, params, client),
+        client
+      };
       try {
         await client.query('BEGIN');
-        const result = await callback(client);
+        const result = await callback(txWrapper);
         await client.query('COMMIT');
         return result;
       } catch (err) {
@@ -103,8 +127,22 @@ class DBAbstraction {
         client.release();
       }
     } else {
-      const tx = this.sqliteDb.transaction(callback);
-      return tx();
+      const txWrapper = {
+        query: (sql, params = []) => this.query(sql, params),
+        queryOne: (sql, params = []) => this.queryOne(sql, params),
+        run: (sql, params = []) => this.run(sql, params),
+        insert: (sql, params = []) => this.insert(sql, params),
+        client: null
+      };
+      try {
+        this.sqliteDb.exec('BEGIN IMMEDIATE');
+        const result = await callback(txWrapper);
+        this.sqliteDb.exec('COMMIT');
+        return result;
+      } catch (err) {
+        try { this.sqliteDb.exec('ROLLBACK'); } catch (rbErr) {}
+        throw err;
+      }
     }
   }
 }

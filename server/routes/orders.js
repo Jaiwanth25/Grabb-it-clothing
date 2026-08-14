@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../database/db');
 const { optionalToken, authenticateToken } = require('../middleware/authMiddleware');
 const { sendOrderEmail } = require('../services/email');
+const { sendRealtimeNotification } = require('./sse');
 
 // POST /api/orders
 router.post('/', optionalToken, async (req, res) => {
@@ -14,36 +15,35 @@ router.post('/', optionalToken, async (req, res) => {
       shipping_address,
       items,
       coupon_code,
-      discount_amount = 0,
-      shipping_fee = 0,
       payment_method = 'Razorpay Test Mode',
       payment_reference,
       payment_proof_url
     } = req.body;
 
-    if (!customer_name || !email || !phone || !shipping_address || !items || !items.length) {
+    if (!customer_name || !email || !phone || !shipping_address || !items || !Array.isArray(items) || !items.length) {
       return res.status(400).json({ error: 'Missing required customer or order items information' });
     }
 
     const userId = req.user ? req.user.id : null;
 
     // Transaction for stock deduction, reservation, and order creation
-    const newOrder = await db.transaction(async (client) => {
+    const newOrder = await db.transaction(async (tx) => {
       let subtotal = 0;
       const verifiedItems = [];
 
-      // Check stock and calculate subtotal
+      // Check stock and calculate subtotal using row locking FOR UPDATE in Postgres
       for (const item of items) {
-        // Use FOR UPDATE in Postgres or standard select in SQLite
-        const variantQuery = `
+        let variantQuery = `
           SELECT pv.id, pv.product_id, pv.size, pv.color, pv.stock, p.name, p.price, p.sale_price 
           FROM product_variants pv 
           JOIN products p ON pv.product_id = p.id 
           WHERE pv.id = ? AND p.is_active = 1
         `;
-        // In PostgreSQL we'd want FOR UPDATE to lock the row. SQLite doesn't support it directly in the same way,
-        // but since we abstracted db.js, we can execute it if we parse it, but for simplicity we will rely on serializable transactions.
-        const variant = await db.queryOne(variantQuery, [item.variant_id]);
+        if (db.isPg) {
+          variantQuery += ' FOR UPDATE';
+        }
+
+        const variant = await tx.queryOne(variantQuery, [item.variant_id]);
 
         if (!variant) {
           throw new Error(`Product variant ID ${item.variant_id} not found or inactive.`);
@@ -53,11 +53,11 @@ router.post('/', optionalToken, async (req, res) => {
           throw new Error(`Insufficient stock for item "${variant.name}" (${variant.size} / ${variant.color}). Only ${variant.stock} units remaining.`);
         }
 
-        const itemPrice = variant.sale_price !== null ? variant.sale_price : variant.price;
+        const itemPrice = variant.sale_price !== null && variant.sale_price !== undefined ? parseFloat(variant.sale_price) : parseFloat(variant.price);
         subtotal += itemPrice * item.quantity;
 
         // Fetch primary image
-        const imgRow = await db.queryOne('SELECT image_url FROM product_images WHERE product_id = ? AND is_primary = 1 LIMIT 1', [variant.product_id]);
+        const imgRow = await tx.queryOne('SELECT image_url FROM product_images WHERE product_id = ? AND is_primary = 1 LIMIT 1', [variant.product_id]);
         const imageUrl = imgRow ? imgRow.image_url : 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80';
 
         verifiedItems.push({
@@ -74,7 +74,7 @@ router.post('/', optionalToken, async (req, res) => {
 
       let verifiedDiscount = 0;
       if (coupon_code) {
-        const coupon = await db.queryOne('SELECT * FROM coupons WHERE UPPER(code) = ? AND is_active = 1', [coupon_code.toUpperCase().trim()]);
+        const coupon = await tx.queryOne('SELECT * FROM coupons WHERE UPPER(code) = ? AND is_active = 1', [coupon_code.toUpperCase().trim()]);
         if (!coupon) {
           throw new Error('Invalid or expired coupon code.');
         }
@@ -108,81 +108,63 @@ router.post('/', optionalToken, async (req, res) => {
         initialOrderStatus = 'Pending Verification';
       }
 
-      // Insert Order and retrieve the generated ID
-      let orderId;
-      if (db.isPg) {
-        const orderRes = await db.queryOne(`
-          INSERT INTO orders (
-            order_number, user_id, customer_name, email, phone, shipping_address, 
-            subtotal, discount_amount, shipping_fee, total_amount, payment_method, 
-            payment_status, payment_reference, payment_proof_url, order_status, tracking_number
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          RETURNING id
-        `, [
-          orderNumber, userId, customer_name.trim(), email.toLowerCase().trim(), phone.trim(),
-          shipping_address, subtotal, verifiedDiscount, verifiedShipping, totalAmount, payment_method,
-          initialPaymentStatus, payment_reference || null, payment_proof_url || null, initialOrderStatus, trackingNumber
-        ]);
-        orderId = orderRes.id;
-      } else {
-        const orderInfo = await db.run(`
-          INSERT INTO orders (
-            order_number, user_id, customer_name, email, phone, shipping_address, 
-            subtotal, discount_amount, shipping_fee, total_amount, payment_method, 
-            payment_status, payment_reference, payment_proof_url, order_status, tracking_number
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-          orderNumber, userId, customer_name.trim(), email.toLowerCase().trim(), phone.trim(),
-          shipping_address, subtotal, verifiedDiscount, verifiedShipping, totalAmount, payment_method,
-          initialPaymentStatus, payment_reference || null, payment_proof_url || null, initialOrderStatus, trackingNumber
-        ]);
-        orderId = orderInfo.lastInsertRowid;
-      }
+      // Insert Order and retrieve generated ID
+      const orderInsertRes = await tx.insert(`
+        INSERT INTO orders (
+          order_number, user_id, customer_name, email, phone, shipping_address, 
+          subtotal, discount_amount, shipping_fee, total_amount, payment_method, 
+          payment_status, payment_reference, payment_proof_url, order_status, tracking_number
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        orderNumber, userId, customer_name.trim(), email.toLowerCase().trim(), phone.trim(),
+        shipping_address, subtotal, verifiedDiscount, verifiedShipping, totalAmount, payment_method,
+        initialPaymentStatus, payment_reference || null, payment_proof_url || null, initialOrderStatus, trackingNumber
+      ]);
 
+      const orderId = orderInsertRes.id;
       const resExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
       for (const vItem of verifiedItems) {
-        await db.run(`
+        await tx.run(`
           INSERT INTO order_items (order_id, product_id, product_name, size, color, price, quantity, image_url)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `, [orderId, vItem.product_id, vItem.product_name, vItem.size, vItem.color, vItem.price, vItem.quantity, vItem.image_url]);
         
-        await db.run('UPDATE product_variants SET stock = stock - ? WHERE id = ?', [vItem.quantity, vItem.variant_id]);
+        await tx.run('UPDATE product_variants SET stock = stock - ? WHERE id = ?', [vItem.quantity, vItem.variant_id]);
         
         try {
-          await db.run(`
+          await tx.run(`
             INSERT INTO stock_reservations (order_id, variant_id, quantity, status, expires_at)
-            VALUES (?, ?, ?, 'COMPLETED', ?)
+            VALUES (?, ?, ?, 'ACTIVE', ?)
           `, [orderId, vItem.variant_id, vItem.quantity, resExpiresAt]);
         } catch(e) {}
       }
 
       if (coupon_code) {
-        await db.run('UPDATE coupons SET times_used = times_used + 1 WHERE UPPER(code) = ?', [coupon_code.toUpperCase().trim()]);
+        await tx.run('UPDATE coupons SET times_used = times_used + 1 WHERE UPPER(code) = ?', [coupon_code.toUpperCase().trim()]);
       }
 
       const sessionId = req.headers['x-session-id'] || req.body.sessionId;
       let cart = null;
       if (userId) {
-        cart = await db.queryOne('SELECT id FROM carts WHERE user_id = ?', [userId]);
+        cart = await tx.queryOne('SELECT id FROM carts WHERE user_id = ?', [userId]);
       } else if (sessionId) {
-        cart = await db.queryOne('SELECT id FROM carts WHERE session_id = ?', [sessionId]);
+        cart = await tx.queryOne('SELECT id FROM carts WHERE session_id = ?', [sessionId]);
       }
 
       if (cart) {
-        await db.run('DELETE FROM cart_items WHERE cart_id = ?', [cart.id]);
+        await tx.run('DELETE FROM cart_items WHERE cart_id = ?', [cart.id]);
       }
 
       if (userId) {
-        await db.run(`
+        await tx.run(`
           INSERT INTO notifications (user_id, title, message)
           VALUES (?, 'Order Placed Successfully', ?)
         `, [userId, `Your Grabb-it order #${orderNumber} has been placed successfully.`]);
       }
 
-      await db.run(`
+      await tx.run(`
         INSERT INTO order_status_history (order_id, status, notes)
         VALUES (?, ?, ?)
       `, [orderId, initialOrderStatus, `Order #${orderNumber} successfully created via ${payment_method}.`]);
@@ -209,6 +191,10 @@ router.post('/', optionalToken, async (req, res) => {
 
     sendOrderEmail(newOrder.email, newOrder.customer_name, newOrder.order_number, newOrder.order_status, newOrder.total_amount)
       .catch(e => console.warn('Order email dispatch warning:', e.message));
+
+    if (userId) {
+      sendRealtimeNotification(userId, { type: 'ORDER_PLACED', order: newOrder });
+    }
 
     res.status(201).json({ order: newOrder, message: 'Order placed successfully!' });
   } catch (err) {
@@ -240,8 +226,15 @@ router.get('/:orderNumber', optionalToken, async (req, res) => {
     const order = await db.queryOne('SELECT * FROM orders WHERE order_number = ? OR id = ?', [req.params.orderNumber, req.params.orderNumber]);
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
-    if (req.user && req.user.role !== 'admin' && order.user_id && order.user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied. You can only view your own orders.' });
+    // IDOR Protection:
+    // If the order belongs to a registered user:
+    if (order.user_id) {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required to access this order' });
+      }
+      if (req.user.role !== 'admin' && req.user.id !== order.user_id) {
+        return res.status(403).json({ error: 'Access denied. You can only view your own orders.' });
+      }
     }
 
     const items = await db.query('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
@@ -249,6 +242,7 @@ router.get('/:orderNumber', optionalToken, async (req, res) => {
 
     res.json({ ...order, items, history });
   } catch (err) {
+    console.error('Fetch Order Error:', err);
     res.status(500).json({ error: 'Failed to fetch order details' });
   }
 });

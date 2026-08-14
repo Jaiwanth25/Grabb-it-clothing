@@ -21,18 +21,18 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    const existingUser = await db.queryOne('SELECT id FROM users WHERE email = ?', [email.toLowerCase(]).trim());
+    const existingUser = await db.queryOne('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
     if (existingUser) {
       return res.status(400).json({ error: 'An account with this email already exists' });
     }
 
     const passwordHash = bcrypt.hashSync(password, 10);
-    const result = await db.queryOne(`
+    const result = await db.insert(`
       INSERT INTO users (name, email, password_hash, role, phone, email_verified)
       VALUES (?, ?, ?, 'customer', ?, 0)
-    `).run(name.trim(), email.toLowerCase().trim(), passwordHash, phone || '');
+    `, [name.trim(), email.toLowerCase().trim(), passwordHash, phone || '']);
 
-    const userId = result.lastInsertRowid;
+    const userId = result.id;
     const user = { id: userId, name: name.trim(), email: email.toLowerCase().trim(), role: 'customer', phone, email_verified: false };
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: '7d' });
 
@@ -59,7 +59,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const userRow = await db.query('SELECT * FROM users WHERE email = ?', [email.toLowerCase(]).trim());
+    const userRow = await db.queryOne('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
     if (!userRow) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -108,7 +108,7 @@ router.get('/me', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const addresses = await db.queryOne('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC', [req.user.id]);
+    const addresses = await db.query('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC', [req.user.id]);
 
     res.json({ user: { ...userRow, email_verified: !!userRow.email_verified }, addresses });
   } catch (err) {
@@ -125,7 +125,7 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(400).json({ error: 'Email address is required' });
     }
 
-    const user = await db.query('SELECT id, email, name FROM users WHERE email = ?', [email.toLowerCase(]).trim());
+    const user = await db.queryOne('SELECT id, email, name FROM users WHERE email = ?', [email.toLowerCase().trim()]);
     
     // Always respond with success to prevent user enumeration
     if (!user) {
@@ -136,9 +136,9 @@ router.post('/forgot-password', async (req, res) => {
     const otpHash = bcrypt.hashSync(otp, 8);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 min expiry
 
-    await db.queryOne(`
+    await db.run(`
       UPDATE users SET otp_hash = ?, otp_expires = ?, otp_attempts = 0 WHERE id = ?
-    `).run(otpHash, expiresAt, user.id);
+    `, [otpHash, expiresAt, user.id]);
 
     await sendOtpEmail(user.email, otp, 'Password Reset');
 
@@ -157,7 +157,7 @@ router.post('/verify-otp', async (req, res) => {
       return res.status(400).json({ error: 'Email and OTP are required' });
     }
 
-    const user = await db.run('SELECT id, otp_hash, otp_expires, otp_attempts FROM users WHERE email = ?', [email.toLowerCase(]).trim());
+    const user = await db.queryOne('SELECT id, otp_hash, otp_expires, otp_attempts FROM users WHERE email = ?', [email.toLowerCase().trim()]);
     if (!user || !user.otp_hash || !user.otp_expires) {
       return res.status(400).json({ error: 'Invalid or expired OTP code' });
     }
@@ -172,7 +172,7 @@ router.post('/verify-otp', async (req, res) => {
 
     const isValid = bcrypt.compareSync(otp.trim(), user.otp_hash);
     if (!isValid) {
-      await db.queryOne('UPDATE users SET otp_attempts = otp_attempts + 1 WHERE id = ?', [user.id]);
+      await db.run('UPDATE users SET otp_attempts = otp_attempts + 1 WHERE id = ?', [user.id]);
       return res.status(400).json({ error: 'Incorrect OTP code.' });
     }
 
@@ -204,7 +204,7 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 6 characters long' });
     }
 
-    const user = await db.run('SELECT id, reset_token_hash, reset_token_expires FROM users WHERE email = ?', [email.toLowerCase(]).trim());
+    const user = await db.queryOne('SELECT id, reset_token_hash, reset_token_expires FROM users WHERE email = ?', [email.toLowerCase().trim()]);
     if (!user || !user.reset_token_hash || !user.reset_token_expires) {
       return res.status(400).json({ error: 'Invalid or expired password reset session' });
     }
@@ -219,7 +219,7 @@ router.post('/reset-password', async (req, res) => {
     }
 
     const newHash = bcrypt.hashSync(newPassword, 10);
-    await db.queryOne(`
+    await db.run(`
       UPDATE users SET password_hash = ?, reset_token_hash = NULL, reset_token_expires = NULL WHERE id = ?
     `, [newHash, user.id]);
 
@@ -233,7 +233,7 @@ router.post('/reset-password', async (req, res) => {
 // POST /api/auth/send-verification (Email Verification OTP)
 router.post('/send-verification', authenticateToken, async (req, res) => {
   try {
-    const user = await db.run('SELECT id, email, email_verified FROM users WHERE id = ?', [req.user.id]);
+    const user = await db.queryOne('SELECT id, email, email_verified FROM users WHERE id = ?', [req.user.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     if (user.email_verified) {
@@ -244,7 +244,7 @@ router.post('/send-verification', authenticateToken, async (req, res) => {
     const otpHash = bcrypt.hashSync(otp, 8);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
-    await db.queryOne(`
+    await db.run(`
       UPDATE users SET otp_hash = ?, otp_expires = ?, otp_attempts = 0 WHERE id = ?
     `, [otpHash, expiresAt, user.id]);
 
@@ -262,7 +262,7 @@ router.post('/verify-email', authenticateToken, async (req, res) => {
     const { otp } = req.body;
     if (!otp) return res.status(400).json({ error: 'Verification code is required' });
 
-    const user = await db.run('SELECT id, otp_hash, otp_expires FROM users WHERE id = ?', [req.user.id]);
+    const user = await db.queryOne('SELECT id, otp_hash, otp_expires FROM users WHERE id = ?', [req.user.id]);
     if (!user || !user.otp_hash || !user.otp_expires) {
       return res.status(400).json({ error: 'Invalid or expired verification code' });
     }
@@ -276,7 +276,7 @@ router.post('/verify-email', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Incorrect verification code' });
     }
 
-    await db.queryOne(`
+    await db.run(`
       UPDATE users SET email_verified = 1, otp_hash = NULL, otp_expires = NULL WHERE id = ?
     `, [user.id]);
 
@@ -294,13 +294,13 @@ router.post('/change-password', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Current password and new password are required' });
     }
 
-    const userRow = await db.run('SELECT password_hash FROM users WHERE id = ?', [req.user.id]);
+    const userRow = await db.queryOne('SELECT password_hash FROM users WHERE id = ?', [req.user.id]);
     if (!userRow || !bcrypt.compareSync(currentPassword, userRow.password_hash)) {
       return res.status(400).json({ error: 'Incorrect current password' });
     }
 
     const newHash = bcrypt.hashSync(newPassword, 10);
-    await db.queryOne('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, req.user.id]);
+    await db.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, req.user.id]);
 
     res.json({ message: 'Password updated successfully' });
   } catch (err) {
@@ -311,34 +311,46 @@ router.post('/change-password', authenticateToken, async (req, res) => {
 
 // GET /api/auth/addresses
 router.get('/addresses', authenticateToken, async (req, res) => {
-  const addresses = await db.run('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC', [req.user.id]);
-  res.json(addresses);
+  try {
+    const addresses = await db.query('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC', [req.user.id]);
+    res.json(addresses);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch addresses' });
+  }
 });
 
 // POST /api/auth/addresses
 router.post('/addresses', authenticateToken, async (req, res) => {
-  const { full_name, phone, address_line, city, state, pincode, is_default } = req.body;
-  if (!full_name || !phone || !address_line || !city || !state || !pincode) {
-    return res.status(400).json({ error: 'All address fields are required' });
+  try {
+    const { full_name, phone, address_line, city, state, pincode, is_default } = req.body;
+    if (!full_name || !phone || !address_line || !city || !state || !pincode) {
+      return res.status(400).json({ error: 'All address fields are required' });
+    }
+
+    if (is_default) {
+      await db.run('UPDATE addresses SET is_default = 0 WHERE user_id = ?', [req.user.id]);
+    }
+
+    const result = await db.insert(`
+      INSERT INTO addresses (user_id, full_name, phone, address_line, city, state, pincode, is_default)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `, [req.user.id, full_name, phone, address_line, city, state, pincode, is_default ? 1 : 0]);
+
+    const newAddress = await db.queryOne('SELECT * FROM addresses WHERE id = ?', [result.id]);
+    res.status(201).json(newAddress);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save address' });
   }
-
-  if (is_default) {
-    db.prepare('UPDATE addresses SET is_default = 0 WHERE user_id = ?', [req.user.id]);
-  }
-
-  const result = await db.run(`
-    INSERT INTO addresses (user_id, full_name, phone, address_line, city, state, pincode, is_default)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `, [req.user.id, full_name, phone, address_line, city, state, pincode, is_default ? 1 : 0]);
-
-  const newAddress = await db.run('SELECT * FROM addresses WHERE id = ?', [result.lastInsertRowid]);
-  res.status(201).json(newAddress);
 });
 
 // DELETE /api/auth/addresses/:id
 router.delete('/addresses/:id', authenticateToken, async (req, res) => {
-  db.prepare('DELETE FROM addresses WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  res.json({ message: 'Address removed' });
+  try {
+    await db.run('DELETE FROM addresses WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    res.json({ message: 'Address removed' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to remove address' });
+  }
 });
 
 module.exports = router;
