@@ -89,8 +89,9 @@ router.post('/products', async (req, res) => {
   try {
     const {
       name, description, gender, category_id, price, sale_price, sku,
-      is_new = 0, is_trending = 0, is_featured = 0, is_active = 1,
-      variants = [], images = []
+      is_new = 0, is_trending = 0, is_featured = 0, is_hot = 0, is_bestseller = 0,
+      is_sale = 0, is_limited = 0, custom_badge_text = null, custom_badge_color = null,
+      is_active = 1, variants = [], images = []
     } = req.body;
 
     if (!name || !gender || !category_id || !price || !sku) {
@@ -101,9 +102,17 @@ router.post('/products', async (req, res) => {
 
     const productId = await db.transaction(async (tx) => {
       const prodRes = await tx.insert(`
-        INSERT INTO products (name, slug, description, gender, category_id, price, sale_price, sku, is_new, is_trending, is_featured, is_active, display_order)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 99)
-      `, [name, slug, description || '', gender.toLowerCase(), category_id, price, sale_price || null, sku, is_new ? 1 : 0, is_trending ? 1 : 0, is_featured ? 1 : 0, is_active ? 1 : 0]);
+        INSERT INTO products (
+          name, slug, description, gender, category_id, price, sale_price, sku,
+          is_new, is_trending, is_featured, is_hot, is_bestseller, is_sale, is_limited,
+          custom_badge_text, custom_badge_color, is_active, display_order
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 99)
+      `, [
+        name, slug, description || '', gender.toLowerCase(), category_id, price, sale_price || null, sku,
+        is_new ? 1 : 0, is_trending ? 1 : 0, is_featured ? 1 : 0, is_hot ? 1 : 0, is_bestseller ? 1 : 0,
+        is_sale ? 1 : 0, is_limited ? 1 : 0, custom_badge_text || null, custom_badge_color || null,
+        is_active ? 1 : 0
+      ]);
 
       const pId = prodRes.id;
 
@@ -144,7 +153,8 @@ router.put('/products/:id', async (req, res) => {
   try {
     const {
       name, description, gender, category_id, price, sale_price, sku,
-      is_new, is_trending, is_featured, is_active, display_order, variants, images
+      is_new, is_trending, is_featured, is_hot, is_bestseller, is_sale, is_limited,
+      custom_badge_text, custom_badge_color, is_active, display_order, variants, images
     } = req.body;
 
     const productId = req.params.id;
@@ -152,10 +162,15 @@ router.put('/products/:id', async (req, res) => {
     await db.transaction(async (tx) => {
       await tx.run(`
         UPDATE products SET
-          name = ?, description = ?, gender = ?, category_id = ?, price = ?, sale_price = ?,
-          sku = ?, is_new = ?, is_trending = ?, is_featured = ?, is_active = ?, display_order = ?, updated_at = CURRENT_TIMESTAMP
+          name = ?, description = ?, gender = ?, category_id = ?, price = ?, sale_price = ?, sku = ?,
+          is_new = ?, is_trending = ?, is_featured = ?, is_hot = ?, is_bestseller = ?, is_sale = ?, is_limited = ?,
+          custom_badge_text = ?, custom_badge_color = ?, is_active = ?, display_order = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `, [name, description, gender, category_id, price, sale_price || null, sku, is_new ? 1 : 0, is_trending ? 1 : 0, is_featured ? 1 : 0, is_active ? 1 : 0, display_order || 0, productId]);
+      `, [
+        name, description, gender, category_id, price, sale_price || null, sku,
+        is_new ? 1 : 0, is_trending ? 1 : 0, is_featured ? 1 : 0, is_hot ? 1 : 0, is_bestseller ? 1 : 0, is_sale ? 1 : 0, is_limited ? 1 : 0,
+        custom_badge_text || null, custom_badge_color || null, is_active ? 1 : 0, display_order || 0, productId
+      ]);
 
       if (variants && Array.isArray(variants)) {
         await tx.run('DELETE FROM product_variants WHERE product_id = ?', [productId]);
@@ -831,6 +846,96 @@ router.post('/products/bulk-csv', async (req, res) => {
   } catch (err) {
     console.error('CSV Bulk Import Error:', err);
     res.status(500).json({ error: 'Failed to import products' });
+  }
+});
+
+// --- STORE SETTINGS MANAGEMENT ---
+router.get('/settings', async (req, res) => {
+  try {
+    const rows = await db.query('SELECT key, value FROM store_settings', []);
+    const settingsMap = {};
+    if (rows && rows.length) {
+      rows.forEach(r => { settingsMap[r.key] = r.value; });
+    }
+    res.json(settingsMap);
+  } catch (err) {
+    console.error('Fetch Admin Settings Error:', err);
+    res.status(500).json({ error: 'Failed to fetch store settings' });
+  }
+});
+
+router.put('/settings', async (req, res) => {
+  try {
+    const settingsObj = req.body;
+    await db.transaction(async (tx) => {
+      for (const [key, value] of Object.entries(settingsObj)) {
+        if (value !== undefined) {
+          const valStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
+          const existing = await tx.queryOne('SELECT key FROM store_settings WHERE key = ?', [key]);
+          if (existing) {
+            await tx.run('UPDATE store_settings SET value = ?, updated_at = CURRENT_TIMESTAMP WHERE key = ?', [valStr, key]);
+          } else {
+            await tx.run('INSERT INTO store_settings (key, value) VALUES (?, ?)', [key, valStr]);
+          }
+        }
+      }
+    });
+    res.json({ message: 'Store settings updated successfully' });
+  } catch (err) {
+    console.error('Update Admin Settings Error:', err);
+    res.status(500).json({ error: 'Failed to update store settings' });
+  }
+});
+
+// --- LOOKS (SHOP THE LOOK) MANAGEMENT ---
+router.get('/looks', async (req, res) => {
+  try {
+    const looks = await db.query('SELECT * FROM looks ORDER BY id DESC', []);
+    const fullLooks = await Promise.all(looks.map(async (l) => {
+      const products = await db.query('SELECT p.id, p.name, p.price, p.sku FROM products p JOIN look_products lp ON p.id = lp.product_id WHERE lp.look_id = ?', [l.id]);
+      return { ...l, products };
+    }));
+    res.json(fullLooks);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch admin looks' });
+  }
+});
+
+router.post('/looks', async (req, res) => {
+  try {
+    const { name, description, image_url, gender = 'men', product_ids = [], is_active = 1 } = req.body;
+    if (!name || !image_url) return res.status(400).json({ error: 'Name and image URL are required' });
+
+    const lookId = await db.transaction(async (tx) => {
+      const resIns = await tx.insert(`
+        INSERT INTO looks (name, description, image_url, gender, is_active)
+        VALUES (?, ?, ?, ?, ?)
+      `, [name, description || '', image_url, gender.toLowerCase(), is_active ? 1 : 0]);
+
+      const lId = resIns.id;
+      if (product_ids && Array.isArray(product_ids)) {
+        for (const pId of product_ids) {
+          await tx.run('INSERT INTO look_products (look_id, product_id) VALUES (?, ?)', [lId, pId]);
+        }
+      }
+      return lId;
+    });
+
+    res.status(201).json({ id: lookId, message: 'Look created successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create look' });
+  }
+});
+
+router.delete('/looks/:id', async (req, res) => {
+  try {
+    await db.transaction(async (tx) => {
+      await tx.run('DELETE FROM look_products WHERE look_id = ?', [req.params.id]);
+      await tx.run('DELETE FROM looks WHERE id = ?', [req.params.id]);
+    });
+    res.json({ message: 'Look deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete look' });
   }
 });
 

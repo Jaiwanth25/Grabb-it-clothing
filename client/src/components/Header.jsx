@@ -17,6 +17,18 @@ const Header = () => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [topTickerMessage, setTopTickerMessage] = useState('FESTIVE CARNIVAL DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF');
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.freeShippingMessage) {
+          setTopTickerMessage(data.freeShippingMessage);
+        }
+      })
+      .catch(err => console.error('Fetch public settings error:', err));
+  }, []);
 
   useEffect(() => {
     if (drawerOpen) {
@@ -120,7 +132,7 @@ const Header = () => {
       {/* Top Bright Carnival Ticker Bar */}
       <div className="header-top-bar">
         <Sparkles size={16} color="var(--text-dark)" />
-        <span>FESTIVE CARNIVAL DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: <strong>GRABB10</strong> FOR 10% OFF</span>
+        <span>{topTickerMessage}</span>
         <Sparkles size={16} color="var(--text-dark)" />
       </div>
 

@@ -97,6 +97,41 @@ app.get('/api/health', async (req, res) => {
   });
 });
 
+// Public Store Settings Endpoint
+app.get('/api/settings', async (req, res) => {
+  try {
+    const rows = await db.query('SELECT key, value FROM store_settings');
+    const settingsMap = {};
+    if (rows && rows.length) {
+      rows.forEach(r => { settingsMap[r.key] = r.value; });
+    }
+    
+    const defaultSettings = {
+      storeName: 'GRABB-IT CLOTHING',
+      storeEmail: 'support@grabb-it.com',
+      phone: '+91 98765 43210',
+      whatsappNumber: '+91 99999 88888',
+      freeShippingThreshold: '999',
+      freeShippingMessage: 'FESTIVE CARNIVAL DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF',
+      instagramUrl: 'https://instagram.com/grabb_it_clothing',
+      returnPolicy: 'Easy 7-day hassle-free returns and exchanges.',
+      shippingPolicy: 'Express shipping across India in 3-5 business days.',
+      privacyPolicy: 'Your personal data is encrypted and handled strictly according to Indian privacy laws.',
+      termsConditions: 'All orders subject to stock availability and verification.'
+    };
+
+    res.json({ ...defaultSettings, ...settingsMap });
+  } catch (err) {
+    console.error('Fetch Public Settings Error:', err);
+    res.json({
+      storeName: 'GRABB-IT CLOTHING',
+      whatsappNumber: '+91 99999 88888',
+      freeShippingThreshold: '999',
+      freeShippingMessage: 'FESTIVE CARNIVAL DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF'
+    });
+  }
+});
+
 // Routes
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');

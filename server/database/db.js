@@ -49,6 +49,13 @@ class DBAbstraction {
       try { this.sqliteDb.exec("ALTER TABLE orders ADD COLUMN refund_at DATETIME"); } catch(err) {}
       try { this.sqliteDb.exec("ALTER TABLE reviews ADD COLUMN image_url TEXT"); } catch(err) {}
       try { this.sqliteDb.exec("ALTER TABLE order_status_history ADD COLUMN changed_by INTEGER"); } catch(err) {}
+      try { this.sqliteDb.exec("CREATE TABLE IF NOT EXISTS store_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)"); } catch(err) {}
+      try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN is_hot INTEGER DEFAULT 0"); } catch(err) {}
+      try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN is_bestseller INTEGER DEFAULT 0"); } catch(err) {}
+      try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN is_sale INTEGER DEFAULT 0"); } catch(err) {}
+      try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN is_limited INTEGER DEFAULT 0"); } catch(err) {}
+      try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN custom_badge_text TEXT"); } catch(err) {}
+      try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN custom_badge_color TEXT"); } catch(err) {}
     }
   }
 

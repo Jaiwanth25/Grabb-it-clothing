@@ -50,6 +50,12 @@ CREATE TABLE IF NOT EXISTS products (
   is_new INTEGER DEFAULT 0,
   is_trending INTEGER DEFAULT 0,
   is_featured INTEGER DEFAULT 0,
+  is_hot INTEGER DEFAULT 0,
+  is_bestseller INTEGER DEFAULT 0,
+  is_sale INTEGER DEFAULT 0,
+  is_limited INTEGER DEFAULT 0,
+  custom_badge_text TEXT,
+  custom_badge_color TEXT,
   is_active INTEGER DEFAULT 1,
   display_order INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -282,4 +288,10 @@ CREATE TABLE IF NOT EXISTS stock_reservations (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS store_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

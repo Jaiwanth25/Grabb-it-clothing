@@ -46,11 +46,20 @@ const ProductCard = ({ product, onQuickView }) => {
           <img src={secondaryImage} alt={product.name} className="product-card-img secondary" />
         </Link>
 
-        {/* Badges */}
+        {/* Dynamic Badges Managed via Admin */}
         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 10 }}>
-          {hasDiscount && <span className="badge-discount">-{discountPercent}%</span>}
+          {hasDiscount && <span className="badge-discount">-{discountPercent}% OFF</span>}
           {product.is_new === 1 && <span className="badge-new">NEW</span>}
-          {product.is_trending === 1 && <span className="badge-trending">HOT 🔥</span>}
+          {product.is_hot === 1 && <span className="badge-discount">HOT 🔥</span>}
+          {product.is_trending === 1 && <span className="badge-trending">TRENDING</span>}
+          {product.is_bestseller === 1 && <span className="badge-new" style={{ backgroundColor: 'var(--color-secondary)' }}>BEST SELLER</span>}
+          {product.is_sale === 1 && <span className="badge-discount">SALE</span>}
+          {product.is_limited === 1 && <span className="badge-trending" style={{ backgroundColor: 'var(--color-highlight)' }}>LIMITED</span>}
+          {product.custom_badge_text && (
+            <span style={{ backgroundColor: product.custom_badge_color || '#FFB3C1', color: '#2B2B2B', fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+              {product.custom_badge_text}
+            </span>
+          )}
         </div>
 
         {/* Wishlist Floating Button */}

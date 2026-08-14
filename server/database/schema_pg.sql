@@ -66,6 +66,12 @@ CREATE TABLE IF NOT EXISTS products (
   is_new BOOLEAN DEFAULT FALSE,
   is_trending BOOLEAN DEFAULT FALSE,
   is_featured BOOLEAN DEFAULT FALSE,
+  is_hot BOOLEAN DEFAULT FALSE,
+  is_bestseller BOOLEAN DEFAULT FALSE,
+  is_sale BOOLEAN DEFAULT FALSE,
+  is_limited BOOLEAN DEFAULT FALSE,
+  custom_badge_text TEXT,
+  custom_badge_color TEXT,
   is_active BOOLEAN DEFAULT TRUE,
   display_order INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -278,6 +284,12 @@ CREATE TABLE IF NOT EXISTS stock_reservations (
   status TEXT NOT NULL DEFAULT 'active',
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS store_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes for optimal PostgreSQL performance
