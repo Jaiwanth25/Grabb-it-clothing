@@ -17,7 +17,7 @@ import AdminDashboard from './admin/AdminDashboard';
 
 // Context Providers
 import { GenderProvider } from './context/GenderContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 
@@ -29,6 +29,17 @@ function Layout({ children }) {
       <Footer />
     </>
   );
+}
+
+function ProtectedAdminRoute({ children }) {
+  const { user, token } = useAuth();
+  if (!token || !user) {
+    return <Navigate to="/admin/login" replace />;
+  }
+  if (user.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+  return children;
 }
 
 function App() {
@@ -53,7 +64,7 @@ function App() {
 
               {/* Admin Routes */}
               <Route path="/admin/login" element={<Layout><AdminLogin /></Layout>} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
 
               {/* 404 Catch All */}
               <Route path="*" element={<Navigate to="/" replace />} />

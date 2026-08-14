@@ -69,8 +69,22 @@ function optionalToken(req, res, next) {
   }
 }
 
+function requireCustomer(req, res, next) {
+  authenticateToken(req, res, () => {
+    if (req.user && (req.user.role === 'customer' || req.user.role === 'admin')) {
+      next();
+    } else {
+      res.status(403).json({ error: 'Access denied. Customer account required.' });
+    }
+  });
+}
+
+const requireAuth = authenticateToken;
+
 module.exports = {
   authenticateToken,
+  requireAuth,
+  requireCustomer,
   requireAdmin,
   optionalToken,
   JWT_SECRET
