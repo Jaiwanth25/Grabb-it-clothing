@@ -11,7 +11,7 @@ const TrendingSection = () => {
   useEffect(() => {
     fetch(`/api/products?gender=${gender}&isTrending=true`)
       .then(res => res.json())
-      .then(data => setProducts(data.slice(0, 4)))
+      .then(data => setProducts(Array.isArray(data) ? data.slice(0, 4) : []))
       .catch(err => console.error('Fetch Trending Error:', err));
   }, [gender]);
 
@@ -19,22 +19,28 @@ const TrendingSection = () => {
     <section className="section-space container">
       <div className="section-header">
         <div>
-          <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: '#666', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-dark)', textTransform: 'uppercase' }}>
             MOST WANTED
           </span>
           <h2 className="section-title">TRENDING OUTFITS ({gender.toUpperCase()})</h2>
         </div>
       </div>
 
-      <div className="product-grid">
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onQuickView={(p) => setQuickViewProduct(p)}
-          />
-        ))}
-      </div>
+      {products.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)', fontSize: '0.95rem', backgroundColor: 'var(--bg-subtle)', borderRadius: '16px' }}>
+          No trending items currently listed for {gender}.
+        </div>
+      ) : (
+        <div className="product-grid">
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onQuickView={(p) => setQuickViewProduct(p)}
+            />
+          ))}
+        </div>
+      )}
 
       {quickViewProduct && (
         <QuickViewModal

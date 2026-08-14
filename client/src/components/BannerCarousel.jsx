@@ -13,28 +13,8 @@ const BannerCarousel = () => {
     fetch('/api/banners')
       .then(res => res.json())
       .then(data => {
-        if (data && data.length) {
+        if (Array.isArray(data)) {
           setBanners(data);
-        } else {
-          // Fallback defaults
-          setBanners([
-            {
-              id: 1,
-              title: 'CARNIVAL COLLECTION 2026',
-              subtitle: 'Contemporary fashion inspired by the energy, colour and culture of India.',
-              button_text: 'EXPLORE THE COLLECTION',
-              button_link: '/men',
-              image_url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop&q=80'
-            },
-            {
-              id: 2,
-              title: 'FESTIVE ESSENTIALS',
-              subtitle: 'Jewel tones, relaxed boxy silhouettes, and high-density organic drops.',
-              button_text: 'SHOP WOMEN',
-              button_link: '/women',
-              image_url: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&auto=format&fit=crop&q=80'
-            }
-          ]);
         }
       })
       .catch(err => console.error('Fetch Banners Error:', err));

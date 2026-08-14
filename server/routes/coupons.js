@@ -8,7 +8,10 @@ router.post('/validate', async (req, res) => {
     const { code, subtotal } = req.body;
     if (!code) return res.status(400).json({ error: 'Coupon code is required' });
 
-    const coupon = await db.queryOne('SELECT * FROM coupons WHERE UPPER(code) = ? AND is_active = 1', [code.toUpperCase(]).trim());
+    const coupon = await db.queryOne(
+      'SELECT * FROM coupons WHERE UPPER(code) = ? AND is_active = 1',
+      [code.toUpperCase().trim()]
+    );
 
     if (!coupon) {
       return res.status(400).json({ error: 'Invalid or expired coupon code' });

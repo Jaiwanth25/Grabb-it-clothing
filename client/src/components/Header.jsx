@@ -116,18 +116,20 @@ const Header = () => {
             aria-label="Open Navigation Menu"
             title="Menu"
           >
-            <Menu size={24} color="var(--color-purple)" />
+            <Menu size={22} color="var(--text-dark)" />
           </button>
           
           <Link to="/" className="header-center" style={{ justifyContent: 'flex-start', gap: '0.65rem' }}>
-            <img
-              src="/assets/grabb-it-logo.png"
-              alt="Grabb-it Logo"
-              className="header-logo-img"
-              onError={(e) => {
-                e.target.src = '/assets/grabb-it-logo.svg';
-              }}
-            />
+            <div className="header-logo-container">
+              <img
+                src="/assets/grabb-it-logo.png"
+                alt="Grabb-it Logo"
+                className="header-logo-img"
+                onError={(e) => {
+                  e.target.src = '/assets/grabb-it-logo.svg';
+                }}
+              />
+            </div>
             <span className="header-brand-title">
               GRABB<span>-IT</span>
             </span>
@@ -161,7 +163,7 @@ const Header = () => {
           }}>
             COLLECTIONS
           </a>
-          <Link to="/offers" className="gender-btn" style={{ color: 'var(--color-pink)' }}>
+          <Link to="/offers" className="gender-btn">
             OFFERS
           </Link>
         </div>
@@ -170,7 +172,7 @@ const Header = () => {
         <div className="header-right">
           {/* Desktop Search */}
           <form onSubmit={handleSearchSubmit} className="search-input-box desktop-only">
-            <Search size={16} color="var(--color-pink)" />
+            <Search size={16} color="var(--text-dark)" />
             <input
               type="text"
               placeholder={`Search ${gender}'s fashion...`}
@@ -181,12 +183,12 @@ const Header = () => {
 
           {/* Account */}
           <Link to={user ? "/account" : "/login"} className="icon-btn" title="Account">
-            <User size={22} color="var(--color-purple)" />
+            <User size={22} color="var(--text-dark)" />
           </Link>
 
           {/* Wishlist */}
           <Link to="/wishlist" className="icon-btn" title="Wishlist">
-            <Heart size={22} color="var(--color-pink)" />
+            <Heart size={22} color="var(--text-dark)" />
           </Link>
 
           {/* Notifications Bell */}
@@ -198,7 +200,7 @@ const Header = () => {
                 title="Notifications"
                 style={{ position: 'relative' }}
               >
-                <Bell size={22} color="var(--color-purple)" />
+                <Bell size={22} color="var(--text-dark)" />
                 {unreadCount > 0 && <span className="cart-count-badge">{unreadCount}</span>}
               </button>
               
@@ -211,9 +213,9 @@ const Header = () => {
                   marginTop: '0.75rem', textAlign: 'left', borderRadius: '16px'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
-                    <span style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.5px', color: 'var(--color-purple)' }}>NOTIFICATIONS</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.5px', color: 'var(--text-dark)' }}>NOTIFICATIONS</span>
                     {unreadCount > 0 && (
-                      <button onClick={handleMarkAllRead} style={{ fontSize: '0.75rem', color: 'var(--color-pink)', textDecoration: 'underline', fontWeight: 800 }}>
+                      <button onClick={handleMarkAllRead} style={{ fontSize: '0.75rem', color: 'var(--text-dark)', textDecoration: 'underline', fontWeight: 800 }}>
                         Mark all read
                       </button>
                     )}
@@ -231,13 +233,13 @@ const Header = () => {
                           onClick={() => n.is_read === 0 && handleMarkAsRead(n.id)}
                           style={{
                             padding: '0.65rem', borderBottom: '1px solid var(--border-light)',
-                            backgroundColor: n.is_read === 0 ? 'var(--bg-pink-tint)' : 'transparent',
+                            backgroundColor: n.is_read === 0 ? 'var(--bg-subtle)' : 'transparent',
                             cursor: n.is_read === 0 ? 'pointer' : 'default',
                             fontSize: '0.8rem', borderRadius: '12px'
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
-                            <span style={{ fontWeight: n.is_read === 0 ? 800 : 600, color: 'var(--color-purple)' }}>{n.title}</span>
+                            <span style={{ fontWeight: n.is_read === 0 ? 800 : 600, color: 'var(--text-dark)' }}>{n.title}</span>
                             <span style={{ fontSize: '0.68rem', color: 'var(--text-light)' }}>{new Date(n.created_at).toLocaleDateString()}</span>
                           </div>
                           <p style={{ color: 'var(--text-muted)', lineHeight: '1.35', margin: 0 }}>{n.message}</p>
@@ -252,7 +254,7 @@ const Header = () => {
 
           {/* Cart */}
           <Link to="/cart" className="icon-btn" title="Shopping Bag">
-            <ShoppingBag size={22} color="var(--color-purple)" />
+            <ShoppingBag size={22} color="var(--text-dark)" />
             {count > 0 && <span className="cart-count-badge">{count}</span>}
           </Link>
         </div>
@@ -265,18 +267,20 @@ const Header = () => {
           <div className="drawer-menu">
             <div className="drawer-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <img src="/assets/grabb-it-logo.png" alt="Grabb-it" style={{ height: '30px' }} />
-                <span style={{ fontWeight: 900, fontSize: '1.3rem', letterSpacing: '1px', color: '#ffffff', fontFamily: 'var(--font-serif)' }}>GRABB-IT</span>
+                <div className="header-logo-container">
+                  <img src="/assets/grabb-it-logo.png" alt="Grabb-it" style={{ height: '30px', maxHeight: '30px' }} />
+                </div>
+                <span style={{ fontWeight: 800, fontSize: '1.3rem', letterSpacing: '1px', color: 'var(--text-dark)', fontFamily: 'var(--font-title)' }}>GRABB-IT</span>
               </div>
-              <button onClick={() => setDrawerOpen(false)} className="icon-btn" style={{ color: '#ffffff' }}>
-                <X size={24} />
+              <button onClick={() => setDrawerOpen(false)} className="icon-btn" style={{ color: 'var(--text-dark)' }}>
+                <X size={24} color="var(--text-dark)" />
               </button>
             </div>
 
             {/* Mobile Search Input */}
             <div style={{ padding: '1.25rem 1rem 0.5rem 1rem' }}>
               <form onSubmit={handleSearchSubmit} className="search-input-box" style={{ width: '100%' }}>
-                <Search size={16} color="var(--color-pink)" />
+                <Search size={16} color="var(--text-dark)" />
                 <input
                   type="text"
                   placeholder="Search outfits & products..."
@@ -313,37 +317,37 @@ const Header = () => {
             {/* Drawer Links */}
             <div className="drawer-nav-list">
               <Link to="/" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Home <ArrowRight size={16} color="var(--color-pink)" />
+                Home <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
               <Link to="/men" className="drawer-nav-item" onClick={() => { setGender('men'); setDrawerOpen(false); }}>
-                Men's Fashion <ArrowRight size={16} color="var(--color-pink)" />
+                Men's Fashion <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
               <Link to="/women" className="drawer-nav-item" onClick={() => { setGender('women'); setDrawerOpen(false); }}>
-                Women's Fashion <ArrowRight size={16} color="var(--color-pink)" />
+                Women's Fashion <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
               <Link to={`/${gender}?isNew=true`} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                New Arrivals <ArrowRight size={16} color="var(--color-pink)" />
+                New Arrivals <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
               <Link to={`/${gender}?isTrending=true`} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Trending Outfits <ArrowRight size={16} color="var(--color-pink)" />
+                Trending Outfits <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
               <Link to="/offers" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Special Offers <ArrowRight size={16} color="var(--color-pink)" />
+                Special Offers <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
               <Link to="/wishlist" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Wishlist <ArrowRight size={16} color="var(--color-pink)" />
+                Wishlist <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
               <Link to="/cart" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Shopping Bag ({count}) <ArrowRight size={16} color="var(--color-pink)" />
+                Shopping Bag ({count}) <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
               <Link to="/account" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                My Account <ArrowRight size={16} color="var(--color-pink)" />
+                My Account <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
 
               {isAdmin && (
-                <Link to="/admin" className="drawer-nav-item" style={{ backgroundColor: 'var(--color-purple)', color: '#ffffff' }} onClick={() => setDrawerOpen(false)}>
+                <Link to="/admin" className="drawer-nav-item" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--text-dark)' }} onClick={() => setDrawerOpen(false)}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Shield size={16} /> Admin Dashboard</span>
-                  <ArrowRight size={16} color="#ffffff" />
+                  <ArrowRight size={16} color="var(--text-dark)" />
                 </Link>
               )}
 
