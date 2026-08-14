@@ -12,6 +12,8 @@ client/dist/
 *.log
 npm-debug.log*
 yarn-debug.log*
+server/database/grabb_it.db
+server/uploads/
 yarn-error.log*
 
 # IDE / Editor files

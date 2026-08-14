@@ -7,6 +7,25 @@ const upload = require('../middleware/uploadMiddleware');
 // All routes here require Admin role
 router.use(requireAdmin);
 
+// POST /api/admin/upload (Direct File Picker Image Upload)
+router.post('/upload', upload.array('images', 5), (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No image files were provided for upload.' });
+    }
+    const urls = req.files.map(file => {
+      if (file.path && (file.path.startsWith('http://') || file.path.startsWith('https://'))) {
+        return file.path;
+      }
+      return `/uploads/${file.filename}`;
+    });
+    res.json({ urls, message: 'Images uploaded successfully' });
+  } catch (err) {
+    console.error('File Upload Error:', err);
+    res.status(500).json({ error: 'Image upload failed' });
+  }
+});
+
 // GET /api/admin/stats
 router.get('/stats', async (req, res) => {
   try {
@@ -162,12 +181,29 @@ router.put('/products/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/admin/products/:id
+// DELETE /api/admin/products/:id (Safe soft-deletion if historical order items exist)
 router.delete('/products/:id', async (req, res) => {
   try {
-    await db.run('DELETE FROM products WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Product deleted' });
+    const productId = req.params.id;
+    const orderItemCount = await db.queryOne('SELECT COUNT(*) as count FROM order_items WHERE product_id = ?', [productId]);
+
+    if (orderItemCount && orderItemCount.count > 0) {
+      // Soft delete to preserve historical order records
+      await db.run('UPDATE products SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [productId]);
+      return res.json({ message: 'Product archived (soft-deleted) to preserve historical order records.' });
+    }
+
+    // Hard delete if no orders reference it
+    await db.transaction(async (tx) => {
+      await tx.run('DELETE FROM product_images WHERE product_id = ?', [productId]);
+      await tx.run('DELETE FROM product_variants WHERE product_id = ?', [productId]);
+      await tx.run('DELETE FROM collection_products WHERE product_id = ?', [productId]);
+      await tx.run('DELETE FROM products WHERE id = ?', [productId]);
+    });
+
+    res.json({ message: 'Product permanently deleted.' });
   } catch (err) {
+    console.error('Delete Admin Product Error:', err);
     res.status(500).json({ error: 'Failed to delete product' });
   }
 });

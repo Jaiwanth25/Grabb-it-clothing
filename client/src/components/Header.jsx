@@ -19,6 +19,24 @@ const Header = () => {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    if (drawerOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setDrawerOpen(false);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [drawerOpen]);
+
+  useEffect(() => {
     if (!user || !token) {
       setNotifications([]);
       setUnreadCount(0);
