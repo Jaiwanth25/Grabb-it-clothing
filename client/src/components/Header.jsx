@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Search, User, ShoppingBag, Heart, X, Shield, ArrowRight, Bell, Sparkles } from 'lucide-react';
 import { useGender } from '../context/GenderContext';
@@ -290,8 +291,8 @@ const Header = () => {
         </div>
       </nav>
 
-      {/* SIDE SLIDE NAVIGATION DRAWER */}
-      {drawerOpen && (
+      {/* SIDE SLIDE NAVIGATION DRAWER MOUNTED VIA PORTAL TO DOCUMENT.BODY */}
+      {drawerOpen && ReactDOM.createPortal(
         <>
           <div className="drawer-backdrop" onClick={() => setDrawerOpen(false)} />
           <div className="drawer-menu">
@@ -321,7 +322,7 @@ const Header = () => {
             </div>
 
             {/* Drawer Search Input */}
-            <div style={{ padding: '1rem 1rem 0.5rem 1rem' }}>
+            <div style={{ padding: '1rem 1rem 0.5rem 1rem', flexShrink: 0 }}>
               <form onSubmit={handleSearchSubmit} className="search-input-box" style={{ width: '100%' }}>
                 <Search size={16} color="var(--text-dark)" />
                 <input
@@ -334,7 +335,7 @@ const Header = () => {
             </div>
 
             {/* Gender Toggle Inside Drawer */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '0.5rem 1rem', gap: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '0.5rem 1rem', gap: '0.5rem', flexShrink: 0 }}>
               <button
                 type="button"
                 className={`btn-primary ${gender === 'men' ? '' : 'btn-secondary'}`}
@@ -465,7 +466,8 @@ const Header = () => {
               </Link>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </header>
   );

@@ -939,6 +939,53 @@ router.delete('/looks/:id', async (req, res) => {
   }
 });
 
+// --- ADMIN PAYMENT & BANK DETAILS MANAGEMENT ---
+router.get('/payment-settings', async (req, res) => {
+  try {
+    const rows = await db.query('SELECT setting_key, setting_value FROM payment_settings', []);
+    const settings = {};
+    if (rows && rows.length) {
+      rows.forEach(r => { settings[r.setting_key] = r.setting_value; });
+    }
+    res.json(settings);
+  } catch (err) {
+    console.error('Fetch Admin Payment Settings Error:', err);
+    res.status(500).json({ error: 'Failed to fetch payment settings' });
+  }
+});
+
+router.put('/payment-settings', async (req, res) => {
+  try {
+    const settingsMap = req.body;
+    await db.transaction(async (tx) => {
+      for (const [key, value] of Object.entries(settingsMap)) {
+        if (value !== undefined) {
+          const valStr = String(value);
+          const existing = await tx.queryOne('SELECT id FROM payment_settings WHERE setting_key = ?', [key]);
+          if (existing) {
+            await tx.run('UPDATE payment_settings SET setting_value = ?, updated_at = CURRENT_TIMESTAMP WHERE setting_key = ?', [valStr, key]);
+          } else {
+            await tx.run('INSERT INTO payment_settings (setting_key, setting_value) VALUES (?, ?)', [key, valStr]);
+          }
+        }
+      }
+    });
+    res.json({ message: 'Payment & Bank details updated successfully' });
+  } catch (err) {
+    console.error('Update Payment Settings Error:', err);
+    res.status(500).json({ error: 'Failed to update payment settings' });
+  }
+});
+
+router.delete('/payment-settings/qr', async (req, res) => {
+  try {
+    await db.run("UPDATE payment_settings SET setting_value = '' WHERE setting_key = 'upi_qr_url'");
+    res.json({ message: 'UPI QR Code removed successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete QR code' });
+  }
+});
+
 // --- IMAGE UPLOAD API FOR ADMIN ---
 router.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) {

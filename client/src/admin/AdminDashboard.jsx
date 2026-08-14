@@ -97,6 +97,20 @@ const AdminDashboard = () => {
     termsConditions: 'All orders subject to stock availability and verification.'
   });
 
+  const [paymentSettingsForm, setPaymentSettingsForm] = useState({
+    upi_enabled: 'true',
+    upi_id: 'grabb-it@upi',
+    upi_display_name: 'GRABB-IT CLOTHING PVT LTD',
+    upi_qr_url: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=grabb-it@upi&pn=GrabbItClothing',
+    bank_enabled: 'true',
+    bank_name: 'HDFC Bank Ltd',
+    bank_account_holder: 'GRABB-IT CLOTHING PVT LTD',
+    bank_account_number: '50200012345678',
+    bank_ifsc: 'HDFC0001234',
+    bank_branch: 'Indiranagar 100ft Road, Bengaluru',
+    payment_instructions: 'After making payment, please note down your UTR / Transaction Reference Number and enter it during checkout.'
+  });
+
   // Verify Admin Access
   useEffect(() => {
     if (!token) {
@@ -110,7 +124,7 @@ const AdminDashboard = () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [statsRes, prodRes, catRes, banRes, ordRes, invRes, custRes, coupRes, colRes, revRes, looksRes, setRes] = await Promise.all([
+      const [statsRes, prodRes, catRes, banRes, ordRes, invRes, custRes, coupRes, colRes, revRes, looksRes, setRes, paySetRes] = await Promise.all([
         fetch('/api/admin/stats', { headers }),
         fetch('/api/admin/products', { headers }),
         fetch('/api/admin/categories', { headers }),
@@ -122,7 +136,8 @@ const AdminDashboard = () => {
         fetch('/api/admin/collections', { headers }),
         fetch('/api/admin/reviews', { headers }),
         fetch('/api/admin/looks', { headers }),
-        fetch('/api/admin/settings', { headers })
+        fetch('/api/admin/settings', { headers }),
+        fetch('/api/admin/payment-settings', { headers })
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
@@ -146,6 +161,12 @@ const AdminDashboard = () => {
         const setMap = await setRes.json();
         if (setMap && Object.keys(setMap).length) {
           setSettingsForm(prev => ({ ...prev, ...setMap }));
+        }
+      }
+      if (paySetRes.ok) {
+        const payMap = await paySetRes.json();
+        if (payMap && Object.keys(payMap).length) {
+          setPaymentSettingsForm(prev => ({ ...prev, ...payMap }));
         }
       }
     } catch (err) {
@@ -412,6 +433,52 @@ const AdminDashboard = () => {
     }
   };
 
+  // Payment & Bank Details Save
+  const handleSavePaymentSettings = async (e) => {
+    e.preventDefault();
+    try {
+      let uploadedQrUrl = paymentSettingsForm.upi_qr_url;
+      if (selectedFiles.length > 0) {
+        const urls = await uploadSelectedFiles();
+        if (urls && urls.length > 0) {
+          uploadedQrUrl = urls[0];
+        }
+      }
+
+      const payload = {
+        ...paymentSettingsForm,
+        upi_qr_url: uploadedQrUrl
+      };
+
+      const res = await fetch('/api/admin/payment-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed to save payment settings');
+      setSelectedFiles([]);
+      setImagePreviews([]);
+      fetchData();
+      alert('✓ Payment & Bank Details updated successfully! Changes are live on customer checkout.');
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteQrCode = async () => {
+    try {
+      const res = await fetch('/api/admin/payment-settings/qr', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to delete QR code');
+      setPaymentSettingsForm(prev => ({ ...prev, upi_qr_url: '' }));
+      alert('✓ UPI QR Code image deleted.');
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const navItems = [
     { id: 'overview', label: 'Dashboard Home', icon: LayoutDashboard },
     { id: 'orders', label: 'View Customer Orders', icon: ShoppingBag, badge: orders.filter(o => o.order_status === 'Pending').length },
@@ -425,6 +492,7 @@ const AdminDashboard = () => {
     { id: 'customers', label: 'Registered Customers', icon: Users },
     { id: 'reviews', label: 'Customer Reviews', icon: MessageSquare },
     { id: 'payments', label: 'Payments & Refunds Log', icon: CreditCard },
+    { id: 'payment-settings', label: 'Payment & Bank Details', icon: CreditCard },
     { id: 'settings', label: 'Store Settings & Policies', icon: Settings }
   ];
 
@@ -1399,6 +1467,180 @@ const AdminDashboard = () => {
 
                     <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.85rem' }}>
                       SAVE ALL STORE CONFIGURATIONS
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* TAB 14: ADMIN PAYMENT & BANK DETAILS MANAGEMENT */}
+              {activeTab === 'payment-settings' && (
+                <div style={{ maxWidth: '800px', backgroundColor: '#ffffff', padding: '2.5rem', borderRadius: '16px', border: '2px solid var(--border-light)' }}>
+                  <h2 style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1.5rem', fontFamily: 'var(--font-title)' }}>
+                    💳 PAYMENT METHODS &amp; BANK DETAILS CONTROL
+                  </h2>
+
+                  <form onSubmit={handleSavePaymentSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    {/* SECTION 1: UPI PAYMENT CONFIGURATION */}
+                    <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'var(--font-title)' }}>
+                          📱 Direct UPI &amp; QR Code Settings
+                        </h3>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.85rem' }}>
+                          <input
+                            type="checkbox"
+                            checked={paymentSettingsForm.upi_enabled === 'true'}
+                            onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, upi_enabled: e.target.checked ? 'true' : 'false' })}
+                          /> Enable UPI Payment
+                        </label>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                        <div className="form-group">
+                          <label className="form-label">Shop Owner UPI VPA / ID</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. grabb-it@upi"
+                            value={paymentSettingsForm.upi_id}
+                            onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, upi_id: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">UPI Display Name</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. GRABB-IT CLOTHING"
+                            value={paymentSettingsForm.upi_display_name}
+                            onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, upi_display_name: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      {/* QR CODE IMAGE PICKER UPLOAD & DELETE */}
+                      <div className="form-group">
+                        <label className="form-label">Upload / Replace UPI QR Code Image</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          className="form-input"
+                          style={{ padding: '0.5rem' }}
+                        />
+
+                        {paymentSettingsForm.upi_qr_url && (
+                          <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: '#ffffff', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                            <img src={paymentSettingsForm.upi_qr_url} alt="UPI QR" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+                            <div>
+                              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Current QR Image Active</span>
+                              <button
+                                type="button"
+                                onClick={handleDeleteQrCode}
+                                className="btn-outline-gray"
+                                style={{ marginTop: '0.4rem', color: '#c62828', borderColor: '#c62828', padding: '0.25rem 0.6rem', fontSize: '0.75rem', display: 'block' }}
+                              >
+                                Delete QR Image
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* SECTION 2: DIRECT BANK TRANSFER DETAILS */}
+                    <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'var(--font-title)' }}>
+                          🏦 Bank Account Transfer Details
+                        </h3>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.85rem' }}>
+                          <input
+                            type="checkbox"
+                            checked={paymentSettingsForm.bank_enabled === 'true'}
+                            onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, bank_enabled: e.target.checked ? 'true' : 'false' })}
+                          /> Enable Bank Transfer
+                        </label>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                        <div className="form-group">
+                          <label className="form-label">Bank Name</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. HDFC Bank Ltd"
+                            value={paymentSettingsForm.bank_name}
+                            onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, bank_name: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Account Holder Name</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. GRABB-IT CLOTHING PVT LTD"
+                            value={paymentSettingsForm.bank_account_holder}
+                            onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, bank_account_holder: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                        <div className="form-group">
+                          <label className="form-label">Account Number</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. 50200012345678"
+                            value={paymentSettingsForm.bank_account_number}
+                            onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, bank_account_number: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">IFSC Code</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. HDFC0001234"
+                            value={paymentSettingsForm.bank_ifsc}
+                            onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, bank_ifsc: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label className="form-label">Branch Name &amp; Address</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="e.g. Indiranagar 100ft Road Branch, Bengaluru"
+                          value={paymentSettingsForm.bank_branch}
+                          onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, bank_branch: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    {/* SECTION 3: PAYMENT INSTRUCTIONS FOR CUSTOMERS */}
+                    <div className="form-group">
+                      <label className="form-label">Customer Payment Instructions</label>
+                      <textarea
+                        rows="3"
+                        className="form-textarea"
+                        placeholder="Instructions displayed to customer during checkout..."
+                        value={paymentSettingsForm.payment_instructions}
+                        onChange={e => setPaymentSettingsForm({ ...paymentSettingsForm, payment_instructions: e.target.value })}
+                      />
+                    </div>
+
+                    <button type="submit" className="btn-primary" style={{ padding: '0.85rem' }} disabled={uploadingImages}>
+                      {uploadingImages ? 'UPLOADING QR IMAGE...' : 'SAVE PAYMENT & BANK DETAILS'}
                     </button>
                   </form>
                 </div>
