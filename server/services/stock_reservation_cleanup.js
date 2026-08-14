@@ -8,10 +8,11 @@ async function cleanupExpiredReservations() {
   try {
     await db.transaction(async (tx) => {
       // Find active reservations that have expired
+      const timeComparison = db.isPg ? 'CURRENT_TIMESTAMP' : "datetime('now')";
       const expiredReservations = await tx.query(`
         SELECT sr.id, sr.order_id, sr.variant_id, sr.quantity, sr.status
         FROM stock_reservations sr
-        WHERE sr.status = 'ACTIVE' AND sr.expires_at < CURRENT_TIMESTAMP
+        WHERE sr.status = 'ACTIVE' AND datetime(sr.expires_at) < ${timeComparison}
       `);
 
       for (const res of expiredReservations) {
