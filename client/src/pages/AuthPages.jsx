@@ -265,6 +265,7 @@ export const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -274,9 +275,25 @@ export const Register = () => {
   const queryParams = new URLSearchParams(location.search);
   const redirectTarget = queryParams.get('redirect');
 
+  const hasMinLength = password.length >= 8;
+  const hasLetter = /[a-zA-Z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const isPasswordValid = hasMinLength && hasLetter && hasNumber;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!isPasswordValid) {
+      setError('Password must be at least 8 characters and contain at least one letter and one number.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -327,7 +344,24 @@ export const Register = () => {
 
         <div className="form-group">
           <label className="form-label">Password</label>
-          <input type="password" className="form-input" placeholder="At least 6 characters" value={password} onChange={e => setPassword(e.target.value)} required />
+          <input type="password" className="form-input" placeholder="Min 8 chars, 1 letter & 1 number" value={password} onChange={e => setPassword(e.target.value)} required />
+          <div style={{ marginTop: '0.5rem', fontSize: '0.78rem', color: '#555', backgroundColor: '#f9f9f9', padding: '0.5rem 0.75rem', borderRadius: '4px', border: '1px solid #eee' }}>
+            <div style={{ fontWeight: 700, marginBottom: '0.2rem', color: '#333' }}>Password must contain:</div>
+            <div style={{ color: hasMinLength ? '#2e7d32' : '#888', fontWeight: hasMinLength ? 700 : 400 }}>
+              {hasMinLength ? '✓' : '○'} At least 8 characters
+            </div>
+            <div style={{ color: hasLetter ? '#2e7d32' : '#888', fontWeight: hasLetter ? 700 : 400 }}>
+              {hasLetter ? '✓' : '○'} At least 1 letter
+            </div>
+            <div style={{ color: hasNumber ? '#2e7d32' : '#888', fontWeight: hasNumber ? 700 : 400 }}>
+              {hasNumber ? '✓' : '○'} At least 1 number
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Confirm Password</label>
+          <input type="password" className="form-input" placeholder="Re-enter password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
         </div>
 
         {error && <div style={{ color: '#c62828', fontSize: '0.85rem', fontWeight: 700, marginBottom: '1rem' }}>{error}</div>}

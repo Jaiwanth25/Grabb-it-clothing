@@ -21,6 +21,10 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
+    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one letter and one number.' });
+    }
+
     const existingUser = await db.queryOne('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
     if (existingUser) {
       return res.status(400).json({ error: 'An account with this email already exists' });

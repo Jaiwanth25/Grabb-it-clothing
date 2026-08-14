@@ -213,7 +213,7 @@ const AccountPage = () => {
             MY ACCOUNT
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '0.25rem' }}>
-            Welcome back, <strong style={{ color: 'var(--color-maroon)' }}>{user.name}</strong> ({user.email})
+            Welcome back, <strong style={{ color: 'var(--color-maroon)' }}>{user?.name ? user.name.split(' ')[0] : 'Customer'}!</strong>
           </p>
         </div>
         <button onClick={logout} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1.25rem' }}>
