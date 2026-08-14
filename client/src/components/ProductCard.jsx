@@ -47,15 +47,17 @@ const ProductCard = ({ product, onQuickView }) => {
         </Link>
 
         {/* Badges */}
-        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 5 }}>
+        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 10 }}>
           {hasDiscount && <span className="badge-discount">-{discountPercent}%</span>}
           {product.is_new === 1 && <span className="badge-new">NEW</span>}
           {product.is_trending === 1 && <span className="badge-trending">HOT 🔥</span>}
         </div>
 
-        {/* Wishlist Heart */}
+        {/* Wishlist Floating Button */}
         <button
-          className={`wishlist-heart-btn ${isFavorite ? 'active' : ''}`}
+          type="button"
+          className={`product-card-wishlist ${isFavorite ? 'active' : ''}`}
+          aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -63,7 +65,7 @@ const ProductCard = ({ product, onQuickView }) => {
           }}
           title={isFavorite ? "Remove from Wishlist" : "Add to Wishlist"}
         >
-          <Heart size={18} fill={isFavorite ? "var(--color-pink)" : "none"} color={isFavorite ? "var(--color-pink)" : "var(--color-purple)"} />
+          <Heart size={21} fill={isFavorite ? "currentColor" : "none"} strokeWidth={2.2} />
         </button>
 
         {/* Quick Actions */}

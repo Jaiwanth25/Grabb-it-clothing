@@ -717,34 +717,68 @@ input, select, textarea {
   }
 }
 
-.wishlist-heart-btn {
+/* Wishlist Floating Circle Button */
+.product-card-wishlist {
   position: absolute;
   top: 14px;
   right: 14px;
-  z-index: 6;
-  background-color: #ffffff;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  background: #ffffff;
+  color: #2B2B2B;
+  border: 1px solid rgba(43, 43, 43, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--border-light);
-  transition: transform 200ms ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  z-index: 20;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
+  transition: transform 200ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 }
 
-.wishlist-heart-btn:hover {
-  background-color: var(--color-primary);
-  color: var(--text-dark);
-  transform: scale(1.1);
-  border-color: var(--color-primary);
+.product-card-wishlist svg {
+  width: 21px;
+  height: 21px;
+  display: block;
+  stroke: currentColor;
+  color: currentColor;
+  opacity: 1;
+  visibility: visible;
 }
 
-.wishlist-heart-btn.active {
-  color: var(--text-dark);
-  border-color: var(--color-primary);
-  background-color: var(--color-primary);
+.product-card-wishlist:hover {
+  transform: scale(1.08);
+  border-color: #E85D75;
+}
+
+.product-card-wishlist:active {
+  transform: scale(0.96);
+}
+
+.product-card-wishlist.active {
+  color: #E85D75;
+  background: #FFF5F7;
+  border-color: #FFD1DC;
+  box-shadow: 0 4px 14px rgba(232, 93, 117, 0.25);
+}
+
+@media (max-width: 768px) {
+  .product-card-wishlist {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .product-card-wishlist svg {
+    width: 19px;
+    height: 19px;
+  }
 }
 
 .product-info {
