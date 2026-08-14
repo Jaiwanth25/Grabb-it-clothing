@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircle2, CreditCard, ShieldCheck, Truck, ArrowLeft, Lock, QrCode, Building2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, CreditCard, ShieldCheck, Truck, ArrowLeft, QrCode, Building2, AlertCircle, Sparkles } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { formatINR } from '../utils/currency';
 
 const CheckoutPage = () => {
   const { cartItems, subtotal, discountAmount, appliedCoupon, clearCart } = useCart();
@@ -79,7 +80,6 @@ const CheckoutPage = () => {
       const rzpData = await res.json();
 
       if (rzpData.testMode || !window.Razorpay) {
-        // Test mode fallback when live credentials aren't present
         const verifyRes = await fetch('/api/payments/verify-razorpay', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -98,7 +98,6 @@ const CheckoutPage = () => {
           throw new Error(verifyJson.error || 'Payment verification failed');
         }
       } else {
-        // Live Razorpay Checkout SDK Modal
         const options = {
           key: rzpData.key,
           amount: rzpData.amount,
@@ -111,7 +110,7 @@ const CheckoutPage = () => {
             email: orderData.email,
             contact: orderData.phone
           },
-          theme: { color: '#111111' },
+          theme: { color: '#4A0E17' },
           handler: async function (response) {
             const verifyRes = await fetch('/api/payments/verify-razorpay', {
               method: 'POST',
@@ -200,7 +199,6 @@ const CheckoutPage = () => {
       if (formData.payment_method.includes('Razorpay')) {
         await handleRazorpayPayment(createdOrder);
       } else {
-        // Manual payment (UPI or Bank Transfer)
         setCompletedOrder(createdOrder);
         clearCart();
         setStep(3);
@@ -217,20 +215,20 @@ const CheckoutPage = () => {
     const isManualPending = completedOrder.payment_status === 'MANUAL_PAYMENT_PENDING';
 
     return (
-      <main className="section-space container" style={{ maxWidth: '720px', textAlign: 'center', backgroundColor: 'var(--bg-main)' }}>
-        <CheckCircle2 size={72} color={isManualPending ? 'var(--accent-gold)' : 'var(--accent-olive)'} style={{ marginBottom: '1.5rem', display: 'inline-block' }} />
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem', fontWeight: 400, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+      <main className="section-space container" style={{ maxWidth: '740px', textAlign: 'center', backgroundColor: 'var(--bg-main)' }}>
+        <CheckCircle2 size={76} color={isManualPending ? 'var(--color-turmeric)' : 'var(--color-emerald)'} style={{ marginBottom: '1.5rem', display: 'inline-block' }} />
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 700, color: 'var(--color-maroon)', marginBottom: '0.5rem' }}>
           {isManualPending ? 'ORDER PLACED — PENDING VERIFICATION' : 'ORDER CONFIRMED! THANK YOU'}
         </h1>
         <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '2rem' }}>
-          Order Reference Number: <strong style={{ color: 'var(--text-main)' }}>{completedOrder.order_number}</strong>
+          Order Reference Number: <strong style={{ color: 'var(--color-saffron)' }}>{completedOrder.order_number}</strong>
         </p>
 
-        <div style={{ backgroundColor: '#ffffff', padding: '2.5rem', border: '1px solid var(--border-dark)', textAlign: 'left', marginBottom: '2.5rem' }}>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem', letterSpacing: '1px' }}>
-            ORDER SUMMARY & STATUS
+        <div style={{ backgroundColor: '#ffffff', padding: '2.5rem', borderRadius: '16px', border: '1px solid var(--border-light)', textAlign: 'left', marginBottom: '2.5rem', boxShadow: 'var(--shadow-card)' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1.25rem', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>
+            ORDER SUMMARY &amp; DETAILS
           </h3>
-          <div style={{ fontSize: '0.85rem', lineHeight: '1.8', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ fontSize: '0.9rem', lineHeight: '1.8', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div><strong>Recipient:</strong> {completedOrder.customer_name} ({completedOrder.email})</div>
             <div><strong>Contact phone:</strong> {completedOrder.phone}</div>
             <div><strong>Shipping Address:</strong> {completedOrder.shipping_address}</div>
@@ -238,7 +236,7 @@ const CheckoutPage = () => {
             <div><strong>Payment Method:</strong> {completedOrder.payment_method}</div>
             <div>
               <strong>Payment Status:</strong>{' '}
-              <span style={{ color: isManualPending ? '#D97706' : 'var(--accent-olive)', fontWeight: 800 }}>
+              <span style={{ color: isManualPending ? 'var(--color-turmeric)' : 'var(--color-emerald)', fontWeight: 800 }}>
                 {isManualPending ? 'MANUAL VERIFICATION PENDING' : 'PAYMENT VERIFIED'}
               </span>
             </div>
@@ -247,29 +245,29 @@ const CheckoutPage = () => {
             )}
           </div>
 
-          <h4 style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase', marginTop: '2rem', marginBottom: '1rem', letterSpacing: '0.5px' }}>
-            ORDERED APPAREL
+          <h4 style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase', marginTop: '2rem', marginBottom: '1rem', color: 'var(--color-maroon)' }}>
+            ORDERED ITEMS
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {completedOrder.items?.map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
                 <div>
-                  <strong style={{ textTransform: 'uppercase' }}>{item.product_name}</strong> ({item.size} / {item.color.toUpperCase()}) x {item.quantity}
+                  <strong style={{ textTransform: 'uppercase', color: 'var(--color-maroon)' }}>{item.product_name}</strong> ({item.size} / {item.color.toUpperCase()}) x {item.quantity}
                 </div>
-                <div style={{ fontWeight: 700 }}>₹{Math.round(item.price * item.quantity)}</div>
+                <div style={{ fontWeight: 800, color: 'var(--color-maroon)' }}>{formatINR(item.price * item.quantity)}</div>
               </div>
             ))}
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 900, fontSize: '1.25rem', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--text-main)', fontFamily: 'var(--font-title)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 900, fontSize: '1.3rem', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '2px solid var(--color-maroon)', fontFamily: 'var(--font-title)', color: 'var(--color-maroon)' }}>
             <span>TOTAL PAID</span>
-            <span>₹{Math.round(completedOrder.total_amount)}</span>
+            <span>{formatINR(completedOrder.total_amount)}</span>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
           <Link to="/account" className="btn-primary" style={{ padding: '0.85rem 1.75rem' }}>
-            MY ORDERS & TRACKING
+            MY ORDERS &amp; TRACKING
           </Link>
           <Link to="/" className="btn-secondary" style={{ padding: '0.85rem 1.75rem' }}>
             CONTINUE SHOPPING
@@ -282,8 +280,8 @@ const CheckoutPage = () => {
   if (cartItems.length === 0 && step !== 3) {
     return (
       <main className="section-space container" style={{ textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem' }}>YOUR SHOPPING BAG IS EMPTY</h2>
-        <p style={{ marginTop: '0.5rem', color: 'var(--text-light)' }}>Add items to your bag to proceed to checkout.</p>
+        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', color: 'var(--color-maroon)' }}>YOUR SHOPPING BAG IS EMPTY</h2>
+        <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>Add items to your bag to proceed to checkout.</p>
         <Link to="/men" className="btn-primary" style={{ marginTop: '1.5rem' }}>EXPLORE COLLECTION</Link>
       </main>
     );
@@ -291,11 +289,17 @@ const CheckoutPage = () => {
 
   return (
     <main className="section-space container" style={{ backgroundColor: 'var(--bg-main)', minHeight: '80vh' }}>
-      <div className="breadcrumbs" style={{ fontFamily: 'var(--font-title)', fontSize: '0.75rem', letterSpacing: '1px', color: 'var(--text-light)' }}>
+      <div className="breadcrumbs" style={{ fontFamily: 'var(--font-title)', fontSize: '0.78rem', letterSpacing: '1px' }}>
         <Link to="/">HOME</Link> / <Link to="/cart">BAG</Link> / <span>CHECKOUT</span>
       </div>
 
-      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem', fontWeight: 400, textTransform: 'uppercase', marginBottom: '2rem', borderBottom: '1px solid var(--text-main)', paddingBottom: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+        <Sparkles size={16} color="var(--color-saffron)" />
+        <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '1.5px', color: 'var(--color-saffron)', textTransform: 'uppercase' }}>
+          FINAL STEP
+        </span>
+      </div>
+      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 700, color: 'var(--color-maroon)', marginBottom: '2rem', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '1rem' }}>
         SECURE CHECKOUT
       </h1>
 
@@ -307,16 +311,14 @@ const CheckoutPage = () => {
             <div 
               className={`checkout-step-indicator ${step === 1 ? 'active' : ''}`}
               onClick={() => setStep(1)}
-              style={{ padding: '0.75rem 1.5rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', borderBottom: step === 1 ? '2px solid #111' : 'none' }}
             >
-              1. SHIPPING DESTINATION
+              1. SHIPPING ADDRESS
             </div>
             <div 
               className={`checkout-step-indicator ${step === 2 ? 'active' : ''}`}
               onClick={() => formData.customer_name && formData.phone && formData.pincode && setStep(2)}
-              style={{ padding: '0.75rem 1.5rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', borderBottom: step === 2 ? '2px solid #111' : 'none' }}
             >
-              2. PAYMENT GATEWAY
+              2. PAYMENT METHOD
             </div>
           </div>
 
@@ -324,41 +326,41 @@ const CheckoutPage = () => {
             <form onSubmit={(e) => { e.preventDefault(); setStep(2); }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>RECIPIENT FULL NAME *</label>
-                  <input type="text" name="customer_name" className="form-select" style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-dark)', borderRadius: '0px' }} value={formData.customer_name} onChange={handleChange} required />
+                  <label className="form-label">RECIPIENT FULL NAME *</label>
+                  <input type="text" name="customer_name" className="form-input" value={formData.customer_name} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>EMAIL ADDRESS *</label>
-                  <input type="email" name="email" className="form-select" style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-dark)', borderRadius: '0px' }} value={formData.email} onChange={handleChange} required />
+                  <label className="form-label">EMAIL ADDRESS *</label>
+                  <input type="email" name="email" className="form-input" value={formData.email} onChange={handleChange} required />
                 </div>
               </div>
 
-              <div className="form-group" style={{ marginTop: '1.25rem' }}>
-                <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>MOBILE PHONE NUMBER *</label>
-                <input type="tel" name="phone" className="form-select" style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-dark)', borderRadius: '0px' }} value={formData.phone} onChange={handleChange} required />
+              <div className="form-group">
+                <label className="form-label">MOBILE PHONE NUMBER *</label>
+                <input type="tel" name="phone" className="form-input" value={formData.phone} onChange={handleChange} required />
               </div>
 
-              <div className="form-group" style={{ marginTop: '1.25rem' }}>
-                <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>HOUSE / STREET ADDRESS *</label>
-                <input type="text" name="address_line" className="form-select" style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-dark)', borderRadius: '0px' }} value={formData.address_line} onChange={handleChange} required />
+              <div className="form-group">
+                <label className="form-label">HOUSE / STREET ADDRESS *</label>
+                <input type="text" name="address_line" className="form-input" value={formData.address_line} onChange={handleChange} required />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.25rem', marginTop: '1.25rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.25rem' }}>
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>CITY *</label>
-                  <input type="text" name="city" className="form-select" style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-dark)', borderRadius: '0px' }} value={formData.city} onChange={handleChange} required />
+                  <label className="form-label">CITY *</label>
+                  <input type="text" name="city" className="form-input" value={formData.city} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>STATE *</label>
-                  <input type="text" name="state" className="form-select" style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-dark)', borderRadius: '0px' }} value={formData.state} onChange={handleChange} required />
+                  <label className="form-label">STATE *</label>
+                  <input type="text" name="state" className="form-input" value={formData.state} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>PINCODE *</label>
-                  <input type="text" name="pincode" className="form-select" style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-dark)', borderRadius: '0px' }} value={formData.pincode} onChange={handleChange} required />
+                  <label className="form-label">PINCODE *</label>
+                  <input type="text" name="pincode" className="form-input" value={formData.pincode} onChange={handleChange} required />
                 </div>
               </div>
 
-              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '2.5rem', padding: '1rem' }}>
+              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '2rem', padding: '1rem' }}>
                 CONTINUE TO PAYMENT METHOD
               </button>
             </form>
@@ -367,11 +369,11 @@ const CheckoutPage = () => {
           {step === 2 && (
             <div>
               <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>SELECT PAYMENT METHOD</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <label className="form-label">SELECT PAYMENT METHOD</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginTop: '0.5rem' }}>
                   
                   {/* Option 1: Razorpay */}
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', border: formData.payment_method.includes('Razorpay') ? '2px solid #111' : '1px solid var(--border-light)', cursor: 'pointer', backgroundColor: '#fff' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '1.1rem', border: formData.payment_method.includes('Razorpay') ? '2px solid var(--color-saffron)' : '1px solid var(--border-light)', borderRadius: '12px', cursor: 'pointer', backgroundColor: '#fff' }}>
                     <input 
                       type="radio" 
                       name="payment_method" 
@@ -379,15 +381,15 @@ const CheckoutPage = () => {
                       checked={formData.payment_method.includes('Razorpay')} 
                       onChange={handleChange} 
                     />
-                    <CreditCard size={20} />
+                    <CreditCard size={22} color="var(--color-maroon)" />
                     <div>
-                      <strong style={{ fontSize: '0.85rem' }}>Razorpay Secure Checkout (Cards / Netbanking / UPI)</strong>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Instant automated payment verification</div>
+                      <strong style={{ fontSize: '0.9rem', color: 'var(--color-maroon)' }}>Razorpay Secure Checkout (Cards / Netbanking / UPI)</strong>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Instant automated payment verification</div>
                     </div>
                   </label>
 
                   {/* Option 2: UPI / QR Code */}
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', border: formData.payment_method.includes('UPI') ? '2px solid #111' : '1px solid var(--border-light)', cursor: 'pointer', backgroundColor: '#fff' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '1.1rem', border: formData.payment_method.includes('UPI') ? '2px solid var(--color-saffron)' : '1px solid var(--border-light)', borderRadius: '12px', cursor: 'pointer', backgroundColor: '#fff' }}>
                     <input 
                       type="radio" 
                       name="payment_method" 
@@ -395,15 +397,15 @@ const CheckoutPage = () => {
                       checked={formData.payment_method.includes('UPI')} 
                       onChange={handleChange} 
                     />
-                    <QrCode size={20} />
+                    <QrCode size={22} color="var(--color-maroon)" />
                     <div>
-                      <strong style={{ fontSize: '0.85rem' }}>UPI / Google Pay / PhonePe (Direct Transfer)</strong>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Scan QR code or use UPI ID + enter UTR reference number</div>
+                      <strong style={{ fontSize: '0.9rem', color: 'var(--color-maroon)' }}>UPI / Google Pay / PhonePe (Direct Transfer)</strong>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Scan QR code or use UPI ID + enter UTR reference number</div>
                     </div>
                   </label>
 
                   {/* Option 3: Bank Transfer */}
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', border: formData.payment_method.includes('Bank') ? '2px solid #111' : '1px solid var(--border-light)', cursor: 'pointer', backgroundColor: '#fff' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '1.1rem', border: formData.payment_method.includes('Bank') ? '2px solid var(--color-saffron)' : '1px solid var(--border-light)', borderRadius: '12px', cursor: 'pointer', backgroundColor: '#fff' }}>
                     <input 
                       type="radio" 
                       name="payment_method" 
@@ -411,10 +413,10 @@ const CheckoutPage = () => {
                       checked={formData.payment_method.includes('Bank')} 
                       onChange={handleChange} 
                     />
-                    <Building2 size={20} />
+                    <Building2 size={22} color="var(--color-maroon)" />
                     <div>
-                      <strong style={{ fontSize: '0.85rem' }}>Bank Transfer (NEFT / IMPS / RTGS)</strong>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Direct deposit to company bank account + submit UTR number</div>
+                      <strong style={{ fontSize: '0.9rem', color: 'var(--color-maroon)' }}>Bank Transfer (NEFT / IMPS / RTGS)</strong>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Direct deposit to company bank account + submit UTR number</div>
                     </div>
                   </label>
 
@@ -423,29 +425,28 @@ const CheckoutPage = () => {
 
               {/* UPI Form details */}
               {formData.payment_method.includes('UPI') && (
-                <div style={{ backgroundColor: '#ffffff', padding: '1.5rem', border: '1px solid var(--border-dark)', marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1rem' }}>
+                <div style={{ backgroundColor: '#ffffff', padding: '1.75rem', borderRadius: '12px', border: '1px solid var(--border-light)', marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontSize: '0.88rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--color-maroon)' }}>
                     UPI PAYMENT INSTRUCTIONS
                   </h4>
                   <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     {paymentSettings?.upi?.qrCodeUrl && (
-                      <img src={paymentSettings.upi.qrCodeUrl} alt="UPI QR Code" style={{ width: '130px', height: '130px', border: '1px solid var(--border-light)' }} />
+                      <img src={paymentSettings.upi.qrCodeUrl} alt="UPI QR Code" style={{ width: '130px', height: '130px', border: '1px solid var(--border-light)', borderRadius: '8px' }} />
                     )}
-                    <div style={{ fontSize: '0.85rem', lineHeight: '1.6' }}>
-                      <div>UPI ID: <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{paymentSettings?.upi?.upiId || 'grabb-it@upi'}</strong></div>
+                    <div style={{ fontSize: '0.88rem', lineHeight: '1.6' }}>
+                      <div>UPI ID: <strong style={{ color: 'var(--color-saffron)', fontSize: '0.95rem' }}>{paymentSettings?.upi?.upiId || 'grabb-it@upi'}</strong></div>
                       <div>Payee Name: <strong>{paymentSettings?.upi?.displayName || 'GRABB-IT CLOTHING'}</strong></div>
-                      <div>Amount: <strong>₹{Math.round(finalTotal)}</strong></div>
+                      <div>Amount: <strong>{formatINR(finalTotal)}</strong></div>
                     </div>
                   </div>
 
                   <div className="form-group" style={{ marginTop: '1.25rem' }}>
-                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>TRANSACTION REFERENCE / UTR NUMBER *</label>
+                    <label className="form-label">TRANSACTION REFERENCE / UTR NUMBER *</label>
                     <input 
                       type="text" 
                       name="utr_reference" 
                       placeholder="e.g. 423910849201" 
-                      className="form-select" 
-                      style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-dark)', borderRadius: '0px' }} 
+                      className="form-input" 
                       value={formData.utr_reference} 
                       onChange={handleChange} 
                       required 
@@ -456,11 +457,11 @@ const CheckoutPage = () => {
 
               {/* Bank Transfer details */}
               {formData.payment_method.includes('Bank') && (
-                <div style={{ backgroundColor: '#ffffff', padding: '1.5rem', border: '1px solid var(--border-dark)', marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1rem' }}>
+                <div style={{ backgroundColor: '#ffffff', padding: '1.75rem', borderRadius: '12px', border: '1px solid var(--border-light)', marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontSize: '0.88rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--color-maroon)' }}>
                     BANK ACCOUNT DETAILS FOR DEPOSIT
                   </h4>
-                  <div style={{ fontSize: '0.85rem', lineHeight: '1.8', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+                  <div style={{ fontSize: '0.88rem', lineHeight: '1.8', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
                     <div>Bank Name: <strong>{paymentSettings?.bankTransfer?.bankName || 'HDFC Bank Ltd'}</strong></div>
                     <div>Account Holder: <strong>{paymentSettings?.bankTransfer?.accountHolder || 'GRABB-IT CLOTHING PVT LTD'}</strong></div>
                     <div>Account Number: <strong>{paymentSettings?.bankTransfer?.accountNumberMasked || '•••• •••• 5821'}</strong></div>
@@ -468,13 +469,12 @@ const CheckoutPage = () => {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 800 }}>BANK TRANSACTION / UTR NUMBER *</label>
+                    <label className="form-label">BANK TRANSACTION / UTR NUMBER *</label>
                     <input 
                       type="text" 
                       name="utr_reference" 
                       placeholder="Enter 12-digit UTR number" 
-                      className="form-select" 
-                      style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-dark)', borderRadius: '0px' }} 
+                      className="form-input" 
                       value={formData.utr_reference} 
                       onChange={handleChange} 
                       required 
@@ -484,7 +484,7 @@ const CheckoutPage = () => {
               )}
 
               {error && (
-                <div style={{ color: 'var(--accent-badge)', fontSize: '0.85rem', fontWeight: 800, margin: '1rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <div style={{ color: 'var(--color-magenta)', fontSize: '0.85rem', fontWeight: 800, margin: '1rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <AlertCircle size={16} /> {error}
                 </div>
               )}
@@ -494,7 +494,7 @@ const CheckoutPage = () => {
                   <ArrowLeft size={16} /> BACK
                 </button>
                 <button type="button" className="btn-primary" style={{ flex: 1, padding: '0.85rem' }} onClick={handlePlaceOrder} disabled={placing}>
-                  {placing ? 'PROCESSING TRANSACTION...' : `PLACE ORDER (₹${Math.round(finalTotal)})`}
+                  {placing ? 'PROCESSING TRANSACTION...' : `PLACE ORDER (${formatINR(finalTotal)})`}
                 </button>
               </div>
             </div>
@@ -502,42 +502,44 @@ const CheckoutPage = () => {
         </div>
 
         {/* Right: Order Summary */}
-        <div style={{ backgroundColor: '#ffffff', padding: '2rem', border: '1px solid var(--border-dark)', height: 'fit-content' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem', letterSpacing: '0.5px' }}>
-            FIT BAG ({cartItems.length})
+        <div style={{ backgroundColor: '#ffffff', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-light)', height: 'fit-content', boxShadow: 'var(--shadow-subtle)' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1.25rem', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '0.5rem', letterSpacing: '0.5px', color: 'var(--color-maroon)' }}>
+            BAG SUMMARY ({cartItems.length})
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '280px', overflowY: 'auto', marginBottom: '1.5rem' }}>
             {cartItems.map(item => (
-              <div key={item.cart_item_id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                <img src={item.image_url} alt="" style={{ width: '50px', height: '65px', objectFit: 'cover', border: '1px solid var(--border-light)' }} />
-                <div style={{ flex: 1, fontSize: '0.8rem' }}>
-                  <div style={{ fontWeight: 800, textTransform: 'uppercase' }}>{item.product_name}</div>
-                  <div style={{ color: 'var(--text-light)', marginTop: '0.15rem' }}>{item.size} / {item.color.toUpperCase()} x {item.quantity}</div>
+              <div key={item.cart_item_id} style={{ display: 'flex', gap: '0.85rem', alignItems: 'center' }}>
+                <img src={item.image_url} alt="" style={{ width: '55px', height: '70px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-light)' }} />
+                <div style={{ flex: 1, fontSize: '0.85rem' }}>
+                  <div style={{ fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-maroon)' }}>{item.product_name}</div>
+                  <div style={{ color: 'var(--text-muted)', marginTop: '0.15rem' }}>{item.size} / {item.color.toUpperCase()} x {item.quantity}</div>
                 </div>
-                <div style={{ fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-title)' }}>₹{Math.round(item.total_price)}</div>
+                <div style={{ fontWeight: 800, fontSize: '0.9rem', fontFamily: 'var(--font-title)', color: 'var(--color-maroon)' }}>{formatINR(item.total_price)}</div>
               </div>
             ))}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.85rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.9rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Bag Subtotal</span>
-              <span style={{ fontWeight: 700 }}>₹{Math.round(subtotal)}</span>
+              <span style={{ fontWeight: 700, color: 'var(--color-maroon)' }}>{formatINR(subtotal)}</span>
             </div>
             {discountAmount > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--accent-badge)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-magenta)' }}>
                 <span>Discount</span>
-                <span>-₹{Math.round(discountAmount)}</span>
+                <span>-{formatINR(discountAmount)}</span>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Shipping Charges</span>
-              <span style={{ fontWeight: 700 }}>{shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}</span>
+              <span style={{ color: 'var(--text-muted)' }}>Express Shipping</span>
+              <span style={{ fontWeight: 700, color: shippingFee === 0 ? 'var(--color-emerald)' : 'var(--color-maroon)' }}>
+                {shippingFee === 0 ? 'FREE' : formatINR(shippingFee)}
+              </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 900, fontSize: '1.2rem', borderTop: '1px solid var(--text-main)', paddingTop: '1rem', fontFamily: 'var(--font-title)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 900, fontSize: '1.25rem', borderTop: '2px solid var(--color-maroon)', paddingTop: '1rem', fontFamily: 'var(--font-title)', color: 'var(--color-maroon)' }}>
               <span>Total Payable</span>
-              <span>₹{Math.round(finalTotal)}</span>
+              <span>{formatINR(finalTotal)}</span>
             </div>
           </div>
         </div>

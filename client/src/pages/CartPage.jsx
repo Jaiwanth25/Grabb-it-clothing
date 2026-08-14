@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Tag, Heart } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Tag, Sparkles } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { formatINR } from '../utils/currency';
 
 const CartPage = () => {
   const {
@@ -45,12 +46,18 @@ const CartPage = () => {
 
   if (cartItems.length === 0) {
     return (
-      <main className="section-space container" style={{ textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <ShoppingBag size={64} color="var(--text-light)" style={{ marginBottom: '1.5rem' }} />
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 400, textTransform: 'uppercase', marginBottom: '0.5rem' }}>YOUR BAG IS EMPTY</h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', maxWidth: '400px', fontSize: '0.95rem' }}>Discover the latest high-frequency drop cuts and premium menswear essentials.</p>
-        <Link to="/men" className="btn-primary" style={{ padding: '1rem 2rem' }}>
-          EXPLORE MEN'S DROPS
+      <main className="section-space container" style={{ textAlign: 'center', minHeight: '65vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '2rem', borderRadius: '50%', marginBottom: '1.5rem' }}>
+          <ShoppingBag size={56} color="var(--color-maroon)" />
+        </div>
+        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 700, color: 'var(--color-maroon)', marginBottom: '0.5rem' }}>
+          YOUR CART IS WAITING FOR SOMETHING ICONIC.
+        </h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', maxWidth: '440px', fontSize: '1rem' }}>
+          Explore modern Indian streetwear, boxy cotton tees, and festive drop essentials.
+        </p>
+        <Link to="/men" className="btn-primary" style={{ padding: '1rem 2.25rem' }}>
+          EXPLORE THE CARNIVAL COLLECTION
         </Link>
       </main>
     );
@@ -58,52 +65,58 @@ const CartPage = () => {
 
   return (
     <main className="section-space container" style={{ backgroundColor: 'var(--bg-main)', minHeight: '80vh' }}>
-      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 400, textTransform: 'uppercase', marginBottom: '2rem', borderBottom: '1px solid var(--text-main)', paddingBottom: '1rem' }}>
-        SHOPPING BAG ({count} DROPS)
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+        <Sparkles size={16} color="var(--color-saffron)" />
+        <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '1.5px', color: 'var(--color-saffron)', textTransform: 'uppercase' }}>
+          YOUR SHOPPING BAG
+        </span>
+      </div>
+      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 700, color: 'var(--color-maroon)', marginBottom: '2rem', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '1rem' }}>
+        SHOPPING BAG ({count} ITEMS)
       </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '3.5rem' }} className="cart-layout">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '3rem' }} className="cart-layout">
         
         {/* Left: Cart Items List */}
         <div className="table-responsive">
           {/* Free Shipping Progress Indicator */}
-          <div className="shipping-progress-container" style={{ marginBottom: '2rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <div className="shipping-progress-container" style={{ marginBottom: '2rem', borderRadius: '12px' }}>
+            <span style={{ fontSize: '0.88rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-maroon)' }}>
               {subtotal >= freeShippingThreshold 
                 ? "✓ YOU'VE UNLOCKED FREE EXPRESS SHIPPING!" 
-                : `ADD ₹${Math.round(freeShippingThreshold - subtotal)} MORE FOR FREE EXPRESS SHIPPING`}
+                : `ADD ${formatINR(freeShippingThreshold - subtotal)} MORE FOR FREE EXPRESS SHIPPING`}
             </span>
-            <div className="shipping-progress-bar-bg" style={{ marginTop: '0.75rem' }}>
+            <div className="shipping-progress-bar-bg" style={{ marginTop: '0.75rem', borderRadius: '4px' }}>
               <div 
                 className="shipping-progress-bar-fill" 
-                style={{ width: `${progressPercent}%`, backgroundColor: 'var(--text-main)' }}
+                style={{ width: `${progressPercent}%`, backgroundColor: 'var(--color-saffron)' }}
               />
             </div>
           </div>
 
-          <table className="custom-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="custom-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-dark)', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px' }}>
-                <th style={{ textAlign: 'left', paddingBottom: '1rem' }}>Fit item</th>
-                <th style={{ textAlign: 'center', paddingBottom: '1rem' }}>Price</th>
-                <th style={{ textAlign: 'center', paddingBottom: '1rem' }}>Qty</th>
-                <th style={{ textAlign: 'center', paddingBottom: '1rem' }}>Subtotal</th>
-                <th style={{ textAlign: 'right', paddingBottom: '1rem' }}>Remove</th>
+              <tr>
+                <th style={{ textAlign: 'left' }}>Item Details</th>
+                <th style={{ textAlign: 'center' }}>Price</th>
+                <th style={{ textAlign: 'center' }}>Quantity</th>
+                <th style={{ textAlign: 'center' }}>Subtotal</th>
+                <th style={{ textAlign: 'right' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {cartItems.map((item) => {
                 const itemFavorite = isInWishlist(item.product_id);
                 return (
-                  <tr key={item.cart_item_id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                    <td style={{ padding: '1.5rem 0' }}>
+                  <tr key={item.cart_item_id}>
+                    <td>
                       <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
-                        <img src={item.image_url} alt={item.product_name} style={{ width: '75px', height: '95px', objectFit: 'cover', border: '1px solid var(--border-light)' }} />
+                        <img src={item.image_url} alt={item.product_name} style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-light)' }} />
                         <div>
-                          <Link to={`/product/${item.slug}`} style={{ fontWeight: 800, fontSize: '0.95rem', fontFamily: 'var(--font-title)', textTransform: 'uppercase' }}>
+                          <Link to={`/product/${item.slug}`} style={{ fontWeight: 800, fontSize: '0.98rem', fontFamily: 'var(--font-title)', color: 'var(--color-maroon)' }}>
                             {item.product_name}
                           </Link>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
                             SIZE: <strong>{item.size}</strong> | COLOR: <strong>{item.color.toUpperCase()}</strong>
                           </div>
                           
@@ -115,35 +128,35 @@ const CartPage = () => {
                               }
                               await removeItem(item.cart_item_id);
                             }}
-                            style={{ fontSize: '0.75rem', color: 'var(--text-light)', textDecoration: 'underline', marginTop: '0.5rem', fontWeight: 600, display: 'block' }}
+                            style={{ fontSize: '0.75rem', color: 'var(--color-saffron)', textDecoration: 'underline', marginTop: '0.5rem', fontWeight: 700, display: 'block' }}
                           >
                             MOVE TO WISHLIST
                           </button>
                         </div>
                       </div>
                     </td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '0.9rem' }}>₹{Math.round(item.unit_price)}</td>
+                    <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-maroon)' }}>{formatINR(item.unit_price)}</td>
                     <td style={{ textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid var(--border-dark)', padding: '0.15rem' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '0.2rem', backgroundColor: '#ffffff' }}>
                         <button
-                          style={{ padding: '0.35rem 0.55rem', display: 'flex', alignItems: 'center' }}
+                          style={{ padding: '0.35rem 0.6rem', display: 'flex', alignItems: 'center', color: 'var(--color-maroon)' }}
                           onClick={() => updateQuantity(item.cart_item_id, item.quantity - 1)}
                         >
-                          <Minus size={12} />
+                          <Minus size={13} />
                         </button>
-                        <span style={{ padding: '0 0.75rem', fontWeight: 800, fontSize: '0.85rem' }}>{item.quantity}</span>
+                        <span style={{ padding: '0 0.85rem', fontWeight: 800, fontSize: '0.9rem' }}>{item.quantity}</span>
                         <button
-                          style={{ padding: '0.35rem 0.55rem', display: 'flex', alignItems: 'center' }}
+                          style={{ padding: '0.35rem 0.6rem', display: 'flex', alignItems: 'center', color: 'var(--color-maroon)' }}
                           onClick={() => updateQuantity(item.cart_item_id, item.quantity + 1)}
                         >
-                          <Plus size={12} />
+                          <Plus size={13} />
                         </button>
                       </div>
                     </td>
-                    <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '0.95rem', fontFamily: 'var(--font-title)' }}>₹{Math.round(item.total_price)}</td>
+                    <td style={{ textAlign: 'center', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-title)', color: 'var(--color-maroon)' }}>{formatINR(item.total_price)}</td>
                     <td style={{ textAlign: 'right' }}>
-                      <button onClick={() => removeItem(item.cart_item_id)} style={{ color: 'var(--text-light)' }} title="Remove item">
-                        <Trash2 size={16} />
+                      <button onClick={() => removeItem(item.cart_item_id)} style={{ color: 'var(--color-magenta)' }} title="Remove item">
+                        <Trash2 size={18} />
                       </button>
                     </td>
                   </tr>
@@ -153,29 +166,29 @@ const CartPage = () => {
           </table>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2.5rem' }}>
-            <Link to="/men" className="btn-secondary" style={{ fontSize: '0.8rem', padding: '0.75rem 1.5rem' }}>
+            <Link to="/men" className="btn-secondary" style={{ fontSize: '0.85rem' }}>
               CONTINUE SHOPPING
             </Link>
           </div>
         </div>
 
         {/* Right: Order Summary Card */}
-        <div style={{ backgroundColor: '#ffffff', padding: '2rem', border: '1px solid var(--border-dark)', height: 'fit-content' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem', letterSpacing: '1px' }}>
+        <div style={{ backgroundColor: '#ffffff', padding: '2rem', border: '1px solid var(--border-light)', borderRadius: 'var(--border-radius-card)', height: 'fit-content', boxShadow: 'var(--shadow-subtle)' }}>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1.5rem', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>
             ORDER SUMMARY
           </h3>
 
           {/* Coupon Code Section */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              PROMO / COUPON CODE
+            <label className="form-label">
+              PROMO / FESTIVE COUPON
             </label>
             {appliedCoupon ? (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-subtle)', padding: '0.75rem', marginTop: '0.5rem', borderLeft: '3px solid var(--accent-olive)' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-olive)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <Tag size={13} /> {appliedCoupon.code} applied (-₹{Math.round(discountAmount)})
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-subtle)', padding: '0.85rem', marginTop: '0.5rem', borderLeft: '4px solid var(--color-emerald)', borderRadius: '8px' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--color-emerald)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Tag size={14} /> {appliedCoupon.code} applied (-{formatINR(discountAmount)})
                 </span>
-                <button onClick={removeCoupon} style={{ color: 'var(--accent-badge)', fontWeight: 800, fontSize: '0.75rem', textDecoration: 'underline' }}>
+                <button onClick={removeCoupon} style={{ color: 'var(--color-magenta)', fontWeight: 800, fontSize: '0.75rem', textDecoration: 'underline' }}>
                   REMOVE
                 </button>
               </div>
@@ -183,9 +196,9 @@ const CartPage = () => {
               <form onSubmit={handleApplyCoupon} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <input
                   type="text"
-                  placeholder="e.g. WELCOME500"
-                  className="form-select"
-                  style={{ textTransform: 'uppercase', borderRadius: '0px', border: '1px solid var(--border-dark)', fontSize: '0.85rem', flex: 1, padding: '0.5rem' }}
+                  placeholder="e.g. GRABB10"
+                  className="form-input"
+                  style={{ textTransform: 'uppercase', fontSize: '0.85rem', flex: 1 }}
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                 />
@@ -194,32 +207,34 @@ const CartPage = () => {
                 </button>
               </form>
             )}
-            {couponMsg && <div style={{ color: 'var(--accent-olive)', fontSize: '0.75rem', fontWeight: 800, marginTop: '0.4rem' }}>{couponMsg}</div>}
-            {couponErr && <div style={{ color: 'var(--accent-badge)', fontSize: '0.75rem', fontWeight: 800, marginTop: '0.4rem' }}>{couponErr}</div>}
+            {couponMsg && <div style={{ color: 'var(--color-emerald)', fontSize: '0.8rem', fontWeight: 800, marginTop: '0.4rem' }}>{couponMsg}</div>}
+            {couponErr && <div style={{ color: 'var(--color-magenta)', fontSize: '0.8rem', fontWeight: 800, marginTop: '0.4rem' }}>{couponErr}</div>}
           </div>
 
           {/* Pricing calculations */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.9rem', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.95rem', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Bag Subtotal</span>
-              <span style={{ fontWeight: 700 }}>₹{Math.round(subtotal)}</span>
+              <span style={{ fontWeight: 700, color: 'var(--color-maroon)' }}>{formatINR(subtotal)}</span>
             </div>
 
             {discountAmount > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--accent-badge)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-magenta)' }}>
                 <span>Coupon Discount</span>
-                <span style={{ fontWeight: 800 }}>-₹{Math.round(discountAmount)}</span>
+                <span style={{ fontWeight: 800 }}>-{formatINR(discountAmount)}</span>
               </div>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Shipping Charges</span>
-              <span style={{ fontWeight: 700 }}>{shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}</span>
+              <span style={{ color: 'var(--text-muted)' }}>Express Shipping</span>
+              <span style={{ fontWeight: 700, color: shippingFee === 0 ? 'var(--color-emerald)' : 'var(--color-maroon)' }}>
+                {shippingFee === 0 ? 'FREE' : formatINR(shippingFee)}
+              </span>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--text-main)', paddingTop: '1.25rem', fontSize: '1.2rem', fontWeight: 900, fontFamily: 'var(--font-title)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid var(--color-maroon)', paddingTop: '1.25rem', fontSize: '1.3rem', fontWeight: 900, fontFamily: 'var(--font-title)', color: 'var(--color-maroon)' }}>
               <span>Order Total</span>
-              <span>₹{Math.round(finalTotal)}</span>
+              <span>{formatINR(finalTotal)}</span>
             </div>
           </div>
 

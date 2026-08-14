@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Sparkles, ArrowRight, Flame, Compass, ShoppingBag } from 'lucide-react';
 import BannerCarousel from '../components/BannerCarousel';
 import NewArrivalsSection from '../components/NewArrivalsSection';
 import CategorySection from '../components/CategorySection';
@@ -8,6 +9,7 @@ import SpecialOffersSection from '../components/SpecialOffersSection';
 import ProductCard from '../components/ProductCard';
 import QuickViewModal from '../components/QuickViewModal';
 import { useGender } from '../context/GenderContext';
+import { formatINR } from '../utils/currency';
 
 const Home = () => {
   const { gender } = useGender();
@@ -36,19 +38,19 @@ const Home = () => {
       .catch(err => console.error('Fetch Looks Error:', err));
   }, [gender]);
 
-  // Styles definitions for visual styles (men vs women)
+  // Style aesthetics definitions
   const stylesList = gender === 'men' 
     ? [
-        { name: 'Streetwear', search: 'oversized', img: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Minimalist', search: 'essential', img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Smart Casual', search: 'shirt', img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Relaxed Fit', search: 'linen', img: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80' }
+        { name: 'Oversized Streetwear', search: 'oversized', img: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&auto=format&fit=crop&q=80' },
+        { name: 'Minimalist Solids', search: 'essential', img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80' },
+        { name: 'Smart Resort Shirts', search: 'shirt', img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80' },
+        { name: 'Breezy Linen Cuts', search: 'linen', img: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80' }
       ]
     : [
-        { name: 'Chic Outfits', search: 'poplin', img: 'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Minimalist', search: 'knit', img: 'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Weekend Vibe', search: 'shorts', img: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Street Casual', search: 'denim', img: 'https://images.unsplash.com/photo-1582418702059-97ebdfb35d09?w=800&auto=format&fit=crop&q=80' }
+        { name: 'Chic Festive Outfits', search: 'poplin', img: 'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=800&auto=format&fit=crop&q=80' },
+        { name: 'Minimalist Knits', search: 'knit', img: 'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=800&auto=format&fit=crop&q=80' },
+        { name: 'Weekend Street Vibe', search: 'shorts', img: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&auto=format&fit=crop&q=80' },
+        { name: 'Japanese Raw Denims', search: 'denim', img: 'https://images.unsplash.com/photo-1582418702059-97ebdfb35d09?w=800&auto=format&fit=crop&q=80' }
       ];
 
   return (
@@ -57,74 +59,120 @@ const Home = () => {
       <BannerCarousel />
 
       {/* 2. Brand Positioning Statement */}
-      <section style={{ textAlign: 'center', padding: '5rem 1rem 4rem 1rem' }} className="container">
-        <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-light)', textTransform: 'uppercase' }}>
-          GRABB-IT CLOTHING
-        </span>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', fontWeight: 400, marginTop: '0.75rem', letterSpacing: '-0.5px' }}>
-          Your everyday style. <span style={{ fontStyle: 'italic' }}>Your next grab.</span>
+      <section style={{ textAlign: 'center', padding: '5.5rem 1rem 4.5rem 1rem' }} className="container">
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <Sparkles size={16} color="var(--color-saffron)" />
+          <span className="badge-carnival">
+            MODERN INDIAN FASHION CARNIVAL
+          </span>
+          <Sparkles size={16} color="var(--color-saffron)" />
+        </div>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3.25rem', fontWeight: 700, marginTop: '0.5rem', color: 'var(--color-maroon)', lineHeight: 1.15 }}>
+          STYLE THAT <span style={{ fontStyle: 'italic', color: 'var(--color-saffron)' }}>CELEBRATES YOU.</span>
         </h1>
-        <p style={{ maxWidth: '600px', margin: '1rem auto 0 auto', color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.6 }}>
-          Meticulously tailored streetwear and premium essentials engineered for modern confidence. Clean silhouettes, heavy drops, and timeless neutral cuts.
+        <p style={{ maxWidth: '640px', margin: '1.25rem auto 2.25rem auto', color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: 1.6 }}>
+          Contemporary fashion inspired by the energy, colour, and culture of India. Premium boxy drops, heavy cottons, and effortless cuts.
         </p>
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+          <Link to={`/${gender}`} className="btn-primary">
+            <ShoppingBag size={18} /> SHOP THE COLLECTION
+          </Link>
+          <Link to={`/${gender}?isNew=true`} className="btn-secondary">
+            EXPLORE NEW DROPS <ArrowRight size={18} />
+          </Link>
+        </div>
       </section>
 
-      {/* 3. Shop by Style (Horizontal Grid) */}
-      <section className="container section-space" style={{ paddingTop: 0 }}>
+      {/* 3. SIGNATURE CARNIVAL SECTION — THE CARNIVAL EDIT */}
+      <section className="carnival-banner-section">
+        <div className="container carnival-grid">
+          <div className="carnival-content-box">
+            <div className="carnival-tag">
+              <Flame size={18} color="var(--color-turmeric)" /> THE CARNIVAL EDIT
+            </div>
+            <h2 className="carnival-heading">
+              COLOUR. CULTURE.<br />CONFIDENCE.
+            </h2>
+            <p className="carnival-desc">
+              Step into a celebration of contemporary Indian streetwear. High-density organic cottons, rich jewel tones, and relaxed silhouettes tailored for modern Indian youth.
+            </p>
+            <Link to={`/${gender}?isTrending=true`} className="btn-saffron">
+              SHOP THE CARNIVAL EDIT <ArrowRight size={18} />
+            </Link>
+          </div>
+          <div className="carnival-img-wrapper">
+            <img 
+              src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&auto=format&fit=crop&q=80" 
+              alt="Carnival Edit Fashion" 
+              className="carnival-img" 
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Shop by Category */}
+      <CategorySection />
+
+      {/* 5. Shop by Style / Vibe */}
+      <section className="container section-space">
         <div className="section-header">
           <div>
-            <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-light)', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-saffron)', textTransform: 'uppercase' }}>
               CHOOSE YOUR VIBE
             </span>
             <h2 className="section-title">SHOP BY STYLE</h2>
           </div>
+          <Link to={`/${gender}`} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+            VIEW ALL STYLES
+          </Link>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
           {stylesList.map((style, i) => (
             <Link 
               key={i} 
               to={`/${gender}?search=${encodeURIComponent(style.search)}`} 
-              className="look-card"
-              style={{ display: 'block', height: '320px' }}
+              className="category-card"
+              style={{ display: 'block', height: '340px' }}
             >
-              <img src={style.img} alt={style.name} className="look-img" style={{ height: '100%', width: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '1.5rem', background: 'linear-gradient(to top, rgba(18,18,18,0.85), transparent)', color: '#ffffff' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'var(--font-title)' }}>
-                  {style.name}
-                </h3>
+              <img src={style.img} alt={style.name} className="category-card-img" />
+              <div className="category-card-content">
+                <span className="category-card-title">{style.name}</span>
+                <ArrowRight size={16} color="var(--color-turmeric)" />
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* 4. New Arrivals */}
+      {/* 6. New Arrivals */}
       <NewArrivalsSection />
 
-      {/* 5. Collections (Curated Drops) */}
+      {/* 7. Curated Collections (Exclusive Drops) */}
       {collections.length > 0 && (
         <section id="collections" className="section-space container">
           <div className="section-header">
             <div>
-              <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-light)', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-saffron)', textTransform: 'uppercase' }}>
                 CURATED CAMPAIGNS
               </span>
-              <h2 className="section-title">EXCLUSIVE COLLECTIONS</h2>
+              <h2 className="section-title">EXCLUSIVE DROPS &amp; EDITORIALS</h2>
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
             {collections.map(col => (
-              <Link key={col.id} to={`/${gender}?collection=${col.slug}`} className="look-card" style={{ display: 'block' }}>
-                <img src={col.cover_image} alt={col.name} className="look-img" style={{ height: '400px' }} />
-                <div style={{ padding: '1.25rem 0' }}>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, textTransform: 'uppercase', fontFamily: 'var(--font-title)' }}>
+              <Link key={col.id} to={`/${gender}?collection=${col.slug}`} className="category-card" style={{ display: 'block', height: '420px' }}>
+                <img src={col.cover_image} alt={col.name} className="category-card-img" />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(74, 14, 23, 0.95) 0%, rgba(74, 14, 23, 0.2) 60%, transparent 100%)', zIndex: 1 }} />
+                <div style={{ position: 'relative', zIndex: 2, padding: '1.5rem', color: '#ffffff' }}>
+                  <span className="badge-carnival" style={{ marginBottom: '0.5rem', display: 'inline-block' }}>LIMITED DROP</span>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 800, textTransform: 'uppercase', fontFamily: 'var(--font-title)', color: '#ffffff' }}>
                     {col.name}
                   </h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+                  <p style={{ color: '#f2eae1', fontSize: '0.9rem', marginTop: '0.4rem', lineHeight: 1.4 }}>
                     {col.description}
                   </p>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.8rem', marginTop: '0.75rem', borderBottom: '1px solid var(--text-main)', paddingBottom: '2px' }}>
-                    DISCOVER DROP
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.85rem', marginTop: '1rem', color: 'var(--color-turmeric)' }}>
+                    DISCOVER COLLECTION <ArrowRight size={16} />
                   </span>
                 </div>
               </Link>
@@ -133,13 +181,13 @@ const Home = () => {
         </section>
       )}
 
-      {/* 6. Shop The Look Outfit Combinations */}
+      {/* 8. Shop The Look Outfit Combinations */}
       {looks.length > 0 && (
         <section className="shop-the-look-section">
           <div className="container">
             <div className="section-header">
               <div>
-                <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-light)', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-saffron)', textTransform: 'uppercase' }}>
                   STYLE INSPO
                 </span>
                 <h2 className="section-title">SHOP THE LOOK</h2>
@@ -149,13 +197,13 @@ const Home = () => {
             {looks.map((look) => (
               <div key={look.id} className="look-grid" style={{ marginBottom: '4rem' }}>
                 {/* Look Canvas */}
-                <div className="look-card">
+                <div className="look-card" style={{ borderRadius: 'var(--border-radius-card)', border: '1px solid var(--border-light)' }}>
                   <img src={look.image_url} alt={look.name} className="look-img" />
-                  <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', color: '#ffffff', zIndex: 10 }}>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: 700, fontFamily: 'var(--font-title)', textTransform: 'uppercase' }}>
+                  <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', color: '#ffffff', zIndex: 10, background: 'rgba(74, 14, 23, 0.85)', backdropFilter: 'blur(6px)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(229, 169, 59, 0.3)' }}>
+                    <h3 style={{ fontSize: '1.4rem', fontWeight: 800, fontFamily: 'var(--font-title)', textTransform: 'uppercase', color: '#ffffff' }}>
                       {look.name}
                     </h3>
-                    <p style={{ fontSize: '0.95rem', fontWeight: 300, opacity: 0.9, marginTop: '0.25rem' }}>
+                    <p style={{ fontSize: '0.9rem', color: '#f2eae1', marginTop: '0.25rem' }}>
                       {look.description}
                     </p>
                   </div>
@@ -163,32 +211,32 @@ const Home = () => {
 
                 {/* Outfit Products list */}
                 <div className="look-products">
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-light)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                    PRODUCTS IN OUTFIT
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-saffron)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                    PRODUCTS IN THIS OUTFIT
                   </h4>
                   {look.products && look.products.map(prod => (
-                    <div key={prod.id} className="look-prod-item">
-                      <img src={prod.primary_image} alt={prod.name} className="look-prod-img" />
+                    <div key={prod.id} className="look-prod-item" style={{ borderRadius: 'var(--border-radius-card)', boxShadow: 'var(--shadow-subtle)' }}>
+                      <img src={prod.primary_image} alt={prod.name} className="look-prod-img" style={{ borderRadius: '8px' }} />
                       <div style={{ flex: 1 }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-light)' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-saffron)' }}>
                           {prod.category?.name || 'Apparel'}
                         </span>
-                        <h5 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0.15rem 0' }}>
+                        <h5 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0.2rem 0', color: 'var(--text-main)' }}>
                           {prod.name}
                         </h5>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.9rem' }}>
-                          <span style={{ fontWeight: 800 }}>
-                            ₹{prod.sale_price || prod.price}
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.95rem' }}>
+                          <span style={{ fontWeight: 800, color: 'var(--color-maroon)' }}>
+                            {formatINR(prod.sale_price || prod.price)}
                           </span>
                           {prod.sale_price && (
-                            <span style={{ textDecoration: 'line-through', color: 'var(--text-light)', fontSize: '0.8rem' }}>
-                              ₹{prod.price}
+                            <span style={{ textDecoration: 'line-through', color: 'var(--text-light)', fontSize: '0.85rem' }}>
+                              {formatINR(prod.price)}
                             </span>
                           )}
                         </div>
                       </div>
                       <Link to={`/product/${prod.slug}`} className="btn-primary" style={{ padding: '0.6rem 1rem', fontSize: '0.75rem' }}>
-                        VIEW PRODUCT
+                        VIEW ITEM
                       </Link>
                     </div>
                   ))}
@@ -199,20 +247,20 @@ const Home = () => {
         </section>
       )}
 
-      {/* 7. Trending Now */}
+      {/* 9. Trending Outfits */}
       <TrendingSection />
 
-      {/* 8. Special Promo Offers */}
+      {/* 10. Special Promo Offers */}
       <SpecialOffersSection />
 
-      {/* 9. Curated Products Catalog */}
+      {/* 11. Curated Products Catalog */}
       <section className="section-space container">
         <div className="section-header">
           <div>
-            <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-light)', textTransform: 'uppercase' }}>
-              HOT DROPS
+            <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-saffron)', textTransform: 'uppercase' }}>
+              MUST-HAVE DROPS
             </span>
-            <h2 className="section-title">CURATED BASICS ({gender.toUpperCase()})</h2>
+            <h2 className="section-title">CURATED ESSENTIALS ({gender.toUpperCase()})</h2>
           </div>
         </div>
 

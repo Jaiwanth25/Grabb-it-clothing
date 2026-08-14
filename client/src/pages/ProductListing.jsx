@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Filter, SlidersHorizontal, X, Star } from 'lucide-react';
+import { SlidersHorizontal, X, Star, Sparkles, Filter } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import QuickViewModal from '../components/QuickViewModal';
 import { useGender } from '../context/GenderContext';
+import { formatINR } from '../utils/currency';
 
 const ProductListing = () => {
   const { gender: globalGender, setGender } = useGender();
@@ -54,12 +55,12 @@ const ProductListing = () => {
     { name: 'White', hex: '#ffffff' },
     { name: 'Gray', hex: '#8e8d89' },
     { name: 'Beige', hex: '#f5f2eb' },
-    { name: 'Olive', hex: '#4b5320' },
+    { name: 'Maroon', hex: '#4a0e17' },
+    { name: 'Magenta', hex: '#800020' },
+    { name: 'Saffron', hex: '#e65100' },
+    { name: 'Turmeric', hex: '#e5a93b' },
     { name: 'Navy', hex: '#0a1931' },
-    { name: 'Indigo', hex: '#1c2833' },
-    { name: 'Blue', hex: '#3498db' },
-    { name: 'Terracotta', hex: '#c05c46' },
-    { name: 'Camel', hex: '#c19a6b' }
+    { name: 'Emerald', hex: '#0d5c46' }
   ];
 
   // Fetch Categories for active gender
@@ -126,7 +127,6 @@ const ProductListing = () => {
 
   const handlePriceBracketClick = (bracket) => {
     if (minPrice === bracket.min && maxPrice === bracket.max) {
-      // Toggle off
       setMinPrice('');
       setMaxPrice('');
     } else {
@@ -141,18 +141,18 @@ const ProductListing = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Gender selection */}
       <div>
-        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px' }}>Gender</h4>
+        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Gender</h4>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button 
             className={`btn-secondary ${pathGender === 'men' ? 'btn-primary' : ''}`}
-            style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem', border: '1px solid #121212', backgroundColor: pathGender === 'men' ? '#121212' : '#ffffff', color: pathGender === 'men' ? '#ffffff' : '#121212' }}
+            style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}
             onClick={() => { navigate('/men'); setGender('men'); }}
           >
             MEN
           </button>
           <button 
             className={`btn-secondary ${pathGender === 'women' ? 'btn-primary' : ''}`}
-            style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem', border: '1px solid #121212', backgroundColor: pathGender === 'women' ? '#121212' : '#ffffff', color: pathGender === 'women' ? '#ffffff' : '#121212' }}
+            style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}
             onClick={() => { navigate('/women'); setGender('women'); }}
           >
             WOMEN
@@ -162,10 +162,10 @@ const ProductListing = () => {
 
       {/* Category filter */}
       <div>
-        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px' }}>Category</h4>
+        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Category</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <button
-            style={{ textAlign: 'left', fontSize: '0.85rem', fontWeight: selectedCategory === '' ? 800 : 500, borderBottom: selectedCategory === '' ? '1px solid #111' : 'none', paddingBottom: '2px', width: 'fit-content' }}
+            style={{ textAlign: 'left', fontSize: '0.88rem', fontWeight: selectedCategory === '' ? 800 : 500, color: selectedCategory === '' ? 'var(--color-saffron)' : 'var(--text-muted)', borderBottom: selectedCategory === '' ? '2px solid var(--color-saffron)' : 'none', paddingBottom: '2px', width: 'fit-content' }}
             onClick={() => setSelectedCategory('')}
           >
             All Apparel
@@ -173,7 +173,7 @@ const ProductListing = () => {
           {categories.map(cat => (
             <button
               key={cat.id}
-              style={{ textAlign: 'left', fontSize: '0.85rem', color: selectedCategory === cat.slug ? 'var(--text-main)' : 'var(--text-muted)', fontWeight: selectedCategory === cat.slug ? 800 : 500, paddingBottom: '2px', borderBottom: selectedCategory === cat.slug ? '1px solid #111' : 'none', width: 'fit-content' }}
+              style={{ textAlign: 'left', fontSize: '0.88rem', color: selectedCategory === cat.slug ? 'var(--color-maroon)' : 'var(--text-muted)', fontWeight: selectedCategory === cat.slug ? 800 : 500, paddingBottom: '2px', borderBottom: selectedCategory === cat.slug ? '2px solid var(--color-saffron)' : 'none', width: 'fit-content' }}
               onClick={() => setSelectedCategory(cat.slug)}
             >
               {cat.name}
@@ -184,14 +184,14 @@ const ProductListing = () => {
 
       {/* Price brackets filter */}
       <div>
-        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px' }}>Price range</h4>
+        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Price Range</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
           {priceBrackets.map((br, idx) => {
             const isActive = minPrice === br.min && maxPrice === br.max;
             return (
               <button
                 key={idx}
-                style={{ textAlign: 'left', fontSize: '0.85rem', color: isActive ? 'var(--text-main)' : 'var(--text-muted)', fontWeight: isActive ? 800 : 500 }}
+                style={{ textAlign: 'left', fontSize: '0.88rem', color: isActive ? 'var(--color-saffron)' : 'var(--text-muted)', fontWeight: isActive ? 800 : 500 }}
                 onClick={() => handlePriceBracketClick(br)}
               >
                 {br.label}
@@ -200,15 +200,15 @@ const ProductListing = () => {
           })}
         </div>
 
-        {/* Custom Price Range sliders */}
+        {/* Custom Price Range input */}
         <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1rem' }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', fontWeight: 600 }}>CUSTOM PRICE (INR)</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', fontWeight: 700 }}>CUSTOM PRICE (INR ₹)</span>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
             <input 
               type="number" 
               placeholder="Min" 
-              className="form-select" 
-              style={{ width: '45%', padding: '0.35rem', fontSize: '0.8rem' }}
+              className="form-input" 
+              style={{ width: '45%', padding: '0.4rem', fontSize: '0.8rem' }}
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
             />
@@ -216,8 +216,8 @@ const ProductListing = () => {
             <input 
               type="number" 
               placeholder="Max" 
-              className="form-select" 
-              style={{ width: '45%', padding: '0.35rem', fontSize: '0.8rem' }}
+              className="form-input" 
+              style={{ width: '45%', padding: '0.4rem', fontSize: '0.8rem' }}
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
             />
@@ -227,16 +227,16 @@ const ProductListing = () => {
 
       {/* Size filter */}
       <div>
-        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px' }}>Size</h4>
+        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Size</h4>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
           {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(sz => (
             <button
               key={sz}
               className="btn-outline-gray"
               style={{
-                backgroundColor: selectedSize === sz ? 'var(--text-main)' : 'transparent',
+                backgroundColor: selectedSize === sz ? 'var(--color-maroon)' : 'transparent',
                 color: selectedSize === sz ? '#ffffff' : 'var(--text-main)',
-                border: '1px solid var(--text-main)',
+                borderColor: selectedSize === sz ? 'var(--color-maroon)' : 'var(--border-light)',
                 padding: '0.4rem 0.75rem',
                 fontSize: '0.75rem',
                 fontWeight: 700
@@ -251,7 +251,7 @@ const ProductListing = () => {
 
       {/* Color visual swatches */}
       <div>
-        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px' }}>Color</h4>
+        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Color</h4>
         <div className="color-swatches-grid">
           {colorSwatches.map(col => (
             <div 
@@ -267,12 +267,12 @@ const ProductListing = () => {
 
       {/* Discount offers */}
       <div>
-        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px' }}>Discount Offer</h4>
+        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Discount Offer</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {['10', '20', '30', '40', '50', '60'].map(disc => (
             <button
               key={disc}
-              style={{ textAlign: 'left', fontSize: '0.85rem', color: selectedDiscount === disc ? 'var(--text-main)' : 'var(--text-muted)', fontWeight: selectedDiscount === disc ? 800 : 500 }}
+              style={{ textAlign: 'left', fontSize: '0.88rem', color: selectedDiscount === disc ? 'var(--color-saffron)' : 'var(--text-muted)', fontWeight: selectedDiscount === disc ? 800 : 500 }}
               onClick={() => setSelectedDiscount(selectedDiscount === disc ? '' : disc)}
             >
               {disc}% and above
@@ -283,16 +283,16 @@ const ProductListing = () => {
 
       {/* Minimum Rating */}
       <div>
-        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px' }}>Rating</h4>
+        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Rating</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {[4, 3].map(rate => (
             <button
               key={rate}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: selectedRating === String(rate) ? 'var(--text-main)' : 'var(--text-muted)', fontWeight: selectedRating === String(rate) ? 800 : 500 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.88rem', color: selectedRating === String(rate) ? 'var(--color-maroon)' : 'var(--text-muted)', fontWeight: selectedRating === String(rate) ? 800 : 500 }}
               onClick={() => setSelectedRating(selectedRating === String(rate) ? '' : String(rate))}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                {rate} <Star size={12} fill="var(--text-main)" color="var(--text-main)" /> & above
+              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                {rate} <Star size={13} fill="var(--color-turmeric)" color="var(--color-turmeric)" /> &amp; above
               </span>
             </button>
           ))}
@@ -301,12 +301,12 @@ const ProductListing = () => {
 
       {/* Stock Availability */}
       <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 600 }}>
           <input 
             type="checkbox"
             checked={inStockOnly}
             onChange={(e) => setInStockOnly(e.target.checked)}
-            style={{ width: '16px', height: '16px', accentColor: 'var(--text-main)' }}
+            style={{ width: '16px', height: '16px', accentColor: 'var(--color-saffron)' }}
           />
           Exclude Out of Stock
         </label>
@@ -317,7 +317,7 @@ const ProductListing = () => {
   return (
     <main className="section-space container" style={{ backgroundColor: 'var(--bg-main)', minHeight: '80vh' }}>
       {/* Breadcrumbs */}
-      <div className="breadcrumbs" style={{ fontFamily: 'var(--font-title)', fontSize: '0.75rem', letterSpacing: '1px', color: 'var(--text-light)' }}>
+      <div className="breadcrumbs" style={{ fontFamily: 'var(--font-title)', fontSize: '0.78rem', letterSpacing: '1px' }}>
         <Link to="/">HOME</Link> / 
         <Link to={`/${pathGender}`}>{pathGender.toUpperCase()}</Link>
         {activeCategoryObj && <span> / {activeCategoryObj.name.toUpperCase()}</span>}
@@ -326,16 +326,16 @@ const ProductListing = () => {
       </div>
 
       {/* Page header and controls */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2.5rem', borderBottom: '1px solid var(--text-main)', paddingBottom: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2.5rem', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '1rem' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-maroon)' }}>
             {activeCategoryObj 
               ? `${pathGender.toUpperCase()} ${activeCategoryObj.name}` 
               : selectedCollection
               ? `${selectedCollection.replace('-', ' ').toUpperCase()}`
               : `${pathGender.toUpperCase()}'S APPAREL`}
           </h1>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: 600, letterSpacing: '0.5px' }}>
+          <span style={{ fontSize: '0.82rem', color: 'var(--text-light)', fontWeight: 700, letterSpacing: '0.5px' }}>
             {products.length} {products.length === 1 ? 'PRODUCT' : 'PRODUCTS'} FOUND
           </span>
         </div>
@@ -343,10 +343,10 @@ const ProductListing = () => {
         {/* Sort & Mobile filter trigger */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>Sort By:</label>
+            <label style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Sort By:</label>
             <select
               className="form-select"
-              style={{ width: '190px', padding: '0.45rem', fontSize: '0.8rem', border: '1px solid var(--border-light)', borderRadius: '0px', outline: 'none' }}
+              style={{ width: '195px', padding: '0.5rem', fontSize: '0.82rem', outline: 'none' }}
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
@@ -371,14 +371,14 @@ const ProductListing = () => {
       </div>
 
       {/* Main PLP layout: Desktop Sidebar + Product Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '3rem' }} className="listing-main-layout">
+      <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '3rem' }} className="listing-main-layout">
         {/* Sidebar Filters (Desktop) */}
         <aside className="desktop-only" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', borderRight: '1px solid var(--border-light)', paddingRight: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem', marginBottom: '0.5rem' }}>
-            <h3 style={{ fontSize: '0.85rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1.5px' }}>FILTERS</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '0.75rem', marginBottom: '0.5rem' }}>
+            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--color-maroon)' }}>FILTERS</h3>
             {(selectedCategory || selectedCollection || selectedSize || selectedColor || minPrice || maxPrice || selectedDiscount || selectedRating || inStockOnly) && (
-              <button onClick={clearAllFilters} style={{ fontSize: '0.75rem', color: 'var(--accent-badge)', fontWeight: 800, textDecoration: 'underline' }}>
-                RESET
+              <button onClick={clearAllFilters} style={{ fontSize: '0.75rem', color: 'var(--color-magenta)', fontWeight: 800, textDecoration: 'underline' }}>
+                RESET ALL
               </button>
             )}
           </div>
@@ -389,13 +389,13 @@ const ProductListing = () => {
         <div>
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem 0', color: 'var(--text-light)' }}>
-              <div style={{ width: '40px', height: '40px', border: '3px solid var(--border-light)', borderTopColor: 'var(--text-main)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-              <span style={{ fontSize: '0.9rem', marginTop: '1rem', fontWeight: 600, letterSpacing: '1px' }}>FETCHING DROPS...</span>
+              <div style={{ width: '42px', height: '42px', border: '3px solid var(--border-light)', borderTopColor: 'var(--color-saffron)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              <span style={{ fontSize: '0.9rem', marginTop: '1rem', fontWeight: 700, letterSpacing: '1px', color: 'var(--color-maroon)' }}>FETCHING FESTIVE DROPS...</span>
             </div>
           ) : products.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '5rem 2rem', backgroundColor: '#ffffff', border: '1px solid var(--border-light)' }}>
-              <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', textTransform: 'uppercase' }}>No fits match your filters</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 1.5rem auto' }}>
+            <div style={{ textAlign: 'center', padding: '5rem 2rem', backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-subtle)' }}>
+              <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '1.6rem', fontWeight: 800, marginBottom: '0.5rem', textTransform: 'uppercase', color: 'var(--color-maroon)' }}>No styles found. Try another collection.</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', marginBottom: '2rem', maxWidth: '420px', margin: '0 auto 1.5rem auto' }}>
                 Try relaxing your search keywords, clearing selected color swatches, or resetting filters to start over.
               </p>
               <button className="btn-primary" onClick={clearAllFilters}>RESET ALL FILTERS</button>
@@ -414,33 +414,32 @@ const ProductListing = () => {
         </div>
       </div>
 
-      {/* Mobile drawer drawer backdrop & sliding sheet */}
+      {/* Mobile filter sheet */}
       {mobileFilterOpen && (
         <>
           <div 
-            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1100 }}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(36, 12, 20, 0.6)', zIndex: 1100, backdropFilter: 'blur(4px)' }}
             onClick={() => setMobileFilterOpen(false)}
           />
           <div 
             style={{ 
               position: 'fixed', top: 0, right: 0, bottom: 0, width: '85%', maxWidth: '360px', 
-              backgroundColor: '#faf9f6', zIndex: 1200, padding: '1.5rem', overflowY: 'auto',
-              boxShadow: '-4px 0 20px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: '1.5rem'
+              backgroundColor: 'var(--bg-main)', zIndex: 1200, padding: '1.5rem', overflowY: 'auto',
+              boxShadow: '-6px 0 30px rgba(74, 14, 23, 0.2)', display: 'flex', flexDirection: 'column', gap: '1.5rem'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #111', paddingBottom: '0.75rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>FILTERS</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '0.75rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-maroon)' }}>FILTERS</h3>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 {(selectedCategory || selectedCollection || selectedSize || selectedColor || minPrice || maxPrice || selectedDiscount || selectedRating || inStockOnly) && (
-                  <button onClick={clearAllFilters} style={{ fontSize: '0.75rem', color: 'var(--accent-badge)', fontWeight: 800 }}>RESET</button>
+                  <button onClick={clearAllFilters} style={{ fontSize: '0.75rem', color: 'var(--color-magenta)', fontWeight: 800 }}>RESET</button>
                 )}
-                <button onClick={() => setMobileFilterOpen(false)} style={{ display: 'flex', alignItems: 'center' }} className="icon-btn">
-                  <X size={20} />
+                <button onClick={() => setMobileFilterOpen(false)} className="icon-btn">
+                  <X size={20} color="var(--color-maroon)" />
                 </button>
               </div>
             </div>
             
-            {/* Filters components */}
             {renderFiltersContent()}
 
             <button 

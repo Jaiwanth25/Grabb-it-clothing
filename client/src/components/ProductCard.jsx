@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Eye, ShoppingBag, Star } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { formatINR } from '../utils/currency';
 
 const ProductCard = ({ product, onQuickView }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -42,15 +43,15 @@ const ProductCard = ({ product, onQuickView }) => {
     <div className="product-card">
       <div className="product-card-img-wrapper">
         <Link to={`/product/${product.slug}`}>
-          <img src={primaryImage} alt={product.name} className="product-card-img" />
+          <img src={primaryImage} alt={product.name} className="product-card-img primary" />
           <img src={secondaryImage} alt={product.name} className="product-card-img secondary" />
         </Link>
 
         {/* Badges */}
-        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 5 }}>
+        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 5 }}>
           {hasDiscount && <span className="badge-discount">-{discountPercent}%</span>}
           {product.is_new === 1 && <span className="badge-new">NEW</span>}
-          {product.is_trending === 1 && <span className="badge-trending">TRENDING</span>}
+          {product.is_trending === 1 && <span className="badge-trending">HOT</span>}
         </div>
 
         {/* Wishlist Heart */}
@@ -63,14 +64,14 @@ const ProductCard = ({ product, onQuickView }) => {
           }}
           title={isFavorite ? "Remove from Wishlist" : "Add to Wishlist"}
         >
-          <Heart size={18} fill={isFavorite ? "#e53935" : "none"} color={isFavorite ? "#e53935" : "#111111"} />
+          <Heart size={18} fill={isFavorite ? "var(--color-magenta)" : "none"} color={isFavorite ? "var(--color-magenta)" : "#4A0E17"} />
         </button>
 
-        {/* Hover Action Buttons */}
+        {/* Quick Actions */}
         <div className="product-card-actions">
           <button
             className="btn-secondary"
-            style={{ flex: 1, padding: '0.5rem', fontSize: '0.75rem' }}
+            style={{ flex: 1, padding: '0.55rem', fontSize: '0.75rem' }}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -81,7 +82,7 @@ const ProductCard = ({ product, onQuickView }) => {
           </button>
           <button
             className="btn-primary"
-            style={{ flex: 1, padding: '0.5rem', fontSize: '0.75rem' }}
+            style={{ flex: 1, padding: '0.55rem', fontSize: '0.75rem' }}
             onClick={handleQuickAdd}
             disabled={adding}
           >
@@ -94,13 +95,14 @@ const ProductCard = ({ product, onQuickView }) => {
       <div className="product-info">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span className="product-category-name">{product.category?.name || product.gender}</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.75rem', color: '#666' }}>
-            <Star size={12} fill="#f5a623" color="#f5a623" />
-            <span>{product.rating} ({product.review_count})</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            <Star size={12} fill="var(--color-turmeric)" color="var(--color-turmeric)" />
+            <span style={{ fontWeight: 700 }}>{product.rating || '4.8'}</span>
+            <span style={{ color: 'var(--text-light)' }}>({product.review_count || 12})</span>
           </div>
         </div>
 
-        <Link to={`/product/${product.slug}`} className="product-title" style={{ fontFamily: 'var(--font-title)', fontWeight: 600 }}>
+        <Link to={`/product/${product.slug}`} className="product-title">
           {product.name}
         </Link>
 
@@ -118,16 +120,16 @@ const ProductCard = ({ product, onQuickView }) => {
           }
           if (uniqueColors.length > 0) {
             return (
-              <div style={{ display: 'flex', gap: '4px', margin: '4px 0 6px 0' }}>
+              <div style={{ display: 'flex', gap: '5px', margin: '4px 0' }}>
                 {uniqueColors.map((col, idx) => (
                   <span 
                     key={idx} 
                     title={col.color} 
                     style={{ 
-                      width: '10px', 
-                      height: '10px', 
+                      width: '12px', 
+                      height: '12px', 
                       borderRadius: '50%', 
-                      backgroundColor: col.color_hex || '#000',
+                      backgroundColor: col.color_hex || '#4A0E17',
                       border: '1px solid rgba(0,0,0,0.15)' 
                     }} 
                   />
@@ -139,8 +141,12 @@ const ProductCard = ({ product, onQuickView }) => {
         })()}
 
         <div className="product-price-row">
-          <span className="price-current" style={{ fontWeight: 800 }}>₹{Math.round(currentPrice)}</span>
-          {hasDiscount && <span className="price-original" style={{ textDecoration: 'line-through', color: 'var(--text-light)', marginLeft: '0.5rem', fontSize: '0.85rem' }}>₹{Math.round(product.price)}</span>}
+          <span className="price-current">{formatINR(currentPrice)}</span>
+          {hasDiscount && (
+            <span className="price-original">
+              {formatINR(product.price)}
+            </span>
+          )}
         </div>
       </div>
     </div>

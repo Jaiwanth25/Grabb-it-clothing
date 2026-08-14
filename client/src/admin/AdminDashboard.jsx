@@ -6,6 +6,7 @@ import {
   Settings, Layers, MessageSquare, Upload, Download
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { formatINR } from '../utils/currency';
 
 const AdminDashboard = () => {
   const { user, token, logout, isAdmin } = useAuth();

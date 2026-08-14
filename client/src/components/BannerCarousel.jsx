@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
 
 const BannerCarousel = () => {
   const [banners, setBanners] = useState([]);
@@ -20,16 +20,16 @@ const BannerCarousel = () => {
           setBanners([
             {
               id: 1,
-              title: 'NEW ARRIVALS 2026',
-              subtitle: 'Fresh minimal styles designed for everyday confidence.',
-              button_text: 'SHOP NOW',
+              title: 'CARNIVAL COLLECTION 2026',
+              subtitle: 'Contemporary fashion inspired by the energy, colour and culture of India.',
+              button_text: 'EXPLORE THE COLLECTION',
               button_link: '/men',
               image_url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop&q=80'
             },
             {
               id: 2,
-              title: 'WOMEN\'S ESSENTIALS',
-              subtitle: 'Clean silhouettes, premium fabrics, effortless elegance.',
+              title: 'FESTIVE ESSENTIALS',
+              subtitle: 'Jewel tones, relaxed boxy silhouettes, and high-density organic drops.',
               button_text: 'SHOP WOMEN',
               button_link: '/women',
               image_url: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&auto=format&fit=crop&q=80'
@@ -94,10 +94,16 @@ const BannerCarousel = () => {
           <img src={banner.image_url} alt={banner.title} className="banner-img" />
           <div className="container" style={{ position: 'relative', zIndex: 5 }}>
             <div className="banner-content">
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                <Sparkles size={14} color="var(--color-saffron)" />
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '1.5px', color: 'var(--color-saffron)', textTransform: 'uppercase' }}>
+                  LIMITED DROP
+                </span>
+              </div>
               <h2 className="banner-title">{banner.title}</h2>
               {banner.subtitle && <p className="banner-subtitle">{banner.subtitle}</p>}
               <Link to={banner.button_link || '/men'} className="btn-primary">
-                {banner.button_text || 'SHOP NOW'}
+                {banner.button_text || 'SHOP NOW'} <ArrowRight size={16} />
               </Link>
             </div>
           </div>
@@ -112,34 +118,48 @@ const BannerCarousel = () => {
             style={{
               position: 'absolute',
               top: '50%',
-              left: '20px',
+              left: '24px',
               transform: 'translateY(-50%)',
               zIndex: 10,
-              backgroundColor: '#ffffff',
-              border: '1px solid #111',
-              padding: '0.75rem',
+              backgroundColor: 'rgba(250, 246, 240, 0.9)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--color-maroon)',
+              boxShadow: 'var(--shadow-card)',
               cursor: 'pointer'
             }}
             aria-label="Previous Slide"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={22} />
           </button>
           <button
             onClick={handleNext}
             style={{
               position: 'absolute',
               top: '50%',
-              right: '20px',
+              right: '24px',
               transform: 'translateY(-50%)',
               zIndex: 10,
-              backgroundColor: '#ffffff',
-              border: '1px solid #111',
-              padding: '0.75rem',
+              backgroundColor: 'rgba(250, 246, 240, 0.9)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--color-maroon)',
+              boxShadow: 'var(--shadow-card)',
               cursor: 'pointer'
             }}
             aria-label="Next Slide"
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={22} />
           </button>
 
           {/* Dots Pagination */}

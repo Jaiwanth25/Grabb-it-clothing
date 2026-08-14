@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Star, ShoppingBag, Heart, Check } from 'lucide-react';
+import { X, Star, ShoppingBag, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { formatINR } from '../utils/currency';
 
 const QuickViewModal = ({ product, onClose }) => {
   const { addToCart } = useCart();
@@ -55,14 +56,14 @@ const QuickViewModal = ({ product, onClose }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '820px' }}>
         <button className="modal-close-btn" onClick={onClose}>
           <X size={22} />
         </button>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem' }}>
           {/* Left: Product Image */}
-          <div style={{ backgroundColor: '#f5f5f5', position: 'relative', height: '360px' }}>
+          <div style={{ backgroundColor: 'var(--bg-subtle)', position: 'relative', height: '380px', borderRadius: '12px', overflow: 'hidden' }}>
             <img src={primaryImage} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
@@ -70,22 +71,22 @@ const QuickViewModal = ({ product, onClose }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <span className="product-category-name">{product.category?.name || product.gender}</span>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: '0.2rem' }}>{product.name}</h2>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: '0.2rem', color: 'var(--text-main)' }}>{product.name}</h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem', fontSize: '0.85rem' }}>
-                <Star size={14} fill="#f5a623" color="#f5a623" />
-                <span style={{ fontWeight: 700 }}>{product.rating}</span>
-                <span style={{ color: '#888' }}>({product.review_count} reviews)</span>
+                <Star size={14} fill="var(--color-turmeric)" color="var(--color-turmeric)" />
+                <span style={{ fontWeight: 700 }}>{product.rating || '4.8'}</span>
+                <span style={{ color: 'var(--text-light)' }}>({product.review_count || 12} reviews)</span>
               </div>
             </div>
 
             {/* Price */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ fontSize: '1.4rem', fontWeight: 900 }}>
-                ₹{Math.round(product.sale_price !== null ? product.sale_price : product.price)}
+              <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-maroon)' }}>
+                {formatINR(product.sale_price !== null && product.sale_price !== undefined ? product.sale_price : product.price)}
               </span>
-              {product.sale_price !== null && (
-                <span style={{ fontSize: '1rem', color: '#999', textDecoration: 'line-through' }}>
-                  ₹{Math.round(product.price)}
+              {product.sale_price !== null && product.sale_price < product.price && (
+                <span style={{ fontSize: '1rem', color: 'var(--text-light)', textDecoration: 'line-through' }}>
+                  {formatINR(product.price)}
                 </span>
               )}
             </div>
@@ -93,11 +94,11 @@ const QuickViewModal = ({ product, onClose }) => {
             {/* Stock status */}
             <div>
               {inStock ? (
-                <span style={{ color: '#2e7d32', fontWeight: 700, fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--color-emerald)', fontWeight: 700, fontSize: '0.85rem' }}>
                   ✓ In Stock ({activeVariant?.stock} available)
                 </span>
               ) : (
-                <span style={{ color: '#d32f2f', fontWeight: 700, fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--color-magenta)', fontWeight: 700, fontSize: '0.85rem' }}>
                   ✕ Out of Stock
                 </span>
               )}
@@ -113,9 +114,11 @@ const QuickViewModal = ({ product, onClose }) => {
                       key={sz}
                       className={`btn-outline-gray ${selectedSize === sz ? 'active' : ''}`}
                       style={{
-                        backgroundColor: selectedSize === sz ? '#111' : '#fff',
-                        color: selectedSize === sz ? '#fff' : '#111',
-                        minWidth: '40px'
+                        backgroundColor: selectedSize === sz ? 'var(--color-maroon)' : '#fff',
+                        color: selectedSize === sz ? '#fff' : 'var(--text-main)',
+                        borderColor: selectedSize === sz ? 'var(--color-maroon)' : 'var(--border-light)',
+                        minWidth: '42px',
+                        fontWeight: 700
                       }}
                       onClick={() => setSelectedSize(sz)}
                     >
@@ -136,8 +139,10 @@ const QuickViewModal = ({ product, onClose }) => {
                       key={col}
                       className="btn-outline-gray"
                       style={{
-                        backgroundColor: selectedColor === col ? '#111' : '#fff',
-                        color: selectedColor === col ? '#fff' : '#111'
+                        backgroundColor: selectedColor === col ? 'var(--color-maroon)' : '#fff',
+                        color: selectedColor === col ? '#fff' : 'var(--text-main)',
+                        borderColor: selectedColor === col ? 'var(--color-maroon)' : 'var(--border-light)',
+                        fontWeight: 700
                       }}
                       onClick={() => setSelectedColor(col)}
                     >
@@ -175,13 +180,13 @@ const QuickViewModal = ({ product, onClose }) => {
                 style={{ padding: '0.75rem' }}
                 onClick={() => toggleWishlist(product.id)}
               >
-                <Heart size={18} fill={isFavorite ? '#e53935' : 'none'} color={isFavorite ? '#e53935' : '#111'} />
+                <Heart size={18} fill={isFavorite ? 'var(--color-magenta)' : 'none'} color={isFavorite ? 'var(--color-magenta)' : 'var(--color-maroon)'} />
               </button>
             </div>
 
             {/* Messages */}
-            {message && <div style={{ color: '#2e7d32', fontSize: '0.85rem', fontWeight: 700 }}>{message}</div>}
-            {errorMsg && <div style={{ color: '#d32f2f', fontSize: '0.85rem', fontWeight: 700 }}>{errorMsg}</div>}
+            {message && <div style={{ color: 'var(--color-emerald)', fontSize: '0.85rem', fontWeight: 700 }}>{message}</div>}
+            {errorMsg && <div style={{ color: 'var(--color-magenta)', fontSize: '0.85rem', fontWeight: 700 }}>{errorMsg}</div>}
           </div>
         </div>
       </div>
