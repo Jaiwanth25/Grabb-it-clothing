@@ -26,7 +26,7 @@ router.post('/validate', async (req, res) => {
     }
 
     if (subtotal && subtotal < coupon.min_order_amount) {
-      return res.status(400).json({ error: `Minimum order amount of $${coupon.min_order_amount.toFixed(2)} required for this coupon.` });
+      return res.status(400).json({ error: `Minimum order amount of ₹${coupon.min_order_amount.toFixed(2)} required for this coupon.` });
     }
 
     let discountAmount = 0;
