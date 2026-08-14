@@ -23,7 +23,6 @@ const ProductCard = ({ product, onQuickView }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Check primary variant
     const firstVariant = product.variants && product.variants.length ? product.variants[0] : null;
     if (!firstVariant) {
       onQuickView(product);
@@ -51,7 +50,7 @@ const ProductCard = ({ product, onQuickView }) => {
         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 5 }}>
           {hasDiscount && <span className="badge-discount">-{discountPercent}%</span>}
           {product.is_new === 1 && <span className="badge-new">NEW</span>}
-          {product.is_trending === 1 && <span className="badge-trending">HOT</span>}
+          {product.is_trending === 1 && <span className="badge-trending">HOT 🔥</span>}
         </div>
 
         {/* Wishlist Heart */}
@@ -64,7 +63,7 @@ const ProductCard = ({ product, onQuickView }) => {
           }}
           title={isFavorite ? "Remove from Wishlist" : "Add to Wishlist"}
         >
-          <Heart size={18} fill={isFavorite ? "var(--color-magenta)" : "none"} color={isFavorite ? "var(--color-magenta)" : "#4A0E17"} />
+          <Heart size={18} fill={isFavorite ? "var(--color-pink)" : "none"} color={isFavorite ? "var(--color-pink)" : "var(--color-purple)"} />
         </button>
 
         {/* Quick Actions */}
@@ -95,9 +94,9 @@ const ProductCard = ({ product, onQuickView }) => {
       <div className="product-info">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span className="product-category-name">{product.category?.name || product.gender}</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            <Star size={12} fill="var(--color-turmeric)" color="var(--color-turmeric)" />
-            <span style={{ fontWeight: 700 }}>{product.rating || '4.8'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            <Star size={13} fill="var(--color-yellow)" color="var(--color-yellow)" />
+            <span style={{ fontWeight: 800 }}>{product.rating || '4.8'}</span>
             <span style={{ color: 'var(--text-light)' }}>({product.review_count || 12})</span>
           </div>
         </div>
@@ -106,7 +105,7 @@ const ProductCard = ({ product, onQuickView }) => {
           {product.name}
         </Link>
 
-        {/* Color Indicators */}
+        {/* Color Swatches */}
         {(() => {
           const uniqueColors = [];
           const seenColors = new Set();
@@ -129,8 +128,8 @@ const ProductCard = ({ product, onQuickView }) => {
                       width: '12px', 
                       height: '12px', 
                       borderRadius: '50%', 
-                      backgroundColor: col.color_hex || '#4A0E17',
-                      border: '1px solid rgba(0,0,0,0.15)' 
+                      backgroundColor: col.color_hex || 'var(--color-pink)',
+                      border: '1.5px solid rgba(0,0,0,0.1)' 
                     }} 
                   />
                 ))}
