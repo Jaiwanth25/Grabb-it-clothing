@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Flame, Compass, ShoppingBag } from 'lucide-react';
+import { Sparkles, ArrowRight, Flame, ShoppingBag } from 'lucide-react';
 import BannerCarousel from '../components/BannerCarousel';
 import NewArrivalsSection from '../components/NewArrivalsSection';
 import CategorySection from '../components/CategorySection';
@@ -61,17 +61,17 @@ const Home = () => {
       {/* 2. Brand Positioning Statement */}
       <section style={{ textAlign: 'center', padding: '5.5rem 1rem 4.5rem 1rem' }} className="container">
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-          <Sparkles size={16} color="var(--color-pink)" />
+          <Sparkles size={16} color="var(--text-dark)" />
           <span className="badge-carnival">
-            MODERN INDIAN FASHION CARNIVAL
+            PASTEL FASHION CARNIVAL
           </span>
-          <Sparkles size={16} color="var(--color-pink)" />
+          <Sparkles size={16} color="var(--text-dark)" />
         </div>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3.25rem', fontWeight: 700, marginTop: '0.5rem', color: 'var(--color-purple)', lineHeight: 1.15 }}>
-          STYLE THAT <span style={{ color: 'var(--color-pink)' }}>CELEBRATES YOU.</span>
+        <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '3.25rem', fontWeight: 700, marginTop: '0.5rem', color: 'var(--text-dark)', lineHeight: 1.15 }}>
+          STYLE THAT <span style={{ color: 'var(--text-dark)', textDecoration: 'underline decoration-wavy var(--color-accent)' }}>CELEBRATES YOU.</span>
         </h1>
         <p style={{ maxWidth: '640px', margin: '1.25rem auto 2.25rem auto', color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: 1.6, fontWeight: 600 }}>
-          Contemporary fashion inspired by the energy, colour, and culture of India. Premium boxy drops, heavy cottons, and effortless cuts.
+          Contemporary fashion inspired by soft pastel tones, breezy silhouettes, and effortless cuts.
         </p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
           <Link to={`/${gender}`} className="btn-primary">
@@ -88,13 +88,13 @@ const Home = () => {
         <div className="container carnival-grid">
           <div className="carnival-content-box">
             <div className="carnival-tag">
-              <Flame size={18} color="var(--color-yellow)" /> THE CARNIVAL EDIT
+              <Flame size={18} color="var(--text-dark)" /> THE CARNIVAL EDIT
             </div>
             <h2 className="carnival-heading">
-              COLOUR. CULTURE.<br />CONFIDENCE.
+              PASTEL. PLAYFUL.<br />CONFIDENCE.
             </h2>
             <p className="carnival-desc">
-              Step into a celebration of contemporary Indian streetwear. High-density organic cottons, rich jewel tones, and relaxed silhouettes tailored for modern Indian youth.
+              Step into a celebration of soft pastel streetwear. High-density organic cottons, gentle peach tones, and relaxed silhouettes tailored for effortless style.
             </p>
             <Link to={`/${gender}?isTrending=true`} className="btn-saffron">
               SHOP THE CARNIVAL EDIT <ArrowRight size={18} />
@@ -117,7 +117,7 @@ const Home = () => {
       <section className="container section-space">
         <div className="section-header">
           <div>
-            <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-coral)', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-dark)', textTransform: 'uppercase' }}>
               CHOOSE YOUR VIBE
             </span>
             <h2 className="section-title">SHOP BY STYLE</h2>
@@ -137,7 +137,7 @@ const Home = () => {
               <img src={style.img} alt={style.name} className="category-card-img" />
               <div className="category-card-content">
                 <span className="category-card-title">{style.name}</span>
-                <ArrowRight size={18} color="var(--color-pink)" />
+                <ArrowRight size={18} color="var(--text-dark)" />
               </div>
             </Link>
           ))}
@@ -152,7 +152,7 @@ const Home = () => {
         <section id="collections" className="section-space container">
           <div className="section-header">
             <div>
-              <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-pink)', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-dark)', textTransform: 'uppercase' }}>
                 CURATED CAMPAIGNS
               </span>
               <h2 className="section-title">EXCLUSIVE DROPS &amp; EDITORIALS</h2>
@@ -160,18 +160,18 @@ const Home = () => {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
             {collections.map(col => (
-              <Link key={col.id} to={`/${gender}?collection=${col.slug}`} className="category-card" style={{ display: 'block', height: '420px', borderRadius: '24px' }}>
+              <Link key={col.id} to={`/${gender}?collection=${col.slug}`} className="category-card" style={{ display: 'block', height: '420px', borderRadius: '16px' }}>
                 <img src={col.cover_image} alt={col.name} className="category-card-img" />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(30, 27, 46, 0.95) 0%, rgba(30, 27, 46, 0.25) 60%, transparent 100%)', zIndex: 1 }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(43, 43, 43, 0.92) 0%, rgba(43, 43, 43, 0.25) 60%, transparent 100%)', zIndex: 1 }} />
                 <div style={{ position: 'relative', zIndex: 2, padding: '1.75rem', color: '#ffffff' }}>
                   <span className="badge-carnival" style={{ marginBottom: '0.6rem', display: 'inline-block' }}>LIMITED DROP</span>
-                  <h3 style={{ fontSize: '1.6rem', fontWeight: 800, textTransform: 'uppercase', fontFamily: 'var(--font-title)', color: '#ffffff' }}>
+                  <h3 style={{ fontSize: '1.6rem', fontWeight: 700, textTransform: 'uppercase', fontFamily: 'var(--font-title)', color: '#ffffff' }}>
                     {col.name}
                   </h3>
                   <p style={{ color: '#fffdf9', fontSize: '0.95rem', marginTop: '0.4rem', lineHeight: 1.45, fontWeight: 500 }}>
                     {col.description}
                   </p>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.88rem', marginTop: '1.1rem', color: 'var(--color-yellow)' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.88rem', marginTop: '1.1rem', color: 'var(--color-highlight)' }}>
                     DISCOVER COLLECTION <ArrowRight size={16} />
                   </span>
                 </div>
@@ -187,7 +187,7 @@ const Home = () => {
           <div className="container">
             <div className="section-header">
               <div>
-                <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-turquoise)', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-dark)', textTransform: 'uppercase' }}>
                   STYLE INSPO
                 </span>
                 <h2 className="section-title">SHOP THE LOOK</h2>
@@ -197,13 +197,13 @@ const Home = () => {
             {looks.map((look) => (
               <div key={look.id} className="look-grid" style={{ marginBottom: '4rem' }}>
                 {/* Look Canvas */}
-                <div className="look-card" style={{ borderRadius: '24px', border: '3px solid var(--border-light)', overflow: 'hidden' }}>
-                  <img src={look.image_url} alt={look.name} className="look-img" />
-                  <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', color: '#ffffff', zIndex: 10, background: 'rgba(30, 27, 46, 0.88)', backdropFilter: 'blur(10px)', padding: '1.35rem', borderRadius: '20px', border: '2px solid var(--color-pink)' }}>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: 800, fontFamily: 'var(--font-title)', textTransform: 'uppercase', color: '#ffffff' }}>
+                <div className="look-card" style={{ borderRadius: '16px', border: '2px solid var(--border-light)', overflow: 'hidden' }}>
+                  <img src={look.image_url} alt={look.name} className="look-img" style={{ borderRadius: '16px', boxShadow: '0 8px 20px rgba(0,0,0,0.06)' }} />
+                  <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', color: 'var(--text-dark)', zIndex: 10, background: 'rgba(255, 253, 249, 0.95)', backdropFilter: 'blur(10px)', padding: '1.35rem', borderRadius: '16px', border: '2px solid var(--color-primary)' }}>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 700, fontFamily: 'var(--font-title)', textTransform: 'uppercase', color: 'var(--text-dark)' }}>
                       {look.name}
                     </h3>
-                    <p style={{ fontSize: '0.92rem', color: '#fffdf9', marginTop: '0.25rem', fontWeight: 500 }}>
+                    <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', marginTop: '0.25rem', fontWeight: 500 }}>
                       {look.description}
                     </p>
                   </div>
@@ -211,21 +211,21 @@ const Home = () => {
 
                 {/* Outfit Products list */}
                 <div className="look-products">
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-pink)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-dark)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                     PRODUCTS IN THIS OUTFIT
                   </h4>
                   {look.products && look.products.map(prod => (
-                    <div key={prod.id} className="look-prod-item" style={{ borderRadius: '20px', boxShadow: 'var(--shadow-card)', border: '2px solid var(--border-light)' }}>
-                      <img src={prod.primary_image} alt={prod.name} className="look-prod-img" style={{ borderRadius: '14px' }} />
+                    <div key={prod.id} className="look-prod-item" style={{ borderRadius: '16px', boxShadow: '0 8px 20px rgba(0,0,0,0.06)', border: '2px solid var(--border-light)' }}>
+                      <img src={prod.primary_image} alt={prod.name} className="look-prod-img" style={{ borderRadius: '12px' }} />
                       <div style={{ flex: 1 }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-coral)' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
                           {prod.category?.name || 'Apparel'}
                         </span>
-                        <h5 style={{ fontSize: '1rem', fontWeight: 800, margin: '0.2rem 0', color: 'var(--text-main)' }}>
+                        <h5 style={{ fontSize: '1rem', fontWeight: 700, margin: '0.2rem 0', color: 'var(--text-dark)' }}>
                           {prod.name}
                         </h5>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.95rem' }}>
-                          <span style={{ fontWeight: 900, color: 'var(--color-pink)', fontFamily: 'var(--font-title)' }}>
+                          <span style={{ fontWeight: 800, color: 'var(--text-dark)', fontFamily: 'var(--font-title)' }}>
                             {formatINR(prod.sale_price || prod.price)}
                           </span>
                           {prod.sale_price && (
@@ -257,7 +257,7 @@ const Home = () => {
       <section className="section-space container">
         <div className="section-header">
           <div>
-            <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--color-pink)', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-dark)', textTransform: 'uppercase' }}>
               MUST-HAVE DROPS
             </span>
             <h2 className="section-title">CURATED ESSENTIALS ({gender.toUpperCase()})</h2>

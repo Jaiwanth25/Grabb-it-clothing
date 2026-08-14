@@ -101,9 +101,9 @@ const Header = () => {
     <header className="header-sticky">
       {/* Top Bright Carnival Ticker Bar */}
       <div className="header-top-bar">
-        <Sparkles size={16} color="#FFD13B" />
+        <Sparkles size={16} color="var(--text-dark)" />
         <span>FESTIVE CARNIVAL DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: <strong>GRABB10</strong> FOR 10% OFF</span>
-        <Sparkles size={16} color="#FFD13B" />
+        <Sparkles size={16} color="var(--text-dark)" />
       </div>
 
       {/* Main Navigation Container */}
