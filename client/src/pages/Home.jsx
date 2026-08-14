@@ -183,7 +183,7 @@ const Home = () => {
 
       {/* 8. Shop The Look Outfit Combinations */}
       {looks.length > 0 && (
-        <section className="shop-the-look-section">
+        <section id="looks" className="shop-the-look-section">
           <div className="container">
             <div className="section-header">
               <div>

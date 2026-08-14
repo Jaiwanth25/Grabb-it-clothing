@@ -141,10 +141,10 @@ const Header = () => {
         {/* LEFT: Branding & Mobile Menu Trigger */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button
-            className="icon-btn mobile-only"
+            className="icon-btn"
             onClick={() => setDrawerOpen(true)}
             aria-label="Open Navigation Menu"
-            title="Menu"
+            title="Open Side Menu"
           >
             <Menu size={22} color="var(--text-dark)" />
           </button>
@@ -290,25 +290,38 @@ const Header = () => {
         </div>
       </nav>
 
-      {/* MOBILE DRAWER */}
+      {/* SIDE SLIDE NAVIGATION DRAWER */}
       {drawerOpen && (
         <>
           <div className="drawer-backdrop" onClick={() => setDrawerOpen(false)} />
           <div className="drawer-menu">
+            {/* Drawer Header */}
             <div className="drawer-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <div className="header-logo-container">
-                  <img src="/assets/grabb-it-logo.png" alt="Grabb-it" style={{ height: '30px', maxHeight: '30px' }} />
+                  <img
+                    src="/assets/grabb-it-logo.png"
+                    alt="Grabb-it Logo"
+                    style={{ height: '32px', maxHeight: '32px' }}
+                    onError={(e) => { e.target.src = '/assets/grabb-it-logo.svg'; }}
+                  />
                 </div>
-                <span style={{ fontWeight: 800, fontSize: '1.3rem', letterSpacing: '1px', color: 'var(--text-dark)', fontFamily: 'var(--font-title)' }}>GRABB-IT</span>
+                <span style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '1px', color: 'var(--text-dark)', fontFamily: 'var(--font-title)' }}>
+                  GRABB<span style={{ color: 'var(--color-primary)' }}>-IT</span>
+                </span>
               </div>
-              <button onClick={() => setDrawerOpen(false)} className="icon-btn" style={{ color: 'var(--text-dark)' }}>
+              <button 
+                onClick={() => setDrawerOpen(false)} 
+                className="icon-btn" 
+                aria-label="Close menu"
+                style={{ color: 'var(--text-dark)', width: '38px', height: '38px' }}
+              >
                 <X size={24} color="var(--text-dark)" />
               </button>
             </div>
 
-            {/* Mobile Search Input */}
-            <div style={{ padding: '1.25rem 1rem 0.5rem 1rem' }}>
+            {/* Drawer Search Input */}
+            <div style={{ padding: '1rem 1rem 0.5rem 1rem' }}>
               <form onSubmit={handleSearchSubmit} className="search-input-box" style={{ width: '100%' }}>
                 <Search size={16} color="var(--text-dark)" />
                 <input
@@ -320,72 +333,136 @@ const Header = () => {
               </form>
             </div>
 
-            {/* Gender Toggle Inside Mobile Drawer */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '0.75rem 1rem', gap: '0.5rem' }}>
+            {/* Gender Toggle Inside Drawer */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '0.5rem 1rem', gap: '0.5rem' }}>
               <button
+                type="button"
                 className={`btn-primary ${gender === 'men' ? '' : 'btn-secondary'}`}
-                style={{ fontSize: '0.8rem', padding: '0.6rem' }}
+                style={{ fontSize: '0.8rem', padding: '0.55rem' }}
                 onClick={() => {
                   handleGenderSelect('men');
                   setDrawerOpen(false);
                 }}
               >
-                MEN
+                👕 MEN
               </button>
               <button
+                type="button"
                 className={`btn-primary ${gender === 'women' ? '' : 'btn-secondary'}`}
-                style={{ fontSize: '0.8rem', padding: '0.6rem' }}
+                style={{ fontSize: '0.8rem', padding: '0.55rem' }}
                 onClick={() => {
                   handleGenderSelect('women');
                   setDrawerOpen(false);
                 }}
               >
-                WOMEN
+                👗 WOMEN
               </button>
             </div>
 
-            {/* Drawer Links */}
+            {/* Scrollable Navigation List */}
             <div className="drawer-nav-list">
               <Link to="/" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Home <ArrowRight size={16} color="var(--text-dark)" />
+                <span>🏠 Home</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
+
               <Link to="/men" className="drawer-nav-item" onClick={() => { setGender('men'); setDrawerOpen(false); }}>
-                Men's Fashion <ArrowRight size={16} color="var(--text-dark)" />
+                <span>👕 Men</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
+
               <Link to="/women" className="drawer-nav-item" onClick={() => { setGender('women'); setDrawerOpen(false); }}>
-                Women's Fashion <ArrowRight size={16} color="var(--text-dark)" />
+                <span>👗 Women</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
+
               <Link to={`/${gender}?isNew=true`} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                New Arrivals <ArrowRight size={16} color="var(--text-dark)" />
+                <span>✨ New Drops</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
+
               <Link to={`/${gender}?isTrending=true`} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Trending Outfits <ArrowRight size={16} color="var(--text-dark)" />
+                <span>🔥 Trending</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
+
               <Link to="/offers" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Special Offers <ArrowRight size={16} color="var(--text-dark)" />
+                <span>🏷️ Offers</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
+
+              <a 
+                href="#collections" 
+                className="drawer-nav-item" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setDrawerOpen(false);
+                  if (location.pathname !== '/') {
+                    navigate('/');
+                    setTimeout(() => {
+                      document.getElementById('collections')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
+                  } else {
+                    document.getElementById('collections')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                <span>📦 Collections</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
+              </a>
+
+              <a 
+                href="#looks" 
+                className="drawer-nav-item" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setDrawerOpen(false);
+                  if (location.pathname !== '/') {
+                    navigate('/');
+                    setTimeout(() => {
+                      document.getElementById('looks')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
+                  } else {
+                    document.getElementById('looks')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                <span>👀 Shop the Look</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
+              </a>
+
               <Link to="/wishlist" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Wishlist <ArrowRight size={16} color="var(--text-dark)" />
+                <span>❤️ Wishlist</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
+
               <Link to="/cart" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                Shopping Bag ({count}) <ArrowRight size={16} color="var(--text-dark)" />
-              </Link>
-              <Link to="/account" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
-                My Account <ArrowRight size={16} color="var(--text-dark)" />
+                <span>🛒 Cart ({count})</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
 
-              {isAdmin && (
-                <Link to="/admin" className="drawer-nav-item" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--text-dark)' }} onClick={() => setDrawerOpen(false)}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Shield size={16} /> Admin Dashboard</span>
-                  <ArrowRight size={16} color="var(--text-dark)" />
-                </Link>
-              )}
+              <Link to={user ? "/account" : "/login"} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
+                <span>📦 My Orders</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
+              </Link>
 
-              {!user && (
-                <Link to="/admin/login" className="drawer-nav-item" style={{ color: 'var(--text-light)', fontSize: '0.85rem' }} onClick={() => setDrawerOpen(false)}>
-                  Admin Login
-                </Link>
-              )}
+              <Link to={user ? "/account" : "/login"} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
+                <span>👤 My Account</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
+              </Link>
+
+              {/* ADMIN OPTION — MUST ALWAYS BE THE LAST ITEM */}
+              <div className="drawer-admin-divider" />
+              <Link 
+                to={user?.role === 'admin' ? "/admin" : "/admin/login"} 
+                className="drawer-nav-item drawer-admin-item" 
+                onClick={() => setDrawerOpen(false)}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800 }}>
+                  <Shield size={18} color="var(--text-dark)" /> 🔐 ADMIN
+                </span>
+                <ArrowRight size={16} color="var(--text-dark)" />
+              </Link>
             </div>
           </div>
         </>
