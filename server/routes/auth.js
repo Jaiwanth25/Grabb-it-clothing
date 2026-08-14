@@ -7,6 +7,18 @@ const db = require('../database/db');
 const { authenticateToken, JWT_SECRET } = require('../middleware/authMiddleware');
 const { sendOtpEmail } = require('../services/email');
 
+// Helper for 5-rule strong password policy
+function validateStrongPassword(pass) {
+  if (!pass || pass.length < 8) return false;
+  if (!/[A-Z]/.test(pass)) return false;
+  if (!/[a-z]/.test(pass)) return false;
+  if (!/\d/.test(pass)) return false;
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pass)) return false;
+  return true;
+}
+
+const PASSWORD_POLICY_ERROR = 'Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
+
 // Helper to generate 6-digit numeric OTP
 function generate6DigitOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -21,8 +33,8 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one letter and one number.' });
+    if (!validateStrongPassword(password)) {
+      return res.status(400).json({ error: PASSWORD_POLICY_ERROR });
     }
 
     const existingUser = await db.queryOne('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
@@ -204,8 +216,8 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Email, reset token, and new password are required' });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    if (!validateStrongPassword(newPassword)) {
+      return res.status(400).json({ error: PASSWORD_POLICY_ERROR });
     }
 
     const user = await db.queryOne('SELECT id, reset_token_hash, reset_token_expires FROM users WHERE email = ?', [email.toLowerCase().trim()]);

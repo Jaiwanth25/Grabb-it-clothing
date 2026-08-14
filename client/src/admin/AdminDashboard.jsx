@@ -1439,20 +1439,40 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                      <div className="form-group">
-                        <label className="form-label">Free Express Shipping Threshold (₹)</label>
-                        <input type="number" className="form-input" value={settingsForm.freeShippingThreshold} onChange={e => setSettingsForm({ ...settingsForm, freeShippingThreshold: e.target.value })} required />
+                    <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                      <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '1rem', fontFamily: 'var(--font-title)', color: 'var(--text-dark)' }}>
+                        🚚 DYNAMIC SHIPPING &amp; DELIVERY SETTINGS
+                      </h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', alignItems: 'center' }}>
+                        <div className="form-group">
+                          <label className="form-label">Shipping Charge (₹)</label>
+                          <input type="number" className="form-input" value={settingsForm.shipping_charge || '79'} onChange={e => setSettingsForm({ ...settingsForm, shipping_charge: e.target.value })} required />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Free Shipping Threshold (₹)</label>
+                          <input type="number" className="form-input" value={settingsForm.free_shipping_threshold || settingsForm.freeShippingThreshold || '999'} onChange={e => setSettingsForm({ ...settingsForm, free_shipping_threshold: e.target.value, freeShippingThreshold: e.target.value })} required />
+                        </div>
+                        <div className="form-group" style={{ marginTop: '1.2rem' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer' }}>
+                            <input
+                              type="checkbox"
+                              checked={settingsForm.free_shipping_enabled !== 'false'}
+                              onChange={e => setSettingsForm({ ...settingsForm, free_shipping_enabled: e.target.checked ? 'true' : 'false' })}
+                            /> Enable Free Shipping
+                          </label>
+                        </div>
                       </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                       <div className="form-group">
                         <label className="form-label">Instagram Profile URL</label>
                         <input type="url" className="form-input" value={settingsForm.instagramUrl} onChange={e => setSettingsForm({ ...settingsForm, instagramUrl: e.target.value })} />
                       </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">Announcement Top Ticker Banner Message</label>
-                      <input type="text" className="form-input" value={settingsForm.freeShippingMessage} onChange={e => setSettingsForm({ ...settingsForm, freeShippingMessage: e.target.value })} required />
+                      <div className="form-group">
+                        <label className="form-label">Announcement Banner Message</label>
+                        <input type="text" className="form-input" value={settingsForm.freeShippingMessage} onChange={e => setSettingsForm({ ...settingsForm, freeShippingMessage: e.target.value })} required />
+                      </div>
                     </div>
 
                     <div className="form-group">

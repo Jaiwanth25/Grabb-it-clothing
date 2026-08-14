@@ -95,7 +95,20 @@ router.post('/', authenticateToken, async (req, res) => {
         verifiedDiscount = Math.min(verifiedDiscount, subtotal);
       }
 
-      const verifiedShipping = subtotal >= 999 ? 0 : 99;
+      // Fetch dynamic shipping settings from store_settings DB
+      const shipChargeRow = await tx.queryOne("SELECT value FROM store_settings WHERE key = 'shipping_charge'");
+      const freeThreshRow = await tx.queryOne("SELECT value FROM store_settings WHERE key = 'free_shipping_threshold'");
+      const freeEnabledRow = await tx.queryOne("SELECT value FROM store_settings WHERE key = 'free_shipping_enabled'");
+
+      const dbShippingCharge = shipChargeRow ? (parseFloat(shipChargeRow.value) || 79) : 79;
+      const dbFreeThreshold = freeThreshRow ? (parseFloat(freeThreshRow.value) || 999) : 999;
+      const dbFreeEnabled = freeEnabledRow ? (freeEnabledRow.value !== 'false' && freeEnabledRow.value !== '0') : true;
+
+      let verifiedShipping = dbShippingCharge;
+      if (dbFreeEnabled && subtotal >= dbFreeThreshold) {
+        verifiedShipping = 0;
+      }
+
       const totalAmount = Math.max(0, subtotal - verifiedDiscount + verifiedShipping);
       const orderNumber = 'GRB-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
       const trackingNumber = 'TRK' + Math.floor(100000000 + Math.random() * 900000000);

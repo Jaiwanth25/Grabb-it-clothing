@@ -69,7 +69,32 @@ const CheckoutPage = () => {
     }
   }, [token]);
 
-  const shippingFee = subtotal >= 999 || cartItems.length === 0 ? 0 : 99;
+  const [storeSettings, setStoreSettings] = useState({
+    shipping_charge: '79',
+    free_shipping_threshold: '999',
+    free_shipping_enabled: 'true'
+  });
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          setStoreSettings({
+            shipping_charge: data.shipping_charge || '79',
+            free_shipping_threshold: data.free_shipping_threshold || data.freeShippingThreshold || '999',
+            free_shipping_enabled: data.free_shipping_enabled !== undefined ? String(data.free_shipping_enabled) : 'true'
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const dbShippingCharge = parseFloat(storeSettings.shipping_charge) || 79;
+  const dbFreeThreshold = parseFloat(storeSettings.free_shipping_threshold) || 999;
+  const dbFreeEnabled = storeSettings.free_shipping_enabled !== 'false';
+
+  const shippingFee = cartItems.length === 0 ? 0 : (dbFreeEnabled && subtotal >= dbFreeThreshold ? 0 : dbShippingCharge);
   const finalTotal = Math.max(0, subtotal - discountAmount + shippingFee);
 
   const handleChange = (e) => {

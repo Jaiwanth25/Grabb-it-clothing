@@ -40,6 +40,10 @@ async function sendEmail({ to, subject, html, text }) {
       return { success: false, error: err.message };
     }
   } else {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('CRITICAL PRODUCTION EMAIL ERROR: SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASSWORD) are not configured.');
+      return { success: false, error: 'Email service is not configured.' };
+    }
     // Development / Sandbox mode fallback logging
     console.log('----------------------------------------------------');
     console.log(`[EMAIL DISPATCH - DEV SIMULATOR]`);
