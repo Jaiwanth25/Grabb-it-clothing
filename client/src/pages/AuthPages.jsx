@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Lock, Mail, User, Phone, ArrowRight, KeyRound, CheckCircle2 } from 'lucide-react';
 
@@ -21,6 +21,9 @@ export const Login = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const redirectTarget = queryParams.get('redirect');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,6 +43,8 @@ export const Login = () => {
 
       if (data.user.role === 'admin') {
         navigate('/admin');
+      } else if (redirectTarget) {
+        navigate(redirectTarget);
       } else {
         navigate('/account');
       }
@@ -159,12 +164,7 @@ export const Login = () => {
           </button>
 
           <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: '#666' }}>
-            Don't have an account? <Link to="/register" style={{ fontWeight: 800, color: '#111' }}>Register Here</Link>
-          </div>
-
-          <div style={{ backgroundColor: '#f5f5f5', padding: '0.75rem', marginTop: '1.5rem', fontSize: '0.75rem', border: '1px dashed #ccc' }}>
-            <strong>Sample Customer Login:</strong><br />
-            Email: customer@grabb-it.com | Password: Customer@123
+            Don't have an account? <Link to={redirectTarget ? `/register?redirect=${encodeURIComponent(redirectTarget)}` : "/register"} style={{ fontWeight: 800, color: '#111' }}>Register Here</Link>
           </div>
         </form>
       ) : (
@@ -270,6 +270,9 @@ export const Register = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const redirectTarget = queryParams.get('redirect');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -286,7 +289,11 @@ export const Register = () => {
       if (!res.ok) throw new Error(data.error || 'Failed to register');
 
       login(data.user, data.token);
-      navigate('/account');
+      if (redirectTarget) {
+        navigate(redirectTarget);
+      } else {
+        navigate('/account');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -330,7 +337,7 @@ export const Register = () => {
         </button>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: '#666' }}>
-          Already have an account? <Link to="/login" style={{ fontWeight: 800, color: '#111' }}>Sign In</Link>
+          Already have an account? <Link to={redirectTarget ? `/login?redirect=${encodeURIComponent(redirectTarget)}` : "/login"} style={{ fontWeight: 800, color: '#111' }}>Sign In</Link>
         </div>
       </form>
     </main>

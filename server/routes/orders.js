@@ -5,8 +5,8 @@ const { optionalToken, authenticateToken } = require('../middleware/authMiddlewa
 const { sendOrderEmail } = require('../services/email');
 const { sendRealtimeNotification } = require('./sse');
 
-// POST /api/orders
-router.post('/', optionalToken, async (req, res) => {
+// POST /api/orders (Mandatory Customer Authentication)
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const {
       customer_name,
@@ -24,7 +24,7 @@ router.post('/', optionalToken, async (req, res) => {
       return res.status(400).json({ error: 'Missing required customer or order items information' });
     }
 
-    const userId = req.user ? req.user.id : null;
+    const userId = req.user.id;
 
     // Transaction for stock deduction, reservation, and order creation
     const newOrder = await db.transaction(async (tx) => {

@@ -56,8 +56,8 @@ router.get('/settings', async (req, res) => {
   }
 });
 
-// POST /api/payments/create-razorpay-order
-router.post('/create-razorpay-order', optionalToken, async (req, res) => {
+// POST /api/payments/create-razorpay-order (Mandatory Customer Authentication + IDOR check)
+router.post('/create-razorpay-order', authenticateToken, async (req, res) => {
   try {
     const { orderId } = req.body;
     if (!orderId) {
@@ -67,6 +67,10 @@ router.post('/create-razorpay-order', optionalToken, async (req, res) => {
     const order = await db.queryOne('SELECT * FROM orders WHERE id = ? OR order_number = ?', [orderId, orderId]);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.user_id && order.user_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied: You do not own this order' });
     }
 
     const amountInPaise = Math.round(order.total_amount * 100);

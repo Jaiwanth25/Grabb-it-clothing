@@ -37,6 +37,13 @@ const CheckoutPage = () => {
       .catch(err => console.warn('Could not load payment settings:', err));
   }, []);
 
+  // Mandatory Customer Purchase Authentication Check
+  useEffect(() => {
+    if (!token) {
+      navigate('/login?redirect=/checkout');
+    }
+  }, [token, navigate]);
+
   // Pre-fill user saved address if available
   useEffect(() => {
     if (token) {
