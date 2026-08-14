@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: grabb-it-api
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd server && npm install --legacy-peer-deps
+    startCommand: cd server && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: FRONTEND_URL
+        value: https://grabb-it-clothing.vercel.app
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: grabb-it-postgres
+          property: connectionString
+
+databases:
+  - name: grabb-it-postgres
+    databaseName: grabb_it_db
+    user: grabb_it_user
+    plan: free

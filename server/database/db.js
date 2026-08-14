@@ -18,6 +18,7 @@ class DBAbstraction {
       this.sqliteDb = new Database(dbPath);
       this.sqliteDb.pragma('foreign_keys = ON');
       this.initSqliteDb();
+      this.sqliteTxQueue = Promise.resolve();
     }
   }
 
@@ -134,15 +135,20 @@ class DBAbstraction {
         insert: (sql, params = []) => this.insert(sql, params),
         client: null
       };
-      try {
-        this.sqliteDb.exec('BEGIN IMMEDIATE');
-        const result = await callback(txWrapper);
-        this.sqliteDb.exec('COMMIT');
-        return result;
-      } catch (err) {
-        try { this.sqliteDb.exec('ROLLBACK'); } catch (rbErr) {}
-        throw err;
-      }
+
+      return new Promise((resolve, reject) => {
+        this.sqliteTxQueue = this.sqliteTxQueue.then(async () => {
+          try {
+            this.sqliteDb.exec('BEGIN IMMEDIATE');
+            const result = await callback(txWrapper);
+            this.sqliteDb.exec('COMMIT');
+            resolve(result);
+          } catch (err) {
+            try { this.sqliteDb.exec('ROLLBACK'); } catch (rbErr) {}
+            reject(err);
+          }
+        }).catch(reject);
+      });
     }
   }
 }
