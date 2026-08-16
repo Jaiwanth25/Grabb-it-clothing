@@ -65,8 +65,11 @@ const ProductListing = () => {
   useEffect(() => {
     fetch(`/api/categories?gender=${pathGender}`)
       .then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => console.error('Fetch categories error:', err));
+      .then(data => setCategories(Array.isArray(data) ? data : []))
+      .catch(err => {
+        console.error('Fetch categories error:', err);
+        setCategories([]);
+      });
   }, [pathGender]);
 
   // Sync state from query params on navigate (e.g. search click)
@@ -99,11 +102,12 @@ const ProductListing = () => {
     fetch(`/api/products?${params.toString()}`)
       .then(res => res.json())
       .then(data => {
-        setProducts(data);
+        setProducts(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {
         console.error('Fetch products error:', err);
+        setProducts([]);
         setLoading(false);
       });
   }, [pathGender, selectedCategory, selectedCollection, selectedSize, selectedColor, minPrice, maxPrice, selectedDiscount, selectedRating, inStockOnly, sortBy, searchTerm, location.search]);
@@ -133,7 +137,7 @@ const ProductListing = () => {
     }
   };
 
-  const activeCategoryObj = categories.find(c => c.slug === selectedCategory);
+  const activeCategoryObj = Array.isArray(categories) ? categories.find(c => c?.slug === selectedCategory) : null;
 
   const renderFiltersContent = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
