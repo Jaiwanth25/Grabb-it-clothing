@@ -35,12 +35,25 @@ function Layout({ children }) {
 
 function ProtectedAdminRoute({ children }) {
   const { user, token } = useAuth();
-  if (!token || !user) {
+  
+  const currentToken = token || localStorage.getItem('grabb_it_token');
+  const currentUser = user || (() => {
+    try {
+      const u = localStorage.getItem('grabb_it_user');
+      return u ? JSON.parse(u) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  if (!currentToken || !currentUser) {
     return <Navigate to="/admin/login" replace />;
   }
-  if (user.role !== 'admin') {
+
+  if (currentUser.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
+
   return children;
 }
 

@@ -57,7 +57,7 @@ const AdminLogin = () => {
 
         setSuccessMsg('AUTHENTICATED! OPENING DASHBOARD...');
         login(data.user, data.token);
-        setTimeout(() => navigate('/admin'), 600);
+        navigate('/admin', { replace: true });
         return;
       }
 
@@ -74,7 +74,7 @@ const AdminLogin = () => {
 
         setSuccessMsg('ADMIN AUTHORIZED! REDIRECTING TO CONTROL PANEL...');
         login(masterAdminUser, masterToken);
-        setTimeout(() => navigate('/admin'), 600);
+        navigate('/admin', { replace: true });
         return;
       }
 

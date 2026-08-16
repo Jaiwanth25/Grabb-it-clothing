@@ -3,7 +3,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const u = localStorage.getItem('grabb_it_user');
+      return u ? JSON.parse(u) : null;
+    } catch (e) {
+      return null;
+    }
+  });
   const [token, setToken] = useState(() => localStorage.getItem('grabb_it_token') || '');
   const [loading, setLoading] = useState(true);
 
@@ -14,17 +21,16 @@ export const AuthProvider = ({ children }) => {
       })
         .then(res => {
           if (res.ok) return res.json();
-          throw new Error('Unauthorized');
+          return null;
         })
         .then(data => {
           if (data && data.user) {
             setUser(data.user);
-          } else {
-            logout();
+            localStorage.setItem('grabb_it_user', JSON.stringify(data.user));
           }
         })
         .catch(() => {
-          logout();
+          // Do not log out if local user session exists
         })
         .finally(() => setLoading(false));
     } else {
@@ -36,12 +42,14 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     setToken(userToken);
     localStorage.setItem('grabb_it_token', userToken);
+    localStorage.setItem('grabb_it_user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
     setToken('');
     localStorage.removeItem('grabb_it_token');
+    localStorage.removeItem('grabb_it_user');
   };
 
   return (
