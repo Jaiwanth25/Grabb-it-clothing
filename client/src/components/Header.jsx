@@ -150,7 +150,7 @@ const Header = () => {
             <Menu size={22} color="var(--text-dark)" />
           </button>
           
-          <Link to="/" className="header-center" style={{ justifyContent: 'flex-start', gap: '0.65rem' }}>
+          <Link to="/" className="header-brand-container">
             <div className="header-logo-container">
               <img
                 src="/assets/grabb-it-logo.png"
