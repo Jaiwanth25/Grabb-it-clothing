@@ -6,8 +6,8 @@ const BannerCarousel = () => {
     <section className="monochrome-hero">
       {/* Background High-Fashion Photography */}
       <img
-        src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1800&auto=format&fit=crop&q=80&sat=-100"
-        alt="Grabb-it Monochrome Fashion Campaign"
+        src="https://images.unsplash.com/photo-1488161628813-04466f872be2?w=1800&auto=format&fit=crop&q=80&sat=-100"
+        alt="Grabb-it Male Streetwear Fashion Campaign"
         className="monochrome-hero-img"
       />
       
