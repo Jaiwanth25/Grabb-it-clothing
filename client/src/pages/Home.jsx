@@ -22,19 +22,19 @@ const Home = () => {
     // Fetch Featured Products
     fetch(`/api/products?gender=${gender}&isFeatured=true`)
       .then(res => res.json())
-      .then(data => setFeaturedProducts(data.slice(0, 4)))
+      .then(data => setFeaturedProducts(Array.isArray(data) ? data.slice(0, 4) : []))
       .catch(err => console.error('Fetch Featured Products Error:', err));
 
     // Fetch Collections
     fetch(`/api/collections?gender=${gender}`)
       .then(res => res.json())
-      .then(data => setCollections(data.slice(0, 3)))
+      .then(data => setCollections(Array.isArray(data) ? data.slice(0, 3) : []))
       .catch(err => console.error('Fetch Collections Error:', err));
 
     // Fetch Looks
     fetch(`/api/looks?gender=${gender}`)
       .then(res => res.json())
-      .then(data => setLooks(data.slice(0, 2)))
+      .then(data => setLooks(Array.isArray(data) ? data.slice(0, 2) : []))
       .catch(err => console.error('Fetch Looks Error:', err));
   }, [gender]);
 

@@ -17,7 +17,11 @@ export const AuthProvider = ({ children }) => {
           throw new Error('Unauthorized');
         })
         .then(data => {
-          setUser(data.user);
+          if (data && data.user) {
+            setUser(data.user);
+          } else {
+            logout();
+          }
         })
         .catch(() => {
           logout();

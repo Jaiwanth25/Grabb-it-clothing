@@ -20,11 +20,18 @@ export const WishlistProvider = ({ children }) => {
       });
       if (res.ok) {
         const data = await res.json();
-        setWishlistItems(data);
-        setWishlistIds(data.map(item => item.id));
+        if (Array.isArray(data)) {
+          setWishlistItems(data);
+          setWishlistIds(data.map(item => item.id));
+        } else {
+          setWishlistItems([]);
+          setWishlistIds([]);
+        }
       }
     } catch (err) {
       console.error('Fetch Wishlist Error:', err);
+      setWishlistItems([]);
+      setWishlistIds([]);
     }
   };
 
@@ -49,7 +56,7 @@ export const WishlistProvider = ({ children }) => {
       const data = await res.json();
       if (res.ok) {
         fetchWishlist();
-        return data.inWishlist;
+        return data ? !!data.inWishlist : false;
       }
     } catch (err) {
       console.error('Toggle Wishlist Error:', err);
@@ -57,7 +64,7 @@ export const WishlistProvider = ({ children }) => {
     return false;
   };
 
-  const isInWishlist = (productId) => wishlistIds.includes(productId);
+  const isInWishlist = (productId) => Array.isArray(wishlistIds) && wishlistIds.includes(productId);
 
   return (
     <WishlistContext.Provider value={{ wishlistItems, wishlistIds, toggleWishlist, isInWishlist, refreshWishlist: fetchWishlist }}>

@@ -284,7 +284,7 @@ const CheckoutPage = () => {
             {completedOrder.items?.map((item, idx) => (
               <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
                 <div>
-                  <strong style={{ textTransform: 'uppercase', color: 'var(--color-maroon)' }}>{item.product_name}</strong> ({item.size} / {item.color.toUpperCase()}) x {item.quantity}
+                  <strong style={{ textTransform: 'uppercase', color: 'var(--color-maroon)' }}>{item.product_name}</strong> ({item.size} / {(item.color || '').toUpperCase()}) x {item.quantity}
                 </div>
                 <div style={{ fontWeight: 800, color: 'var(--color-maroon)' }}>{formatINR(item.price * item.quantity)}</div>
               </div>

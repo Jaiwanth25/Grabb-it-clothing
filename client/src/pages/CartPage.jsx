@@ -105,7 +105,7 @@ const CartPage = () => {
               </tr>
             </thead>
             <tbody>
-              {cartItems.map((item) => {
+              {(cartItems || []).map((item) => {
                 const itemFavorite = isInWishlist(item.product_id);
                 return (
                   <tr key={item.cart_item_id}>
@@ -117,7 +117,7 @@ const CartPage = () => {
                             {item.product_name}
                           </Link>
                           <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-                            SIZE: <strong>{item.size}</strong> | COLOR: <strong>{item.color.toUpperCase()}</strong>
+                            SIZE: <strong>{item.size}</strong> | COLOR: <strong>{(item.color || '').toUpperCase()}</strong>
                           </div>
                           
                           {/* Move to Wishlist shortcut link */}
