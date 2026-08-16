@@ -1,59 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { useGender } from '../context/GenderContext';
-import { ArrowRight } from 'lucide-react';
+
+const categoriesList = [
+  {
+    id: 'men-shirts',
+    name: "Men's Shirts",
+    slug: 'men-shirts',
+    img: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&auto=format&fit=crop&q=80&sat=-100'
+  },
+  {
+    id: 'men-t-shirts',
+    name: "Men's T-Shirts",
+    slug: 'men-t-shirts',
+    img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80&sat=-100'
+  },
+  {
+    id: 'men-pants',
+    name: "Men's Pants",
+    slug: 'men-pants',
+    img: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&auto=format&fit=crop&q=80&sat=-100'
+  },
+  {
+    id: 'men-jeans',
+    name: "Men's Jeans",
+    slug: 'men-jeans',
+    img: 'https://images.unsplash.com/photo-1542272604-780c36856842?w=600&auto=format&fit=crop&q=80&sat=-100'
+  },
+  {
+    id: 'hoodies',
+    name: "Hoodies",
+    slug: 'men-outerwear',
+    img: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80&sat=-100'
+  },
+  {
+    id: 'designer-shirts',
+    name: "Designer Shirts",
+    slug: 'men-linen',
+    img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&auto=format&fit=crop&q=80&sat=-100'
+  }
+];
 
 const CategorySection = () => {
-  const { gender } = useGender();
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    fetch(`/api/categories?gender=${gender}`)
-      .then(res => res.json())
-      .then(data => {
-        setCategories(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Fetch Categories Error:', err);
-        setLoading(false);
-      });
-  }, [gender]);
-
   return (
-    <section className="section-space container">
-      <div className="section-header">
-        <div>
-          <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', color: '#666', textTransform: 'uppercase' }}>
-            {gender.toUpperCase()} CATEGORIES
-          </span>
-          <h2 className="section-title">EXPLORE BY CATEGORY</h2>
-        </div>
-
-        <Link to={`/${gender}`} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.9rem' }}>
-          VIEW ALL {gender.toUpperCase()} CATEGORIES <ArrowRight size={16} />
-        </Link>
+    <section className="category-section-container">
+      <div className="category-section-header">
+        <h2 className="category-section-title">SHOP BY CATEGORY</h2>
+        <div className="category-section-divider"></div>
       </div>
 
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#888' }}>Loading categories...</div>
-      ) : (
-        <div className="category-grid">
-          {categories.map((cat) => (
-            <Link key={cat.id} to={`/${gender}?category=${cat.slug}`} className="category-card">
-              <img src={cat.image_url} alt={cat.name} className="category-card-img" />
-              <div className="category-card-content">
-                <h3 className="category-card-title">{cat.name}</h3>
-                <span style={{ fontSize: '0.75rem', color: '#e0e0e0', fontWeight: 700 }}>
-                  {cat.product_count || 0} Items
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+      <div className="category-circle-grid">
+        {categoriesList.map((cat) => (
+          <Link key={cat.id} to={`/men?category=${cat.slug}`} className="category-circle-card">
+            <div className="category-circle-img-wrap">
+              <img src={cat.img} alt={cat.name} className="category-circle-img" />
+            </div>
+            <span className="category-circle-name">{cat.name}</span>
+          </Link>
+        ))}
+      </div>
     </section>
   );
 };
