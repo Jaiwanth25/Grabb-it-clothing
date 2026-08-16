@@ -193,7 +193,32 @@ app.use((err, req, res, next) => {
 // Start Stock Reservation Cleanup Scheduler
 startReservationCleanupScheduler(60000);
 
-const server = app.listen(PORT, () => {
+// Auto-ensure default Admin account exists on backend startup
+const bcrypt = require('bcryptjs');
+
+async function ensureAdminUser() {
+  try {
+    const admin = await db.queryOne("SELECT id, email, password_hash, role FROM users WHERE email = 'admin@grabb-it.com'");
+    const adminPasswordHash = bcrypt.hashSync('Admin@123456', 10);
+    
+    if (!admin) {
+      console.log('Admin user missing. Creating default admin@grabb-it.com...');
+      await db.insert(`
+        INSERT INTO users (name, email, password_hash, role, phone)
+        VALUES ('Grabb-It Admin', 'admin@grabb-it.com', ?, 'admin', '+18005550199')
+      `, [adminPasswordHash]);
+      console.log('Default admin user created successfully.');
+    } else {
+      // Always ensure password_hash and role are valid
+      await db.run("UPDATE users SET password_hash = ?, role = 'admin' WHERE email = 'admin@grabb-it.com'", [adminPasswordHash]);
+      console.log('Admin credentials verified & synchronized (admin@grabb-it.com / Admin@123456).');
+    }
+  } catch (err) {
+    console.warn('Auto-admin verification notice:', err.message);
+  }
+}
+
+const server = app.listen(PORT, async () => {
   console.log(`=================================`);
   console.log(`GRABB-IT Backend Server Active`);
   console.log(`Port: ${PORT}`);
@@ -201,6 +226,7 @@ const server = app.listen(PORT, () => {
   console.log(`Database Mode: ${db.isPg ? 'PostgreSQL' : 'SQLite'}`);
   console.log(`API Root: http://localhost:${PORT}/api`);
   console.log(`=================================`);
+  await ensureAdminUser();
 });
 
 // Graceful Shutdown
