@@ -986,13 +986,120 @@ router.delete('/payment-settings/qr', async (req, res) => {
   }
 });
 
-// --- IMAGE UPLOAD API FOR ADMIN ---
-router.post('/upload', upload.single('image'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No image file uploaded' });
+// --- CATEGORIES MANAGEMENT ---
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await db.query('SELECT * FROM categories ORDER BY display_order ASC, id DESC', []);
+    res.json(categories || []);
+  } catch (err) {
+    console.error('Fetch Admin Categories Error:', err);
+    res.status(500).json({ error: 'Failed to fetch categories' });
   }
-  const imageUrl = req.file.path || `/uploads/${req.file.filename}`;
-  res.json({ imageUrl });
+});
+
+router.post('/categories', async (req, res) => {
+  try {
+    const { name, slug, gender = 'men', image_url, display_order = 0, is_active = 1 } = req.body;
+    if (!name) return res.status(400).json({ error: 'Category name is required' });
+
+    const catSlug = slug ? slug.toLowerCase().trim() : name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    const result = await db.insert(`
+      INSERT INTO categories (name, slug, gender, image_url, display_order, is_active)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [name, catSlug, gender.toLowerCase(), image_url || '', parseInt(display_order) || 0, is_active ? 1 : 0]);
+
+    res.status(201).json({ id: result.id, message: 'Category created successfully' });
+  } catch (err) {
+    console.error('Create Category Error:', err);
+    res.status(400).json({ error: err.message || 'Failed to create category' });
+  }
+});
+
+router.put('/categories/:id', async (req, res) => {
+  try {
+    const { name, slug, gender = 'men', image_url, display_order = 0, is_active = 1 } = req.body;
+    const catId = req.params.id;
+
+    const catSlug = slug ? slug.toLowerCase().trim() : name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    await db.run(`
+      UPDATE categories SET
+        name = ?, slug = ?, gender = ?, image_url = ?, display_order = ?, is_active = ?
+      WHERE id = ?
+    `, [name, catSlug, gender.toLowerCase(), image_url || '', parseInt(display_order) || 0, is_active ? 1 : 0, catId]);
+
+    res.json({ message: 'Category updated successfully' });
+  } catch (err) {
+    console.error('Update Category Error:', err);
+    res.status(500).json({ error: 'Failed to update category' });
+  }
+});
+
+router.delete('/categories/:id', async (req, res) => {
+  try {
+    await db.run('DELETE FROM categories WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Category deleted successfully' });
+  } catch (err) {
+    console.error('Delete Category Error:', err);
+    res.status(500).json({ error: 'Failed to delete category' });
+  }
+});
+
+// --- SHOP BY STYLE MANAGEMENT ---
+router.get('/styles', async (req, res) => {
+  try {
+    const styles = await db.query('SELECT * FROM styles ORDER BY display_order ASC, id DESC', []);
+    res.json(styles || []);
+  } catch (err) {
+    console.error('Fetch Admin Styles Error:', err);
+    res.status(500).json({ error: 'Failed to fetch styles' });
+  }
+});
+
+router.post('/styles', async (req, res) => {
+  try {
+    const { name, search_query, image_url, gender = 'men', display_order = 0, is_active = 1 } = req.body;
+    if (!name || !image_url) return res.status(400).json({ error: 'Name and Image URL are required' });
+
+    const result = await db.insert(`
+      INSERT INTO styles (name, search_query, image_url, gender, display_order, is_active)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [name, search_query || name, image_url, gender.toLowerCase(), parseInt(display_order) || 0, is_active ? 1 : 0]);
+
+    res.status(201).json({ id: result.id, message: 'Style created successfully' });
+  } catch (err) {
+    console.error('Create Style Error:', err);
+    res.status(400).json({ error: 'Failed to create style' });
+  }
+});
+
+router.put('/styles/:id', async (req, res) => {
+  try {
+    const { name, search_query, image_url, gender = 'men', display_order = 0, is_active = 1 } = req.body;
+    const styleId = req.params.id;
+
+    await db.run(`
+      UPDATE styles SET
+        name = ?, search_query = ?, image_url = ?, gender = ?, display_order = ?, is_active = ?
+      WHERE id = ?
+    `, [name, search_query || name, image_url, gender.toLowerCase(), parseInt(display_order) || 0, is_active ? 1 : 0, styleId]);
+
+    res.json({ message: 'Style updated successfully' });
+  } catch (err) {
+    console.error('Update Style Error:', err);
+    res.status(500).json({ error: 'Failed to update style' });
+  }
+});
+
+router.delete('/styles/:id', async (req, res) => {
+  try {
+    await db.run('DELETE FROM styles WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Style deleted successfully' });
+  } catch (err) {
+    console.error('Delete Style Error:', err);
+    res.status(500).json({ error: 'Failed to delete style' });
+  }
 });
 
 module.exports = router;

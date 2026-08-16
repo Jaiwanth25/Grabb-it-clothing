@@ -38,13 +38,23 @@ const Home = () => {
       .catch(err => console.error('Fetch Looks Error:', err));
   }, [gender]);
 
-  // Style aesthetics definitions (Men's Fashion)
-  const stylesList = [
-    { name: 'Oversized Streetwear', search: 'oversized', img: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&auto=format&fit=crop&q=80' },
-    { name: 'Minimalist Solids', search: 'essential', img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80' },
-    { name: 'Smart Resort Shirts', search: 'shirt', img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80' },
-    { name: 'Breezy Linen Cuts', search: 'linen', img: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80' }
-  ];
+  const [stylesList, setStylesList] = useState([
+    { name: 'Oversized Streetwear', search_query: 'oversized', image_url: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&auto=format&fit=crop&q=80' },
+    { name: 'Minimalist Solids', search_query: 'essential', image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80' },
+    { name: 'Smart Resort Shirts', search_query: 'shirt', image_url: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80' },
+    { name: 'Breezy Linen Cuts', search_query: 'linen', image_url: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80' }
+  ]);
+
+  useEffect(() => {
+    fetch(`/api/styles?gender=${gender}`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setStylesList(data);
+        }
+      })
+      .catch(err => console.error('Fetch styles error:', err));
+  }, [gender]);
 
   return (
     <main style={{ backgroundColor: 'var(--bg-main)' }}>
@@ -96,14 +106,14 @@ const Home = () => {
           </Link>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.75rem' }}>
-          {stylesList.map((style, i) => (
+          {(stylesList || []).map((style, i) => (
             <Link 
-              key={i} 
-              to={`/${gender}?search=${encodeURIComponent(style.search)}`} 
+              key={style.id || i} 
+              to={`/${gender}?search=${encodeURIComponent(style.search_query || style.search || style.name)}`} 
               className="category-card"
               style={{ display: 'block', height: '340px' }}
             >
-              <img src={style.img} alt={style.name} className="category-card-img" />
+              <img src={style.image_url || style.img} alt={style.name} className="category-card-img" />
               <div className="category-card-content">
                 <span className="category-card-title">{style.name}</span>
                 <ArrowRight size={18} color="var(--text-dark)" />

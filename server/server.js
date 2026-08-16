@@ -145,10 +145,12 @@ const adminRoutes = require('./routes/admin');
 const notificationsRoutes = require('./routes/notifications');
 const paymentRoutes = require('./routes/payments');
 const sseRoutes = require('./routes/sse');
+const stylesRoutes = require('./routes/styles');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/styles', stylesRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use('/api/collections', collectionsRoutes);
 app.use('/api/looks', looksRoutes);

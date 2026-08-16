@@ -19,6 +19,7 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [styles, setStyles] = useState([]);
   const [banners, setBanners] = useState([]);
   const [orders, setOrders] = useState([]);
   const [inventory, setInventory] = useState([]);
@@ -36,6 +37,7 @@ const AdminDashboard = () => {
   // Modals state
   const [showProductModal, setShowProductModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showStyleModal, setShowStyleModal] = useState(false);
   const [showBannerModal, setShowBannerModal] = useState(false);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
@@ -62,7 +64,13 @@ const AdminDashboard = () => {
     ]
   });
 
-  const [categoryForm, setCategoryForm] = useState({ name: '', gender: 'men', image_url: '' });
+  const [categoryForm, setCategoryForm] = useState({
+    id: null, name: '', slug: '', gender: 'men', image_url: '', display_order: 0, is_active: true
+  });
+
+  const [styleForm, setStyleForm] = useState({
+    id: null, name: '', search_query: '', image_url: '', gender: 'men', display_order: 0, is_active: true
+  });
 
   const [bannerForm, setBannerForm] = useState({
     title: 'THE FESTIVE DROP', subtitle: 'Vibrant Colors. Contemporary Fits.', button_text: 'SHOP COLLECTION NOW', button_link: '/men',
@@ -124,7 +132,7 @@ const AdminDashboard = () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [statsRes, prodRes, catRes, banRes, ordRes, invRes, custRes, coupRes, colRes, revRes, looksRes, setRes, paySetRes] = await Promise.all([
+      const [statsRes, prodRes, catRes, banRes, ordRes, invRes, custRes, coupRes, colRes, revRes, looksRes, setRes, paySetRes, stylesRes] = await Promise.all([
         fetch('/api/admin/stats', { headers }),
         fetch('/api/admin/products', { headers }),
         fetch('/api/admin/categories', { headers }),
@@ -137,7 +145,8 @@ const AdminDashboard = () => {
         fetch('/api/admin/reviews', { headers }),
         fetch('/api/admin/looks', { headers }),
         fetch('/api/admin/settings', { headers }),
-        fetch('/api/admin/payment-settings', { headers })
+        fetch('/api/admin/payment-settings', { headers }),
+        fetch('/api/admin/styles', { headers })
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
@@ -149,6 +158,7 @@ const AdminDashboard = () => {
           setProductForm(prev => ({ ...prev, category_id: catData[0].id }));
         }
       }
+      if (stylesRes && stylesRes.ok) setStyles(await stylesRes.json());
       if (banRes.ok) setBanners(await banRes.json());
       if (ordRes.ok) setOrders(await ordRes.json());
       if (invRes.ok) setInventory(await invRes.json());
@@ -320,20 +330,77 @@ const AdminDashboard = () => {
     }
   };
 
-  // Category Save
+  // Category Save (Add & Edit with Picture Upload)
   const handleSaveCategory = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/admin/categories', {
-        method: 'POST',
+      let finalImageUrl = categoryForm.image_url;
+      if (selectedFiles.length > 0) {
+        const urls = await uploadSelectedFiles();
+        if (urls && urls.length > 0) {
+          finalImageUrl = urls[0];
+        }
+      }
+
+      const payload = {
+        ...categoryForm,
+        image_url: finalImageUrl
+      };
+
+      const url = categoryForm.id ? `/api/admin/categories/${categoryForm.id}` : '/api/admin/categories';
+      const method = categoryForm.id ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(categoryForm)
+        body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error('Failed to save category');
+
       setShowCategoryModal(false);
-      setCategoryForm({ name: '', gender: 'men', image_url: '' });
+      setSelectedFiles([]);
+      setImagePreviews([]);
+      setCategoryForm({ id: null, name: '', slug: '', gender: 'men', image_url: '', display_order: 0, is_active: true });
       fetchData();
-      alert('✓ Category added successfully!');
+      alert(`✓ Category ${categoryForm.id ? 'updated' : 'created'} successfully!`);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // Shop by Style Save (Add & Edit with Picture Upload)
+  const handleSaveStyle = async (e) => {
+    e.preventDefault();
+    try {
+      let finalImageUrl = styleForm.image_url;
+      if (selectedFiles.length > 0) {
+        const urls = await uploadSelectedFiles();
+        if (urls && urls.length > 0) {
+          finalImageUrl = urls[0];
+        }
+      }
+
+      const payload = {
+        ...styleForm,
+        image_url: finalImageUrl
+      };
+
+      const url = styleForm.id ? `/api/admin/styles/${styleForm.id}` : '/api/admin/styles';
+      const method = styleForm.id ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed to save style');
+
+      setShowStyleModal(false);
+      setSelectedFiles([]);
+      setImagePreviews([]);
+      setStyleForm({ id: null, name: '', search_query: '', image_url: '', gender: 'men', display_order: 0, is_active: true });
+      fetchData();
+      alert(`✓ Shop by Style card ${styleForm.id ? 'updated' : 'created'} successfully!`);
     } catch (err) {
       alert(err.message);
     }
@@ -481,14 +548,15 @@ const AdminDashboard = () => {
 
   const navItems = [
     { id: 'overview', label: 'Dashboard Home', icon: LayoutDashboard },
-    { id: 'orders', label: 'View Customer Orders', icon: ShoppingBag, badge: orders.filter(o => o.order_status === 'Pending').length },
+    { id: 'orders', label: 'View Customer Orders', icon: ShoppingBag, badge: (orders || []).filter(o => o.order_status === 'Pending').length },
     { id: 'products', label: 'Manage Products', icon: PackageCheck },
     { id: 'inventory', label: 'Stock Inventory', icon: Layers },
+    { id: 'categories', label: 'Categories & Pictures', icon: FolderTree },
+    { id: 'styles', label: 'Shop by Style (Vibe Cards)', icon: Sparkles },
     { id: 'coupons', label: 'Special Offers & Coupons', icon: Ticket },
     { id: 'collections', label: 'Campaign Collections', icon: Image },
     { id: 'banners', label: 'Homepage Banners', icon: Image },
     { id: 'looks', label: 'Shop The Look', icon: Camera },
-    { id: 'categories', label: 'Apparel Categories', icon: FolderTree },
     { id: 'customers', label: 'Registered Customers', icon: Users },
     { id: 'reviews', label: 'Customer Reviews', icon: MessageSquare },
     { id: 'payments', label: 'Payments & Refunds Log', icon: CreditCard },
@@ -1191,42 +1259,191 @@ const AdminDashboard = () => {
                 </div>
               )}
 
-              {/* TAB 8: CATEGORIES */}
+              {/* TAB 8: CATEGORIES & PICTURES */}
               {activeTab === 'categories' && (
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h2 style={{ fontSize: '1.15rem', fontWeight: 800, textTransform: 'uppercase', fontFamily: 'var(--font-title)' }}>
-                      Apparel Categories
+                      Apparel Categories &amp; Storefront Pictures
                     </h2>
-                    <button className="btn-primary" onClick={() => setShowCategoryModal(true)}>
-                      <Plus size={16} /> ADD CATEGORY
+                    <button className="btn-primary" onClick={() => {
+                      setCategoryForm({ id: null, name: '', slug: '', gender: 'men', image_url: '', display_order: 0, is_active: true });
+                      setSelectedFiles([]);
+                      setImagePreviews([]);
+                      setShowCategoryModal(true);
+                    }}>
+                      <Plus size={16} /> ADD NEW CATEGORY
                     </button>
                   </div>
 
-                  {categories.length === 0 ? (
+                  {(categories || []).length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem 1rem', backgroundColor: '#ffffff', borderRadius: '16px', border: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
-                      No categories created yet.
+                      No categories created yet. Click "+ ADD NEW CATEGORY" to create one.
                     </div>
                   ) : (
                     <div className="table-responsive">
                       <table className="custom-table">
                         <thead>
                           <tr>
-                            <th>Image</th>
+                            <th>Category Photo</th>
                             <th>ID</th>
-                            <th>Name</th>
-                            <th>Slug</th>
+                            <th>Category Name</th>
+                            <th>URL Slug</th>
                             <th>Gender Target</th>
+                            <th>Display Order</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {categories.map(c => (
+                          {(categories || []).map(c => (
                             <tr key={c.id}>
-                              <td><img src={c.image_url} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} /></td>
+                              <td>
+                                <img
+                                  src={c.image_url || 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=200&auto=format&fit=crop&q=80'}
+                                  alt={c.name}
+                                  style={{ width: '54px', height: '54px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--color-primary)' }}
+                                />
+                              </td>
                               <td><code>CAT-{c.id}</code></td>
                               <td><strong>{c.name}</strong></td>
-                              <td>{c.slug}</td>
+                              <td><code>{c.slug}</code></td>
                               <td style={{ textTransform: 'uppercase' }}>{c.gender}</td>
+                              <td><strong>{c.display_order || 0}</strong></td>
+                              <td>
+                                <span className={c.is_active === 1 ? 'badge-new' : 'badge-discount'}>
+                                  {c.is_active === 1 ? 'Active' : 'Disabled'}
+                                </span>
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                  <button
+                                    onClick={() => {
+                                      setCategoryForm({
+                                        id: c.id,
+                                        name: c.name,
+                                        slug: c.slug,
+                                        gender: c.gender || 'men',
+                                        image_url: c.image_url || '',
+                                        display_order: c.display_order || 0,
+                                        is_active: c.is_active === 1
+                                      });
+                                      setSelectedFiles([]);
+                                      setImagePreviews([]);
+                                      setShowCategoryModal(true);
+                                    }}
+                                    className="btn-outline-gray"
+                                    style={{ padding: '0.35rem 0.6rem', color: '#111', borderColor: '#111' }}
+                                    title="Edit Category"
+                                  >
+                                    <Edit size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirm({ type: 'categories', id: c.id, title: c.name })}
+                                    className="btn-outline-gray"
+                                    style={{ padding: '0.35rem 0.6rem', color: '#c62828', borderColor: '#c62828' }}
+                                    title="Delete Category"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 8B: SHOP BY STYLE */}
+              {activeTab === 'styles' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h2 style={{ fontSize: '1.15rem', fontWeight: 800, textTransform: 'uppercase', fontFamily: 'var(--font-title)' }}>
+                      Shop by Style (Vibe Cards)
+                    </h2>
+                    <button className="btn-primary" onClick={() => {
+                      setStyleForm({ id: null, name: '', search_query: '', image_url: '', gender: 'men', display_order: 0, is_active: true });
+                      setSelectedFiles([]);
+                      setImagePreviews([]);
+                      setShowStyleModal(true);
+                    }}>
+                      <Plus size={16} /> ADD NEW STYLE
+                    </button>
+                  </div>
+
+                  {(styles || []).length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '4rem 1rem', backgroundColor: '#ffffff', borderRadius: '16px', border: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
+                      No style cards created yet. Click "+ ADD NEW STYLE" to create one.
+                    </div>
+                  ) : (
+                    <div className="table-responsive">
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th>Style Card Photo</th>
+                            <th>Style Title</th>
+                            <th>Search Keyword</th>
+                            <th>Gender Target</th>
+                            <th>Display Order</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(styles || []).map(st => (
+                            <tr key={st.id}>
+                              <td>
+                                <img
+                                  src={st.image_url}
+                                  alt={st.name}
+                                  style={{ width: '70px', height: '90px', borderRadius: '12px', objectFit: 'cover', border: '2px solid var(--color-primary)' }}
+                                />
+                              </td>
+                              <td><strong>{st.name}</strong></td>
+                              <td><code>{st.search_query}</code></td>
+                              <td style={{ textTransform: 'uppercase' }}>{st.gender}</td>
+                              <td><strong>{st.display_order || 0}</strong></td>
+                              <td>
+                                <span className={st.is_active === 1 ? 'badge-new' : 'badge-discount'}>
+                                  {st.is_active === 1 ? 'Active' : 'Disabled'}
+                                </span>
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                  <button
+                                    onClick={() => {
+                                      setStyleForm({
+                                        id: st.id,
+                                        name: st.name,
+                                        search_query: st.search_query,
+                                        gender: st.gender || 'men',
+                                        image_url: st.image_url || '',
+                                        display_order: st.display_order || 0,
+                                        is_active: st.is_active === 1
+                                      });
+                                      setSelectedFiles([]);
+                                      setImagePreviews([]);
+                                      setShowStyleModal(true);
+                                    }}
+                                    className="btn-outline-gray"
+                                    style={{ padding: '0.35rem 0.6rem', color: '#111', borderColor: '#111' }}
+                                    title="Edit Style"
+                                  >
+                                    <Edit size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirm({ type: 'styles', id: st.id, title: st.name })}
+                                    className="btn-outline-gray"
+                                    style={{ padding: '0.35rem 0.6rem', color: '#c62828', borderColor: '#c62828' }}
+                                    title="Delete Style"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -2057,25 +2274,189 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* ADD CATEGORY MODAL */}
+      {/* ADD / EDIT CATEGORY MODAL */}
       {showCategoryModal && (
         <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
             <button className="modal-close-btn" onClick={() => setShowCategoryModal(false)}><X size={20} /></button>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1.5rem', fontFamily: 'var(--font-title)' }}>ADD CATEGORY</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1.5rem', fontFamily: 'var(--font-title)' }}>
+              {categoryForm.id ? 'EDIT CATEGORY & PICTURE' : 'ADD NEW CATEGORY'}
+            </h3>
             <form onSubmit={handleSaveCategory} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="form-group">
                 <label className="form-label">Category Name</label>
-                <input type="text" className="form-input" value={categoryForm.name} onChange={e => setCategoryForm({ ...categoryForm, name: e.target.value })} required />
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Men's Shirts"
+                  value={categoryForm.name}
+                  onChange={e => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                  required
+                />
               </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Target Gender</label>
+                  <select className="form-select" value={categoryForm.gender} onChange={e => setCategoryForm({ ...categoryForm, gender: e.target.value })}>
+                    <option value="men">MEN</option>
+                    <option value="women">WOMEN</option>
+                    <option value="unisex">UNISEX</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Display Order Number</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={categoryForm.display_order}
+                    onChange={e => setCategoryForm({ ...categoryForm, display_order: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+
+              {/* CATEGORY IMAGE UPLOAD & URL */}
               <div className="form-group">
-                <label className="form-label">Target Gender</label>
-                <select className="form-select" value={categoryForm.gender} onChange={e => setCategoryForm({ ...categoryForm, gender: e.target.value })}>
-                  <option value="men">MEN</option>
-                  <option value="women">WOMEN</option>
-                </select>
+                <label className="form-label">Category Picture (Upload from Computer or enter Image URL)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="form-input"
+                  style={{ padding: '0.5rem', marginBottom: '0.5rem' }}
+                />
+                <input
+                  type="url"
+                  className="form-input"
+                  placeholder="https://images.unsplash.com/..."
+                  value={categoryForm.image_url}
+                  onChange={e => setCategoryForm({ ...categoryForm, image_url: e.target.value })}
+                />
+
+                {/* IMAGE PREVIEW */}
+                {(imagePreviews.length > 0 || categoryForm.image_url) && (
+                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: '12px' }}>
+                    <img
+                      src={imagePreviews[0] || categoryForm.image_url}
+                      alt="Category Preview"
+                      style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--color-primary)' }}
+                    />
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Image Preview Active</span>
+                  </div>
+                )}
               </div>
-              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '1rem', padding: '0.85rem' }}>SAVE CATEGORY</button>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', fontWeight: 700 }}>
+                <input
+                  type="checkbox"
+                  checked={categoryForm.is_active}
+                  onChange={e => setCategoryForm({ ...categoryForm, is_active: e.target.checked })}
+                /> Active on Storefront
+              </label>
+
+              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }} disabled={uploadingImages}>
+                {uploadingImages ? 'UPLOADING PICTURE...' : (categoryForm.id ? 'UPDATE CATEGORY' : 'SAVE CATEGORY')}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD / EDIT SHOP BY STYLE MODAL */}
+      {showStyleModal && (
+        <div className="modal-overlay" onClick={() => setShowStyleModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <button className="modal-close-btn" onClick={() => setShowStyleModal(false)}><X size={20} /></button>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1.5rem', fontFamily: 'var(--font-title)' }}>
+              {styleForm.id ? 'EDIT STYLE CARD & PICTURE' : 'ADD NEW STYLE CARD'}
+            </h3>
+            <form onSubmit={handleSaveStyle} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-group">
+                <label className="form-label">Style Card Title</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Oversized Streetwear"
+                  value={styleForm.name}
+                  onChange={e => setStyleForm({ ...styleForm, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Search Query Keyword</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. oversized"
+                    value={styleForm.search_query}
+                    onChange={e => setStyleForm({ ...styleForm, search_query: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Target Gender</label>
+                  <select className="form-select" value={styleForm.gender} onChange={e => setStyleForm({ ...styleForm, gender: e.target.value })}>
+                    <option value="men">MEN</option>
+                    <option value="women">WOMEN</option>
+                    <option value="all">ALL</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* STYLE PICTURE UPLOAD & URL */}
+              <div className="form-group">
+                <label className="form-label">Style Card Picture (Upload from Computer or enter Image URL)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="form-input"
+                  style={{ padding: '0.5rem', marginBottom: '0.5rem' }}
+                />
+                <input
+                  type="url"
+                  className="form-input"
+                  placeholder="https://images.unsplash.com/..."
+                  value={styleForm.image_url}
+                  onChange={e => setStyleForm({ ...styleForm, image_url: e.target.value })}
+                />
+
+                {/* IMAGE PREVIEW */}
+                {(imagePreviews.length > 0 || styleForm.image_url) && (
+                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: '12px' }}>
+                    <img
+                      src={imagePreviews[0] || styleForm.image_url}
+                      alt="Style Preview"
+                      style={{ width: '60px', height: '80px', borderRadius: '8px', objectFit: 'cover', border: '2px solid var(--color-primary)' }}
+                    />
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Image Preview Active</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Display Order Number</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={styleForm.display_order}
+                  onChange={e => setStyleForm({ ...styleForm, display_order: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', fontWeight: 700 }}>
+                <input
+                  type="checkbox"
+                  checked={styleForm.is_active}
+                  onChange={e => setStyleForm({ ...styleForm, is_active: e.target.checked })}
+                /> Active on Storefront
+              </label>
+
+              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }} disabled={uploadingImages}>
+                {uploadingImages ? 'UPLOADING PICTURE...' : (styleForm.id ? 'UPDATE STYLE CARD' : 'SAVE STYLE CARD')}
+              </button>
             </form>
           </div>
         </div>
