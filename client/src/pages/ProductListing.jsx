@@ -12,13 +12,11 @@ const ProductListing = () => {
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
 
-  // Determine active gender from path or query params or context
-  const pathGender = location.pathname.includes('/women') ? 'women' : location.pathname.includes('/men') ? 'men' : globalGender;
+  // Active storefront gender is men
+  const pathGender = 'men';
 
   useEffect(() => {
-    if (pathGender !== globalGender) {
-      setGender(pathGender);
-    }
+    setGender('men');
   }, [location.pathname]);
 
   const [products, setProducts] = useState([]);
@@ -139,26 +137,6 @@ const ProductListing = () => {
 
   const renderFiltersContent = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Gender selection */}
-      <div>
-        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Gender</h4>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button 
-            className={`btn-secondary ${pathGender === 'men' ? 'btn-primary' : ''}`}
-            style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}
-            onClick={() => { navigate('/men'); setGender('men'); }}
-          >
-            MEN
-          </button>
-          <button 
-            className={`btn-secondary ${pathGender === 'women' ? 'btn-primary' : ''}`}
-            style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}
-            onClick={() => { navigate('/women'); setGender('women'); }}
-          >
-            WOMEN
-          </button>
-        </div>
-      </div>
 
       {/* Category filter */}
       <div>

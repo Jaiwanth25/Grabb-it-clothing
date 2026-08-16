@@ -38,20 +38,13 @@ const Home = () => {
       .catch(err => console.error('Fetch Looks Error:', err));
   }, [gender]);
 
-  // Style aesthetics definitions
-  const stylesList = gender === 'men' 
-    ? [
-        { name: 'Oversized Streetwear', search: 'oversized', img: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Minimalist Solids', search: 'essential', img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Smart Resort Shirts', search: 'shirt', img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Breezy Linen Cuts', search: 'linen', img: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80' }
-      ]
-    : [
-        { name: 'Chic Festive Outfits', search: 'poplin', img: 'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Minimalist Knits', search: 'knit', img: 'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Weekend Street Vibe', search: 'shorts', img: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&auto=format&fit=crop&q=80' },
-        { name: 'Japanese Raw Denims', search: 'denim', img: 'https://images.unsplash.com/photo-1582418702059-97ebdfb35d09?w=800&auto=format&fit=crop&q=80' }
-      ];
+  // Style aesthetics definitions (Men's Fashion)
+  const stylesList = [
+    { name: 'Oversized Streetwear', search: 'oversized', img: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&auto=format&fit=crop&q=80' },
+    { name: 'Minimalist Solids', search: 'essential', img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80' },
+    { name: 'Smart Resort Shirts', search: 'shirt', img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80' },
+    { name: 'Breezy Linen Cuts', search: 'linen', img: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80' }
+  ];
 
   return (
     <main style={{ backgroundColor: 'var(--bg-main)' }}>
@@ -63,7 +56,7 @@ const Home = () => {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
           <Sparkles size={16} color="var(--text-dark)" />
           <span className="badge-carnival">
-            PASTEL FASHION CARNIVAL
+            PASTEL FASHION EDIT
           </span>
           <Sparkles size={16} color="var(--text-dark)" />
         </div>
@@ -83,12 +76,12 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 3. SIGNATURE CARNIVAL SECTION — THE CARNIVAL EDIT */}
+      {/* 3. SIGNATURE SECTION — THE GRABB-IT EDIT */}
       <section className="carnival-banner-section">
         <div className="container carnival-grid">
           <div className="carnival-content-box">
             <div className="carnival-tag">
-              <Flame size={18} color="var(--text-dark)" /> THE CARNIVAL EDIT
+              <Flame size={18} color="var(--text-dark)" /> THE GRABB-IT EDIT
             </div>
             <h2 className="carnival-heading">
               PASTEL. PLAYFUL.<br />CONFIDENCE.
@@ -97,13 +90,13 @@ const Home = () => {
               Step into a celebration of soft pastel streetwear. High-density organic cottons, gentle peach tones, and relaxed silhouettes tailored for effortless style.
             </p>
             <Link to={`/${gender}?isTrending=true`} className="btn-saffron">
-              SHOP THE CARNIVAL EDIT <ArrowRight size={18} />
+              SHOP THE GRABB-IT EDIT <ArrowRight size={18} />
             </Link>
           </div>
           <div className="carnival-img-wrapper">
             <img 
               src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&auto=format&fit=crop&q=80" 
-              alt="Carnival Edit Fashion" 
+              alt="Grabb-it Edit Fashion" 
               className="carnival-img" 
             />
           </div>
@@ -260,7 +253,7 @@ const Home = () => {
             <span style={{ fontSize: '0.82rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-dark)', textTransform: 'uppercase' }}>
               MUST-HAVE DROPS
             </span>
-            <h2 className="section-title">CURATED ESSENTIALS ({gender.toUpperCase()})</h2>
+            <h2 className="section-title">CURATED ESSENTIALS (MEN)</h2>
           </div>
         </div>
 

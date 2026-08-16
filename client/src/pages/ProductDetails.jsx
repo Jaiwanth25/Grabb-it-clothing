@@ -266,7 +266,7 @@ const ProductDetails = () => {
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
               <Sparkles size={14} color="var(--color-saffron)" />
               <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '1.5px', color: 'var(--color-saffron)', textTransform: 'uppercase' }}>
-                GRABB-IT CARNIVAL • {product.category?.name || product.gender}
+                GRABB-IT • {product.category?.name || 'MEN'}
               </span>
             </div>
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 700, color: 'var(--color-maroon)', marginTop: '0.2rem', textTransform: 'uppercase', lineHeight: 1.15 }}>
@@ -614,39 +614,26 @@ const ProductDetails = () => {
             </button>
             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-maroon)', marginBottom: '0.25rem' }}>SIZE CHART GUIDE</h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1.5rem' }}>
-              GRABB-IT {product.gender.toUpperCase()} FIT SPECIFICATIONS (INCHES)
+              GRABB-IT MEN'S FIT SPECIFICATIONS (INCHES)
             </p>
 
             <table className="custom-table">
               <thead>
                 <tr>
                   <th>SIZE</th>
-                  <th>{product.gender === 'men' ? 'CHEST' : 'BUST'}</th>
+                  <th>CHEST</th>
                   <th>WAIST</th>
                   <th>HIPS</th>
                   <th>LENGTH</th>
                 </tr>
               </thead>
               <tbody>
-                {product.gender === 'men' ? (
-                  <>
-                    <tr><td>XS</td><td>34"</td><td>28"</td><td>34"</td><td>27"</td></tr>
-                    <tr><td>S</td><td>36"</td><td>30"</td><td>36"</td><td>28"</td></tr>
-                    <tr><td>M</td><td>38"</td><td>32"</td><td>38"</td><td>29"</td></tr>
-                    <tr><td>L</td><td>40"</td><td>34"</td><td>40"</td><td>29.5"</td></tr>
-                    <tr><td>XL</td><td>42"</td><td>36"</td><td>42"</td><td>30"</td></tr>
-                    <tr><td>XXL</td><td>44"</td><td>38"</td><td>44"</td><td>30.5"</td></tr>
-                  </>
-                ) : (
-                  <>
-                    <tr><td>XS</td><td>32"</td><td>26"</td><td>34"</td><td>24"</td></tr>
-                    <tr><td>S</td><td>34"</td><td>28"</td><td>36"</td><td>25"</td></tr>
-                    <tr><td>M</td><td>36"</td><td>30"</td><td>38"</td><td>26"</td></tr>
-                    <tr><td>L</td><td>38"</td><td>32"</td><td>40"</td><td>26.5"</td></tr>
-                    <tr><td>XL</td><td>40"</td><td>34"</td><td>42"</td><td>27"</td></tr>
-                    <tr><td>XXL</td><td>42"</td><td>36"</td><td>44"</td><td>27.5"</td></tr>
-                  </>
-                )}
+                <tr><td>XS</td><td>34"</td><td>28"</td><td>34"</td><td>27"</td></tr>
+                <tr><td>S</td><td>36"</td><td>30"</td><td>36"</td><td>28"</td></tr>
+                <tr><td>M</td><td>38"</td><td>32"</td><td>38"</td><td>29"</td></tr>
+                <tr><td>L</td><td>40"</td><td>34"</td><td>40"</td><td>29.5"</td></tr>
+                <tr><td>XL</td><td>42"</td><td>36"</td><td>42"</td><td>30"</td></tr>
+                <tr><td>XXL</td><td>44"</td><td>38"</td><td>44"</td><td>30.5"</td></tr>
               </tbody>
             </table>
           </div>

@@ -52,7 +52,7 @@ function App() {
               {/* Customer Routes with Header & Footer */}
               <Route path="/" element={<Layout><Home /></Layout>} />
               <Route path="/men" element={<Layout><ProductListing /></Layout>} />
-              <Route path="/women" element={<Layout><ProductListing /></Layout>} />
+              <Route path="/women" element={<Navigate to="/men" replace />} />
               <Route path="/offers" element={<Layout><ProductListing /></Layout>} />
               <Route path="/product/:slug" element={<Layout><ProductDetails /></Layout>} />
               <Route path="/cart" element={<Layout><CartPage /></Layout>} />

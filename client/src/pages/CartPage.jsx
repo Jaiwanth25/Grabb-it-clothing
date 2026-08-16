@@ -57,7 +57,7 @@ const CartPage = () => {
           Explore modern Indian streetwear, boxy cotton tees, and festive drop essentials.
         </p>
         <Link to="/men" className="btn-primary" style={{ padding: '1rem 2.25rem' }}>
-          EXPLORE THE CARNIVAL COLLECTION
+          EXPLORE THE COLLECTION
         </Link>
       </main>
     );

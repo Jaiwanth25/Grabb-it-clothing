@@ -65,7 +65,7 @@ const AdminDashboard = () => {
   const [categoryForm, setCategoryForm] = useState({ name: '', gender: 'men', image_url: '' });
 
   const [bannerForm, setBannerForm] = useState({
-    title: 'THE FESTIVE CARNIVAL DROP', subtitle: 'Vibrant Colors. Contemporary Fits.', button_text: 'SHOP COLLECTION NOW', button_link: '/men',
+    title: 'THE FESTIVE DROP', subtitle: 'Vibrant Colors. Contemporary Fits.', button_text: 'SHOP COLLECTION NOW', button_link: '/men',
     image_url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&auto=format&fit=crop&q=80', mobile_image_url: '', gender: 'all', display_order: 0, is_active: true
   });
 
@@ -89,7 +89,7 @@ const AdminDashboard = () => {
     phone: '+91 98765 43210',
     whatsappNumber: '+91 99999 88888',
     freeShippingThreshold: '999',
-    freeShippingMessage: 'FESTIVE CARNIVAL DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF',
+    freeShippingMessage: 'FESTIVE DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF',
     instagramUrl: 'https://instagram.com/grabb_it_clothing',
     returnPolicy: 'Easy 7-day hassle-free returns and exchanges.',
     shippingPolicy: 'Express shipping across India in 3-5 business days.',
@@ -2037,7 +2037,7 @@ const AdminDashboard = () => {
             </h3>
             <form onSubmit={handleSaveLook} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="form-group">
-                <label className="form-label">Outfit Title (e.g. Weekend Carnival)</label>
+                <label className="form-label">Outfit Title (e.g. Weekend Edit)</label>
                 <input type="text" className="form-input" value={lookForm.name} onChange={e => setLookForm({ ...lookForm, name: e.target.value })} required />
               </div>
               <div className="form-group">

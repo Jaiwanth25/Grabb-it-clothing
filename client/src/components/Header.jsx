@@ -18,7 +18,7 @@ const Header = () => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [topTickerMessage, setTopTickerMessage] = useState('FESTIVE CARNIVAL DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF');
+  const [topTickerMessage, setTopTickerMessage] = useState('FESTIVE DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF');
 
   useEffect(() => {
     fetch('/api/settings')
@@ -113,10 +113,10 @@ const Header = () => {
     }
   };
 
-  const handleGenderSelect = (selectedGender) => {
-    setGender(selectedGender);
-    if (location.pathname === '/' || location.pathname === '/men' || location.pathname === '/women') {
-      navigate(`/${selectedGender}`);
+  const handleGenderSelect = () => {
+    setGender('men');
+    if (location.pathname === '/' || location.pathname === '/men') {
+      navigate('/men');
     }
   };
 
@@ -169,13 +169,10 @@ const Header = () => {
 
         {/* CENTER: Desktop Menu Links */}
         <div className="desktop-only" style={{ display: 'flex', gap: '1.25rem' }}>
-          <Link to="/men" className={`gender-btn ${gender === 'men' ? 'active' : ''}`} onClick={() => setGender('men')}>
+          <Link to="/men" className="gender-btn active" onClick={() => setGender('men')}>
             MEN
           </Link>
-          <Link to="/women" className={`gender-btn ${gender === 'women' ? 'active' : ''}`} onClick={() => setGender('women')}>
-            WOMEN
-          </Link>
-          <Link to={`/${gender}?isNew=true`} className="gender-btn">
+          <Link to="/men?isNew=true" className="gender-btn">
             NEW DROPS
           </Link>
           <Link to={`/${gender}?isTrending=true`} className="gender-btn">
@@ -206,7 +203,7 @@ const Header = () => {
             <Search size={16} color="var(--text-dark)" />
             <input
               type="text"
-              placeholder={`Search ${gender}'s fashion...`}
+              placeholder="Search Men's fashion..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -334,32 +331,6 @@ const Header = () => {
               </form>
             </div>
 
-            {/* Gender Toggle Inside Drawer */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '0.5rem 1rem', gap: '0.5rem', flexShrink: 0 }}>
-              <button
-                type="button"
-                className={`btn-primary ${gender === 'men' ? '' : 'btn-secondary'}`}
-                style={{ fontSize: '0.8rem', padding: '0.55rem' }}
-                onClick={() => {
-                  handleGenderSelect('men');
-                  setDrawerOpen(false);
-                }}
-              >
-                👕 MEN
-              </button>
-              <button
-                type="button"
-                className={`btn-primary ${gender === 'women' ? '' : 'btn-secondary'}`}
-                style={{ fontSize: '0.8rem', padding: '0.55rem' }}
-                onClick={() => {
-                  handleGenderSelect('women');
-                  setDrawerOpen(false);
-                }}
-              >
-                👗 WOMEN
-              </button>
-            </div>
-
             {/* Scrollable Navigation List */}
             <div className="drawer-nav-list">
               <Link to="/" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
@@ -369,11 +340,6 @@ const Header = () => {
 
               <Link to="/men" className="drawer-nav-item" onClick={() => { setGender('men'); setDrawerOpen(false); }}>
                 <span>👕 Men</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
-              </Link>
-
-              <Link to="/women" className="drawer-nav-item" onClick={() => { setGender('women'); setDrawerOpen(false); }}>
-                <span>👗 Women</span>
                 <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
 

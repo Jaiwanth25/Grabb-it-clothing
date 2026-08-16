@@ -49,7 +49,6 @@ const Footer = () => {
             <h4 className="footer-col-title">Shop Collection</h4>
             <ul className="footer-links">
               <li><Link to="/men">Men's Apparel</Link></li>
-              <li><Link to="/women">Women's Apparel</Link></li>
               <li><Link to="/men?isNew=true">New Arrivals</Link></li>
               <li><Link to="/men?isTrending=true">Trending Outfits</Link></li>
               <li><Link to="/offers">Festive Offers</Link></li>
@@ -82,13 +81,13 @@ const Footer = () => {
 
           {/* Newsletter */}
           <div>
-            <h4 className="footer-col-title">Join The Carnival</h4>
+            <h4 className="footer-col-title">Join The Movement</h4>
             <p style={{ color: '#d4c8b8', fontSize: '0.88rem', marginBottom: '1.25rem', lineHeight: '1.5' }}>
               Subscribe for exclusive drop alerts, VIP festive offers, and 15% off your first order.
             </p>
             {subscribed ? (
               <div style={{ backgroundColor: 'rgba(13, 92, 70, 0.3)', color: '#4caf50', padding: '0.85rem', fontSize: '0.88rem', fontWeight: 700, borderRadius: '8px', border: '1px solid #4caf50' }}>
-                ✓ Welcome to the GRABB-IT Carnival!
+                ✓ Welcome to GRABB-IT!
               </div>
             ) : (
               <form onSubmit={handleSubscribe} style={{ display: 'flex' }}>

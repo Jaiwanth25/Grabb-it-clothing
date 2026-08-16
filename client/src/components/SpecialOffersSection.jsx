@@ -11,7 +11,7 @@ const SpecialOffersSection = () => {
             LIMITED TIME OFFER
           </span>
           <h3 style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem' }}>
-            FLAT 20% OFF ON ORDERS OVER $60
+            FLAT 20% OFF ON ORDERS OVER ₹2,999
           </h3>
           <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
             Use promo code <strong style={{ color: '#111' }}>WELCOME20</strong> at checkout to unlock instant discounts across all jackets, denims, and knitwear.
