@@ -25,7 +25,7 @@ const ProductCard = ({ product, onQuickView }) => {
 
     const firstVariant = product.variants && product.variants.length ? product.variants[0] : null;
     if (!firstVariant) {
-      onQuickView(product);
+      if (typeof onQuickView === 'function') onQuickView(product);
       return;
     }
 
@@ -34,7 +34,7 @@ const ProductCard = ({ product, onQuickView }) => {
     setAdding(false);
 
     if (!result.success) {
-      onQuickView(product);
+      if (typeof onQuickView === 'function') onQuickView(product);
     }
   };
 
@@ -85,7 +85,7 @@ const ProductCard = ({ product, onQuickView }) => {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              onQuickView(product);
+              if (typeof onQuickView === 'function') onQuickView(product);
             }}
           >
             <Eye size={14} /> Quick View

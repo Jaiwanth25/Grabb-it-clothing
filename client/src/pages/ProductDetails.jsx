@@ -96,13 +96,13 @@ const ProductDetails = () => {
 
   // Active Variant based on color and size selection
   const activeVariant = product.variants?.find(
-    v => v.size === selectedSize && v.color.toLowerCase() === selectedColor.toLowerCase()
+    v => v.size === selectedSize && v.color?.toLowerCase() === selectedColor?.toLowerCase()
   );
 
   // Check if size is in stock for currently selected color
   const checkSizeStock = (sz) => {
     const variant = product.variants?.find(
-      v => v.size === sz && v.color.toLowerCase() === selectedColor.toLowerCase()
+      v => v.size === sz && v.color?.toLowerCase() === selectedColor?.toLowerCase()
     );
     return variant ? variant.stock > 0 : false;
   };
@@ -210,8 +210,8 @@ const ProductDetails = () => {
       {/* Breadcrumbs */}
       <div className="breadcrumbs" style={{ fontFamily: 'var(--font-title)', fontSize: '0.78rem', letterSpacing: '1px' }}>
         <Link to="/">HOME</Link> / 
-        <Link to={`/${product.gender}`}>{product.gender.toUpperCase()}</Link> / 
-        <span>{product.name.toUpperCase()}</span>
+        <Link to={`/${product.gender || 'men'}`}>{(product.gender || 'MEN').toUpperCase()}</Link> / 
+        <span>{(product.name || '').toUpperCase()}</span>
       </div>
 
       {/* Main PDP View */}

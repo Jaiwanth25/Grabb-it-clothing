@@ -793,7 +793,7 @@ const AdminDashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {orders.map(order => (
+                          {(orders || []).map(order => (
                             <tr key={order.id}>
                               <td><strong>#{order.order_number}</strong></td>
                               <td>{order.customer_name}</td>
@@ -892,7 +892,7 @@ const AdminDashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {products.map(p => (
+                          {(products || []).map(p => (
                             <tr key={p.id}>
                               <td><img src={p.primary_image} alt="" style={{ width: '40px', height: '50px', objectFit: 'cover', borderRadius: '8px' }} /></td>
                               <td><code>{p.sku}</code></td>
@@ -999,7 +999,7 @@ const AdminDashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {coupons.map(c => (
+                          {(coupons || []).map(c => (
                             <tr key={c.id}>
                               <td><code>{c.code}</code></td>
                               <td style={{ textTransform: 'capitalize' }}>{c.discount_type}</td>
@@ -1038,7 +1038,7 @@ const AdminDashboard = () => {
                     </button>
                   </div>
 
-                  {banners.length === 0 ? (
+                  {(banners || []).length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem 1rem', backgroundColor: '#ffffff', borderRadius: '16px', border: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
                       No hero banners active on homepage. Click "Add Hero Banner" to publish your first banner!
                     </div>
@@ -1056,7 +1056,7 @@ const AdminDashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {banners.map(b => (
+                          {(banners || []).map(b => (
                             <tr key={b.id}>
                               <td><img src={b.image_url} alt="" style={{ width: '120px', height: '45px', objectFit: 'cover', borderRadius: '8px' }} /></td>
                               <td><strong>{b.title}</strong></td>
@@ -1093,7 +1093,7 @@ const AdminDashboard = () => {
                     </button>
                   </div>
 
-                  {looks.length === 0 ? (
+                  {(looks || []).length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem 1rem', backgroundColor: '#ffffff', borderRadius: '16px', border: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
                       No outfit looks created yet. Click "Add Outfit Look" to tag model outfits!
                     </div>
@@ -1111,7 +1111,7 @@ const AdminDashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {looks.map(l => (
+                          {(looks || []).map(l => (
                             <tr key={l.id}>
                               <td><img src={l.image_url} alt="" style={{ width: '60px', height: '75px', objectFit: 'cover', borderRadius: '8px' }} /></td>
                               <td><strong>{l.name}</strong></td>
@@ -1148,7 +1148,7 @@ const AdminDashboard = () => {
                     </button>
                   </div>
 
-                  {collections.length === 0 ? (
+                  {(collections || []).length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem 1rem', backgroundColor: '#ffffff', borderRadius: '16px', border: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
                       No campaign collections listed yet.
                     </div>
@@ -1166,7 +1166,7 @@ const AdminDashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {collections.map(col => (
+                          {(collections || []).map(col => (
                             <tr key={col.id}>
                               <td><img src={col.cover_image} alt="" style={{ width: '60px', height: '45px', objectFit: 'cover', borderRadius: '8px' }} /></td>
                               <td><strong>{col.name}</strong></td>

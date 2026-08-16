@@ -21,6 +21,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 function Layout({ children }) {
   return (
     <>
@@ -44,35 +46,37 @@ function ProtectedAdminRoute({ children }) {
 
 function App() {
   return (
-    <AuthProvider>
-      <GenderProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <Routes>
-              {/* Customer Routes with Header & Footer */}
-              <Route path="/" element={<Layout><Home /></Layout>} />
-              <Route path="/men" element={<Layout><ProductListing /></Layout>} />
-              <Route path="/women" element={<Navigate to="/men" replace />} />
-              <Route path="/offers" element={<Layout><ProductListing /></Layout>} />
-              <Route path="/product/:slug" element={<Layout><ProductDetails /></Layout>} />
-              <Route path="/cart" element={<Layout><CartPage /></Layout>} />
-              <Route path="/wishlist" element={<Layout><WishlistPage /></Layout>} />
-              <Route path="/checkout" element={<Layout><CheckoutPage /></Layout>} />
-              <Route path="/account" element={<Layout><AccountPage /></Layout>} />
-              <Route path="/login" element={<Layout><Login /></Layout>} />
-              <Route path="/register" element={<Layout><Register /></Layout>} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <GenderProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <Routes>
+                {/* Customer Routes with Header & Footer */}
+                <Route path="/" element={<Layout><Home /></Layout>} />
+                <Route path="/men" element={<Layout><ProductListing /></Layout>} />
+                <Route path="/women" element={<Navigate to="/men" replace />} />
+                <Route path="/offers" element={<Layout><ProductListing /></Layout>} />
+                <Route path="/product/:slug" element={<Layout><ProductDetails /></Layout>} />
+                <Route path="/cart" element={<Layout><CartPage /></Layout>} />
+                <Route path="/wishlist" element={<Layout><WishlistPage /></Layout>} />
+                <Route path="/checkout" element={<Layout><CheckoutPage /></Layout>} />
+                <Route path="/account" element={<Layout><AccountPage /></Layout>} />
+                <Route path="/login" element={<Layout><Login /></Layout>} />
+                <Route path="/register" element={<Layout><Register /></Layout>} />
 
-              {/* Admin Routes */}
-              <Route path="/admin/login" element={<Layout><AdminLogin /></Layout>} />
-              <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+                {/* Admin Routes */}
+                <Route path="/admin/login" element={<Layout><AdminLogin /></Layout>} />
+                <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
 
-              {/* 404 Catch All */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </WishlistProvider>
-        </CartProvider>
-      </GenderProvider>
-    </AuthProvider>
+                {/* 404 Catch All */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </WishlistProvider>
+          </CartProvider>
+        </GenderProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
