@@ -138,11 +138,11 @@ const Header = () => {
       </div>
 
       {/* Main Navigation Container */}
-      <nav className="header-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+      <nav className="header-nav container">
         {/* LEFT: Branding & Mobile Menu Trigger */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="header-left">
           <button
-            className="icon-btn"
+            className="icon-btn mobile-only"
             onClick={() => setDrawerOpen(true)}
             aria-label="Open Navigation Menu"
             title="Open Side Menu"
@@ -168,7 +168,7 @@ const Header = () => {
         </div>
 
         {/* CENTER: Desktop Menu Links */}
-        <div className="desktop-only" style={{ display: 'flex', gap: '1.25rem' }}>
+        <div className="header-center desktop-only">
           <Link to="/men" className="gender-btn active" onClick={() => setGender('men')}>
             MEN
           </Link>

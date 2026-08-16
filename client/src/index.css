@@ -337,11 +337,12 @@ input, select, textarea {
 }
 
 .header-nav {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  height: var(--header-height);
-  padding: 0 2rem;
+  justify-content: space-between;
+  height: 76px;
+  padding: 0 1.5rem;
+  gap: 1rem;
 }
 
 @media (min-width: 993px) {
@@ -355,7 +356,8 @@ input, select, textarea {
 
 @media (max-width: 992px) {
   .header-nav {
-    padding: 0 1rem;
+    padding: 0 0.75rem;
+    height: 64px;
   }
   .desktop-only {
     display: none !important;
@@ -365,8 +367,15 @@ input, select, textarea {
   }
 }
 
-.header-brand-container {
+.header-left {
   display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.header-brand-container {
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   text-decoration: none;
@@ -375,25 +384,29 @@ input, select, textarea {
 }
 
 .header-logo-container {
-  max-height: 44px;
-  max-width: 44px;
+  height: 38px;
+  width: 38px;
+  max-height: 38px;
+  max-width: 38px;
   overflow: hidden;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
 .header-logo-img {
-  max-height: 40px;
-  height: 40px;
-  width: auto;
+  height: 34px;
+  width: 34px;
+  max-height: 34px;
+  max-width: 34px;
   object-fit: contain;
+  display: block;
 }
 
 .header-brand-title {
   font-family: var(--font-title);
-  font-size: 1.9rem;
+  font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: 1px;
   color: var(--text-dark);
@@ -401,32 +414,53 @@ input, select, textarea {
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
+  line-height: 1;
 }
 
 .header-brand-title span {
   color: var(--color-primary);
 }
 
+.header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
   .header-brand-title {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     letter-spacing: 0.5px;
   }
   .header-logo-img {
-    max-height: 28px;
-    height: 28px;
+    height: 26px;
+    width: 26px;
+    max-height: 26px;
+    max-width: 26px;
   }
   .header-logo-container {
-    max-height: 32px;
-    max-width: 32px;
+    height: 28px;
+    width: 28px;
+    max-height: 28px;
+    max-width: 28px;
   }
   .header-nav {
     padding: 0 0.5rem;
-    height: 64px;
+    height: 60px;
   }
   .header-top-bar {
     font-size: 0.68rem;
-    padding: 0.4rem 0.5rem;
+    padding: 0.35rem 0.5rem;
     line-height: 1.3;
   }
 }
