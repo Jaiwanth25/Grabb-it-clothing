@@ -304,27 +304,27 @@ const ProductListing = () => {
       </div>
 
       {/* Page header and controls */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2.5rem', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '1rem' }}>
+      <div className="plp-header-bar">
         <div>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-maroon)' }}>
+          <h1 className="plp-title">
             {activeCategoryObj 
               ? `${pathGender.toUpperCase()} ${activeCategoryObj.name}` 
               : selectedCollection
               ? `${selectedCollection.replace('-', ' ').toUpperCase()}`
               : `${pathGender.toUpperCase()}'S APPAREL`}
           </h1>
-          <span style={{ fontSize: '0.82rem', color: 'var(--text-light)', fontWeight: 700, letterSpacing: '0.5px' }}>
+          <span className="plp-count-text">
             {products.length} {products.length === 1 ? 'PRODUCT' : 'PRODUCTS'} FOUND
           </span>
         </div>
 
         {/* Sort & Mobile filter trigger */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-maroon)' }}>Sort By:</label>
+        <div className="plp-controls-row">
+          <div className="plp-sort-box">
+            <label className="plp-sort-label">Sort By:</label>
             <select
               className="form-select"
-              style={{ width: '195px', padding: '0.5rem', fontSize: '0.82rem', outline: 'none' }}
+              style={{ padding: '0.5rem', fontSize: '0.82rem', outline: 'none', borderRadius: '9999px' }}
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
@@ -341,7 +341,7 @@ const ProductListing = () => {
           <button
             className="btn-primary mobile-only"
             onClick={() => setMobileFilterOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.8rem' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.1rem', fontSize: '0.8rem' }}
           >
             <SlidersHorizontal size={14} /> FILTERS
           </button>
@@ -349,7 +349,7 @@ const ProductListing = () => {
       </div>
 
       {/* Main PLP layout: Desktop Sidebar + Product Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '3rem' }} className="listing-main-layout">
+      <div className="listing-main-layout">
         {/* Sidebar Filters (Desktop) */}
         <aside className="desktop-only" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', borderRight: '1px solid var(--border-light)', paddingRight: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '2px solid var(--color-maroon)', paddingBottom: '0.75rem', marginBottom: '0.5rem' }}>

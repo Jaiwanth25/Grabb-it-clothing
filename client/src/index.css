@@ -1852,5 +1852,183 @@ input, select, textarea {
   }
 }
 
+/* ==========================================================================
+   PERFECT RESPONSIVE ALIGNMENT & OVERFLOW PREVENTER FOR ALL PAGES
+   ========================================================================== */
+
+html, body {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.header-sticky {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.header-top-bar {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 1. PLP Page Alignment */
+.listing-main-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2.5rem;
+  width: 100%;
+}
+
+.plp-header-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  border-bottom: 2px solid #000000;
+  padding-bottom: 1rem;
+  gap: 1rem;
+  width: 100%;
+}
+
+.plp-title {
+  font-family: var(--font-title);
+  font-size: 2.25rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #000000;
+  line-height: 1.1;
+}
+
+.plp-count-text {
+  font-size: 0.82rem;
+  color: #888888;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.plp-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.plp-sort-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.plp-sort-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #000000;
+  white-space: nowrap;
+}
+
+@media (max-width: 992px) {
+  .listing-main-layout {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .plp-header-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+  .plp-title {
+    font-size: 1.5rem !important;
+  }
+  .plp-controls-row {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+}
+
+/* 2. PDP Page Grid Alignment */
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 3.5rem;
+  margin-bottom: 4rem;
+  width: 100%;
+}
+
+@media (max-width: 992px) {
+  .product-detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    margin-bottom: 2.5rem !important;
+  }
+}
+
+/* 3. Cart Layout Alignment */
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 3rem;
+  width: 100%;
+}
+
+@media (max-width: 992px) {
+  .cart-layout {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+/* 4. Checkout Layout Alignment */
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 3.5rem;
+  width: 100%;
+}
+
+@media (max-width: 992px) {
+  .checkout-layout {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+/* 5. Account & Wishlist Layout Alignment */
+.account-grid, .wishlist-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 2.5rem;
+  width: 100%;
+}
+
+@media (max-width: 992px) {
+  .account-grid, .wishlist-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* Tables Responsive Wrap */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
 
 

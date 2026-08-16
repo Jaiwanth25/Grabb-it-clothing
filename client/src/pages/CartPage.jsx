@@ -75,7 +75,7 @@ const CartPage = () => {
         SHOPPING BAG ({count} ITEMS)
       </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '3rem' }} className="cart-layout">
+      <div className="cart-layout">
         
         {/* Left: Cart Items List */}
         <div className="table-responsive">

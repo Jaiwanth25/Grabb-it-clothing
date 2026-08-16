@@ -335,7 +335,7 @@ const CheckoutPage = () => {
         SECURE CHECKOUT
       </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '3.5rem' }} className="checkout-layout">
+      <div className="checkout-layout">
         
         {/* Left: Wizard Form */}
         <div>

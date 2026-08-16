@@ -215,7 +215,7 @@ const ProductDetails = () => {
       </div>
 
       {/* Main PDP View */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '4rem', marginBottom: '5rem' }} className="product-detail-grid">
+      <div className="product-detail-grid">
         
         {/* LEFT SECTION: Main picture + Thumbnails */}
         <div>
