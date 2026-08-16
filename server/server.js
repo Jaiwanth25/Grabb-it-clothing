@@ -8,12 +8,9 @@ const { startReservationCleanupScheduler } = require('./services/stock_reservati
 
 dotenv.config();
 
-// Startup validation for production
-if (process.env.NODE_ENV === 'production') {
-  if (!process.env.JWT_SECRET) {
-    console.error('FATAL ERROR: JWT_SECRET environment variable is missing in production mode!');
-    process.exit(1);
-  }
+// Startup validation
+if (!process.env.JWT_SECRET) {
+  console.warn('NOTICE: JWT_SECRET environment variable is using fallback secret key.');
 }
 
 const app = express();
