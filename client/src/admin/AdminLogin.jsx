@@ -22,10 +22,20 @@ const AdminLogin = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to login');
+      
+      const text = await res.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (parseErr) {
+        throw new Error('Server connection error. Please try logging in again.');
+      }
 
-      if (data.user.role !== 'admin') {
+      if (!res.ok) {
+        throw new Error(data.error || data.message || 'Failed to login. Please check credentials.');
+      }
+
+      if (data.user?.role !== 'admin') {
         throw new Error('Access denied. Account is not an administrator.');
       }
 

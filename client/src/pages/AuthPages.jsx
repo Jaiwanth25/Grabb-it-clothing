@@ -36,12 +36,18 @@ export const Login = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to login');
+      const text = await res.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (parseErr) {
+        throw new Error('Server connection error. Please try logging in again.');
+      }
+      if (!res.ok) throw new Error(data.error || data.message || 'Failed to login');
 
       login(data.user, data.token);
 
-      if (data.user.role === 'admin') {
+      if (data.user?.role === 'admin') {
         navigate('/admin');
       } else if (redirectTarget) {
         navigate(redirectTarget);
