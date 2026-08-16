@@ -190,8 +190,8 @@ const Home = () => {
             {looks.map((look) => (
               <div key={look.id} className="look-grid" style={{ marginBottom: '4rem' }}>
                 {/* Look Canvas */}
-                <div className="look-card" style={{ borderRadius: '16px', border: '2px solid var(--border-light)', overflow: 'hidden' }}>
-                  <img src={look.image_url} alt={look.name} className="look-img" style={{ borderRadius: '16px', boxShadow: '0 8px 20px rgba(0,0,0,0.06)' }} />
+                <div className="look-card">
+                  <img src={look.image_url} alt={look.name} className="look-img" />
                   <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', color: 'var(--text-dark)', zIndex: 10, background: 'rgba(255, 253, 249, 0.95)', backdropFilter: 'blur(10px)', padding: '1.35rem', borderRadius: '16px', border: '2px solid var(--color-primary)' }}>
                     <h3 style={{ fontSize: '1.5rem', fontWeight: 700, fontFamily: 'var(--font-title)', textTransform: 'uppercase', color: 'var(--text-dark)' }}>
                       {look.name}
