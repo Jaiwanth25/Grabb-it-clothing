@@ -1,40 +1,41 @@
-/* GRABB-IT — Pastel Carnival Design System */
+/* GRABB-IT — Modern Crimson & Light Red Design System */
 :root {
-  /* Pastel Carnival Palette Tokens */
-  --color-primary: #FFB3C1;      /* Soft Pink */
-  --color-secondary: #FFD9A0;    /* Peach */
-  --color-accent: #A0E7E5;       /* Soft Turquoise */
-  --color-highlight: #FFF3A0;    /* Buttery Yellow */
-  --color-support: #C9C0FF;      /* Soft Lavender */
-  --bg-main: #FFFDF9;            /* Warm Off-White Background */
+  /* Vibrant Light Red Palette Tokens */
+  --color-primary: #E63946;        /* Vibrant Light Red / Crimson Rose */
+  --color-primary-hover: #C92A37;  /* Deep Crimson Red for Hover States */
+  --color-secondary: #1D3557;      /* Deep Midnight Navy Contrast */
+  --color-accent: #FF4D6D;         /* Bright Coral Accent */
+  --color-highlight: #FFE5E5;      /* Soft Light Red Highlight */
+  --color-support: #E63946;
+  --bg-main: #FAFAFA;              /* Crisp Modern Neutral Background */
   --bg-card: #FFFFFF;
-  --bg-subtle: #FFF5F7;          /* Soft Pink Tint */
-  --bg-dark: #2B2B2B;            /* Dark Text / Neutral Base */
+  --bg-subtle: #FFF5F5;            /* Soft Light Red Card Tint */
+  --bg-dark: #111827;              /* Deep Charcoal / Dark Base */
   
-  --text-dark: #2B2B2B;          /* Dark Text for Accessible Contrast on Pastels */
-  --text-main: #2B2B2B;
-  --text-muted: #595466;
-  --text-light: #8C849E;
+  --text-dark: #111827;            /* Charcoal Dark Text for High Readability */
+  --text-main: #1F2937;
+  --text-muted: #4B5563;
+  --text-light: #9CA3AF;
   --text-white: #FFFFFF;
   
   /* Border Colors */
-  --border-light: #F0E6EF;
-  --border-medium: #E2D5E3;
-  --border-dark: #2B2B2B;
+  --border-light: #F3F4F6;
+  --border-medium: #E5E7EB;
+  --border-dark: #111827;
   
-  --accent-badge: #FFB3C1;
-  --accent-badge-bg: #FFF0F4;
-  --focus-ring: #FFB3C1;
+  --accent-badge: #E63946;
+  --accent-badge-bg: #FFE5E5;
+  --focus-ring: #E63946;
   
   /* Gradients */
-  --gradient-accent-support: linear-gradient(90deg, #A0E7E5 0%, #C9C0FF 100%);
-  --gradient-primary-peach: linear-gradient(135deg, #FFB3C1 0%, #FFD9A0 100%);
-  --gradient-badge: linear-gradient(135deg, #FFF3A0 0%, #FFD9A0 100%);
+  --gradient-accent-support: linear-gradient(90deg, #E63946 0%, #FF6B6B 100%);
+  --gradient-primary-peach: linear-gradient(135deg, #E63946 0%, #FF6B6B 100%);
+  --gradient-badge: linear-gradient(135deg, #FF6B6B 0%, #E63946 100%);
   
   /* Typography Tokens */
-  --font-family: 'Quicksand', 'Plus Jakarta Sans', 'Inter', sans-serif;
-  --font-title: 'Fredoka', 'Quicksand', sans-serif;
-  --font-serif: 'Fredoka', 'Quicksand', sans-serif; /* Friendly Rounded Sans Display Font */
+  --font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+  --font-title: 'Plus Jakarta Sans', 'Fredoka', sans-serif;
+  --font-serif: 'Plus Jakarta Sans', sans-serif;
   
   /* Radii Tokens */
   --border-radius-btn: 9999px;   /* Pill-shaped Buttons */
@@ -43,10 +44,10 @@
   --border-radius-badge: 9999px;
   
   /* Shadows & Transitions */
-  --shadow-subtle: 0 8px 20px rgba(0, 0, 0, 0.06);
-  --shadow-card: 0 8px 20px rgba(0, 0, 0, 0.06);
-  --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.12);
-  --shadow-button: 0 4px 14px rgba(255, 179, 193, 0.4);
+  --shadow-subtle: 0 8px 20px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 8px 20px rgba(230, 57, 70, 0.06);
+  --shadow-hover: 0 12px 28px rgba(230, 57, 70, 0.14);
+  --shadow-button: 0 4px 14px rgba(230, 57, 70, 0.35);
   
   --header-height: 84px;
 }
@@ -135,10 +136,10 @@ input, select, textarea {
   display: inline-block;
 }
 
-/* Pill-Shaped Buttons with Soft Hover Transition (scale 1.05, 200ms ease) */
+/* Pill-Shaped Buttons with Soft Hover Transition */
 .btn-primary {
   background-color: var(--color-primary);
-  color: var(--text-dark); /* Accessible dark text on pastel pink */
+  color: #FFFFFF;
   padding: 0.85rem 2rem;
   font-size: 0.9rem;
   font-weight: 700;
@@ -155,15 +156,15 @@ input, select, textarea {
 }
 
 .btn-primary:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 22px rgba(255, 179, 193, 0.6);
-  background-color: #FFA1B2;
-  color: var(--text-dark);
+  transform: scale(1.04);
+  box-shadow: 0 8px 22px rgba(230, 57, 70, 0.5);
+  background-color: var(--color-primary-hover);
+  color: #FFFFFF;
 }
 
 .btn-secondary {
   background-color: #ffffff;
-  color: var(--text-dark);
+  color: var(--color-primary);
   padding: 0.85rem 2rem;
   font-size: 0.9rem;
   font-weight: 700;
@@ -171,7 +172,7 @@ input, select, textarea {
   text-transform: uppercase;
   border: 2px solid var(--color-primary);
   border-radius: var(--border-radius-btn);
-  transition: transform 200ms ease, background-color 200ms ease;
+  transition: transform 200ms ease, background-color 200ms ease, color 200ms ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -180,13 +181,13 @@ input, select, textarea {
 
 .btn-secondary:hover {
   background-color: var(--color-primary);
-  color: var(--text-dark);
-  transform: scale(1.05);
+  color: #FFFFFF;
+  transform: scale(1.04);
 }
 
 .btn-saffron {
   background-color: var(--color-secondary);
-  color: var(--text-dark);
+  color: #FFFFFF;
   padding: 0.85rem 2rem;
   font-size: 0.9rem;
   font-weight: 700;
@@ -199,12 +200,12 @@ input, select, textarea {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 14px rgba(255, 217, 160, 0.4);
+  box-shadow: 0 4px 14px rgba(29, 53, 87, 0.3);
 }
 
 .btn-saffron:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 22px rgba(255, 217, 160, 0.6);
+  transform: scale(1.04);
+  box-shadow: 0 8px 22px rgba(29, 53, 87, 0.5);
 }
 
 .btn-outline-gray {
@@ -215,13 +216,13 @@ input, select, textarea {
   font-weight: 700;
   border: 2px solid var(--border-medium);
   border-radius: var(--border-radius-btn);
-  transition: transform 200ms ease, border-color 200ms ease;
+  transition: transform 200ms ease, border-color 200ms ease, color 200ms ease;
 }
 
 .btn-outline-gray:hover {
   border-color: var(--color-primary);
-  color: var(--text-dark);
-  transform: scale(1.05);
+  color: var(--color-primary);
+  transform: scale(1.04);
 }
 
 /* Nav Links Soft Hover Transition */
@@ -232,18 +233,18 @@ input, select, textarea {
   color: var(--text-dark);
   padding: 0.5rem 1rem;
   border-radius: var(--border-radius-btn);
-  transition: transform 200ms ease, background-color 200ms ease;
+  transition: transform 200ms ease, background-color 200ms ease, color 200ms ease;
   text-transform: uppercase;
 }
 
 .gender-btn:hover {
-  color: var(--text-dark);
+  color: var(--color-primary);
   background-color: var(--color-highlight);
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
 .gender-btn.active {
-  color: var(--text-dark);
+  color: #FFFFFF;
   background-color: var(--color-primary);
 }
 
@@ -259,15 +260,15 @@ input, select, textarea {
 }
 
 .icon-btn:hover {
-  background-color: var(--color-accent);
-  color: var(--text-dark);
+  background-color: var(--color-highlight);
+  color: var(--color-primary);
   transform: scale(1.05);
 }
 
 /* Badges */
 .badge-discount {
   background-color: var(--color-primary);
-  color: var(--text-dark);
+  color: #FFFFFF;
   font-size: 0.75rem;
   font-weight: 800;
   width: 44px;
@@ -278,12 +279,12 @@ input, select, textarea {
   justify-content: center;
   text-align: center;
   line-height: 1;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 10px rgba(230, 57, 70, 0.25);
 }
 
 .badge-new {
-  background-color: var(--color-accent);
-  color: var(--text-dark);
+  background-color: #FFE5E5;
+  color: var(--color-primary);
   font-size: 0.72rem;
   font-weight: 800;
   padding: 0.35rem 0.8rem;
@@ -292,8 +293,8 @@ input, select, textarea {
 }
 
 .badge-trending {
-  background-color: var(--color-highlight);
-  color: var(--text-dark);
+  background-color: var(--color-primary);
+  color: #FFFFFF;
   font-size: 0.72rem;
   font-weight: 800;
   padding: 0.35rem 0.8rem;
@@ -302,8 +303,8 @@ input, select, textarea {
 }
 
 .badge-carnival {
-  background-color: var(--color-support);
-  color: var(--text-dark);
+  background-color: var(--color-secondary);
+  color: #FFFFFF;
   font-size: 0.75rem;
   font-weight: 800;
   padding: 0.4rem 1rem;
@@ -311,19 +312,19 @@ input, select, textarea {
   text-transform: uppercase;
 }
 
-/* Header & Announcement Bar (Pastel Pink #FFB3C1 with Dark Text #2B2B2B) */
+/* Header & Announcement Bar */
 .header-sticky {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: rgba(255, 253, 249, 0.96);
+  background-color: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
   border-bottom: 2px solid var(--border-light);
 }
 
 .header-top-bar {
-  background-color: var(--color-primary); /* Pastel Pink #FFB3C1 */
-  color: var(--text-dark);                 /* Dark Text #2B2B2B for high contrast */
+  background-color: var(--color-primary);
+  color: #FFFFFF;
   text-align: center;
   font-size: 0.8rem;
   font-weight: 700;
