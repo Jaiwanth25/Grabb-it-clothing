@@ -2,21 +2,23 @@
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'customer',
-  phone TEXT,
-  email_verified BOOLEAN DEFAULT FALSE,
-  email_verify_token TEXT,
-  email_verify_expires TIMESTAMP,
-  reset_token_hash TEXT,
-  reset_token_expires TIMESTAMP,
-  otp_hash TEXT,
-  otp_expires TIMESTAMP,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'customer',
+  phone VARCHAR(50),
+  email_verified INTEGER DEFAULT 0,
+  email_verify_token VARCHAR(255),
+  email_verify_expires TIMESTAMP WITH TIME ZONE,
+  reset_token_hash VARCHAR(255),
+  reset_token_expires TIMESTAMP WITH TIME ZONE,
+  otp_hash VARCHAR(255),
+  otp_expires TIMESTAMP WITH TIME ZONE,
   otp_attempts INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_single_admin ON users(role) WHERE role = 'admin';
 
 CREATE TABLE IF NOT EXISTS sessions (
   id SERIAL PRIMARY KEY,

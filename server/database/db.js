@@ -56,6 +56,7 @@ class DBAbstraction {
       try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN is_limited INTEGER DEFAULT 0"); } catch(err) {}
       try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN custom_badge_text TEXT"); } catch(err) {}
       try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN custom_badge_color TEXT"); } catch(err) {}
+      try { this.sqliteDb.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_single_admin ON users(role) WHERE role = 'admin'"); } catch(err) {}
     }
   }
 
