@@ -576,14 +576,14 @@ input, select, textarea {
 .banner-carousel {
   position: relative;
   width: 100%;
-  height: 560px;
+  height: 480px;
   overflow: hidden;
   background-color: var(--bg-main);
 }
 
 @media (max-width: 768px) {
   .banner-carousel {
-    height: 420px;
+    height: 320px;
   }
 }
 
@@ -613,39 +613,53 @@ input, select, textarea {
 .banner-content {
   position: relative;
   z-index: 2;
-  background: rgba(255, 253, 249, 0.96);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
-  padding: 2.75rem 3.25rem;
-  max-width: 540px;
+  padding: 2.25rem 2.75rem;
+  max-width: 520px;
   margin-left: 6%;
   border: 2px solid var(--color-primary);
-  border-radius: var(--border-radius-card); /* 16px card border radius */
+  border-radius: var(--border-radius-card);
   box-shadow: var(--shadow-card);
 }
 
 @media (max-width: 768px) {
   .banner-content {
-    margin: 0 1rem;
-    padding: 2rem;
+    margin: 0 0.75rem;
+    padding: 1.25rem 1.5rem;
     max-width: 100%;
   }
 }
 
 .banner-title {
   font-family: var(--font-title);
-  font-size: 2.75rem;
-  font-weight: 700;
+  font-size: 2.5rem;
+  font-weight: 800;
   line-height: 1.1;
   color: var(--text-dark);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .banner-title {
+    font-size: 1.6rem;
+    margin-bottom: 0.35rem;
+  }
 }
 
 .banner-subtitle {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
-  margin-bottom: 2rem;
-  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  line-height: 1.45;
   font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .banner-subtitle {
+    font-size: 0.82rem;
+    margin-bottom: 0.85rem;
+  }
 }
 
 .banner-controls {

@@ -48,65 +48,41 @@ const Home = () => {
 
   return (
     <main style={{ backgroundColor: 'var(--bg-main)' }}>
-      {/* 1. Hero Carousel Banner */}
+      {/* 1. Hero Banner */}
       <BannerCarousel />
 
-      {/* 2. Brand Positioning Statement */}
-      <section style={{ textAlign: 'center', padding: '5.5rem 1rem 4.5rem 1rem' }} className="container">
+      {/* 2. CATEGORIES FIRST (Just like reference store) */}
+      <CategorySection />
+
+      {/* 3. NEW DROPS */}
+      <NewArrivalsSection />
+
+      {/* 4. Brand Positioning Banner */}
+      <section style={{ textAlign: 'center', padding: '3.5rem 1rem 2.5rem 1rem' }} className="container">
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-          <Sparkles size={16} color="var(--text-dark)" />
+          <Sparkles size={16} color="var(--color-primary)" />
           <span className="badge-carnival">
-            PASTEL FASHION EDIT
+            MINIMALIST MEN'S WEAR
           </span>
-          <Sparkles size={16} color="var(--text-dark)" />
+          <Sparkles size={16} color="var(--color-primary)" />
         </div>
-        <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '3.25rem', fontWeight: 700, marginTop: '0.5rem', color: 'var(--text-dark)', lineHeight: 1.15 }}>
-          STYLE THAT <span style={{ color: 'var(--text-dark)', textDecoration: 'underline decoration-wavy var(--color-accent)' }}>CELEBRATES YOU.</span>
+        <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '2.75rem', fontWeight: 800, marginTop: '0.5rem', color: 'var(--text-dark)', lineHeight: 1.15 }}>
+          MINIMALIST STREETWEAR <span style={{ color: 'var(--color-primary)' }}>&amp; EVERYDAY FITS.</span>
         </h1>
-        <p style={{ maxWidth: '640px', margin: '1.25rem auto 2.25rem auto', color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: 1.6, fontWeight: 600 }}>
-          Contemporary fashion inspired by soft pastel tones, breezy silhouettes, and effortless cuts.
+        <p style={{ maxWidth: '640px', margin: '1rem auto 1.75rem auto', color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.6, fontWeight: 600 }}>
+          High-density organic cottons, Japanese selvedge denims, relaxed linens, and tailored streetwear for men.
         </p>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <Link to={`/${gender}`} className="btn-primary">
-            <ShoppingBag size={18} /> SHOP THE COLLECTION
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link to="/men" className="btn-primary">
+            <ShoppingBag size={18} /> SHOP MEN'S COLLECTION
           </Link>
-          <Link to={`/${gender}?isNew=true`} className="btn-secondary">
+          <Link to="/men?isNew=true" className="btn-secondary">
             EXPLORE NEW DROPS <ArrowRight size={18} />
           </Link>
         </div>
       </section>
 
-      {/* 3. SIGNATURE SECTION — THE GRABB-IT EDIT */}
-      <section className="carnival-banner-section">
-        <div className="container carnival-grid">
-          <div className="carnival-content-box">
-            <div className="carnival-tag">
-              <Flame size={18} color="var(--text-dark)" /> THE GRABB-IT EDIT
-            </div>
-            <h2 className="carnival-heading">
-              PASTEL. PLAYFUL.<br />CONFIDENCE.
-            </h2>
-            <p className="carnival-desc">
-              Step into a celebration of soft pastel streetwear. High-density organic cottons, gentle peach tones, and relaxed silhouettes tailored for effortless style.
-            </p>
-            <Link to={`/${gender}?isTrending=true`} className="btn-saffron">
-              SHOP THE GRABB-IT EDIT <ArrowRight size={18} />
-            </Link>
-          </div>
-          <div className="carnival-img-wrapper">
-            <img 
-              src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&auto=format&fit=crop&q=80" 
-              alt="Grabb-it Edit Fashion" 
-              className="carnival-img" 
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Shop by Category */}
-      <CategorySection />
-
-      {/* 5. Shop by Style / Vibe */}
+      {/* 5. Shop by Vibe / Style */}
       <section className="container section-space">
         <div className="section-header">
           <div>
