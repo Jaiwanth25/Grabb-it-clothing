@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const db = require('../database/db');
-const { optionalToken, requireAdmin } = require('../middleware/authMiddleware');
+const { authenticateToken, optionalToken, requireAdmin } = require('../middleware/authMiddleware');
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;

@@ -112,7 +112,7 @@ app.get('/api/settings', async (req, res) => {
       phone: '+91 98765 43210',
       whatsappNumber: '+91 99999 88888',
       freeShippingThreshold: '999',
-      freeShippingMessage: 'FESTIVE CARNIVAL DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF',
+      freeShippingMessage: 'FESTIVE DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF',
       instagramUrl: 'https://instagram.com/grabb_it_clothing',
       returnPolicy: 'Easy 7-day hassle-free returns and exchanges.',
       shippingPolicy: 'Express shipping across India in 3-5 business days.',
@@ -127,7 +127,7 @@ app.get('/api/settings', async (req, res) => {
       storeName: 'GRABB-IT CLOTHING',
       whatsappNumber: '+91 99999 88888',
       freeShippingThreshold: '999',
-      freeShippingMessage: 'FESTIVE CARNIVAL DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF'
+      freeShippingMessage: 'FESTIVE DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF'
     });
   }
 });
