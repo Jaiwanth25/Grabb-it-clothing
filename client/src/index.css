@@ -37,11 +37,11 @@
   --font-title: 'Plus Jakarta Sans', sans-serif;
   --font-serif: 'Plus Jakarta Sans', sans-serif;
   
-  /* Radii Tokens */
-  --border-radius-btn: 0px;        /* Sharp Minimalist Fashion Radius */
-  --border-radius-card: 4px;       /* Sleek 4px Cards */
-  --border-radius-img: 4px;        /* Sleek 4px Product/Category Images */
-  --border-radius-badge: 0px;
+  /* Radii Tokens — Cool Rounded Curves */
+  --border-radius-btn: 9999px;     /* Pill Buttons */
+  --border-radius-card: 20px;      /* Sleek Rounded Cards */
+  --border-radius-img: 16px;       /* Rounded Product/Category Images */
+  --border-radius-badge: 9999px;   /* Pill Badges */
   
   /* Shadows & Transitions */
   --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.04);
@@ -120,7 +120,7 @@ input, select, textarea {
   display: inline-block;
 }
 
-/* Monochrome Buttons */
+/* Monochrome Rounded Pill Buttons */
 .btn-primary {
   background-color: #000000;
   color: #FFFFFF;
@@ -130,7 +130,7 @@ input, select, textarea {
   letter-spacing: 2px;
   text-transform: uppercase;
   border: 2px solid #000000;
-  border-radius: 0px;
+  border-radius: 9999px;
   transition: all 0.25s ease;
   display: inline-flex;
   align-items: center;
@@ -143,6 +143,7 @@ input, select, textarea {
   background-color: #FFFFFF;
   color: #000000;
   border-color: #000000;
+  transform: translateY(-2px);
 }
 
 .btn-secondary {
@@ -154,7 +155,7 @@ input, select, textarea {
   letter-spacing: 2px;
   text-transform: uppercase;
   border: 2px solid #000000;
-  border-radius: 0px;
+  border-radius: 9999px;
   transition: all 0.25s ease;
   display: inline-flex;
   align-items: center;
@@ -165,6 +166,7 @@ input, select, textarea {
 .btn-secondary:hover {
   background-color: #000000;
   color: #FFFFFF;
+  transform: translateY(-2px);
 }
 
 .btn-saffron {
@@ -176,7 +178,7 @@ input, select, textarea {
   letter-spacing: 2px;
   text-transform: uppercase;
   border: 2px solid #000000;
-  border-radius: 0px;
+  border-radius: 9999px;
   transition: all 0.25s ease;
   display: inline-flex;
   align-items: center;
@@ -187,6 +189,7 @@ input, select, textarea {
 .btn-saffron:hover {
   background-color: #FFFFFF;
   color: #000000;
+  transform: translateY(-2px);
 }
 
 .btn-outline-gray {
@@ -196,7 +199,7 @@ input, select, textarea {
   font-size: 0.82rem;
   font-weight: 700;
   border: 1px solid #E5E5E5;
-  border-radius: 0px;
+  border-radius: 9999px;
   transition: all 0.2s ease;
 }
 
@@ -212,8 +215,8 @@ input, select, textarea {
   font-weight: 800;
   letter-spacing: 1.5px;
   color: #000000;
-  padding: 0.5rem 1rem;
-  border-radius: 0px;
+  padding: 0.5rem 1.2rem;
+  border-radius: 9999px;
   transition: all 0.2s ease;
   text-transform: uppercase;
 }
@@ -236,7 +239,7 @@ input, select, textarea {
   padding: 0.6rem;
   color: #000000;
   transition: all 0.2s ease;
-  border-radius: 0px;
+  border-radius: 50%;
 }
 
 .icon-btn:hover {
@@ -266,7 +269,7 @@ input, select, textarea {
   font-size: 0.72rem;
   font-weight: 800;
   padding: 0.35rem 0.8rem;
-  border-radius: 0px;
+  border-radius: 9999px;
   text-transform: uppercase;
 }
 
@@ -277,7 +280,7 @@ input, select, textarea {
   font-size: 0.72rem;
   font-weight: 800;
   padding: 0.35rem 0.8rem;
-  border-radius: 0px;
+  border-radius: 9999px;
   text-transform: uppercase;
 }
 
@@ -286,8 +289,8 @@ input, select, textarea {
   color: #FFFFFF;
   font-size: 0.75rem;
   font-weight: 800;
-  padding: 0.4rem 1rem;
-  border-radius: 0px;
+  padding: 0.4rem 1.1rem;
+  border-radius: 9999px;
   text-transform: uppercase;
 }
 
@@ -1684,6 +1687,7 @@ input, select, textarea {
   text-transform: uppercase;
   text-decoration: none;
   border: 2px solid #FFFFFF;
+  border-radius: 9999px;
   transition: all 0.25s ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
