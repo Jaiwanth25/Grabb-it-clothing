@@ -22,6 +22,13 @@
   --border-light: #E5E5E5;
   --border-medium: #CCCCCC;
   --border-dark: #000000;
+
+  /* Legacy & Theme Fallback Tokens */
+  --color-maroon: #000000;
+  --color-saffron: #000000;
+  --color-magenta: #000000;
+  --color-turmeric: #f59e0b;
+  --color-emerald: #16a34a;
   
   --accent-badge: #000000;
   --accent-badge-bg: #F5F5F5;
@@ -207,6 +214,12 @@ input, select, textarea {
   border-color: #000000;
   background-color: #000000;
   color: #FFFFFF;
+}
+
+.btn-outline-gray.active {
+  border-color: #000000 !important;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
 }
 
 /* Nav Links */

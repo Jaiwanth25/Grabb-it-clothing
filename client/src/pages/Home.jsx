@@ -10,6 +10,7 @@ import ProductCard from '../components/ProductCard';
 import QuickViewModal from '../components/QuickViewModal';
 import { useGender } from '../context/GenderContext';
 import { formatINR } from '../utils/currency';
+import { getApiUrl, formatImageUrl } from '../services/api';
 
 const Home = () => {
   const { gender } = useGender();
@@ -20,19 +21,19 @@ const Home = () => {
 
   useEffect(() => {
     // Fetch Featured Products
-    fetch(`/api/products?gender=${gender}&isFeatured=true`)
+    fetch(getApiUrl(`/api/products?gender=${gender}&isFeatured=true`))
       .then(res => res.json())
       .then(data => setFeaturedProducts(Array.isArray(data) ? data.slice(0, 4) : []))
       .catch(err => console.error('Fetch Featured Products Error:', err));
 
     // Fetch Collections
-    fetch(`/api/collections?gender=${gender}`)
+    fetch(getApiUrl(`/api/collections?gender=${gender}`))
       .then(res => res.json())
       .then(data => setCollections(Array.isArray(data) ? data.slice(0, 3) : []))
       .catch(err => console.error('Fetch Collections Error:', err));
 
     // Fetch Looks
-    fetch(`/api/looks?gender=${gender}`)
+    fetch(getApiUrl(`/api/looks?gender=${gender}`))
       .then(res => res.json())
       .then(data => setLooks(Array.isArray(data) ? data.slice(0, 2) : []))
       .catch(err => console.error('Fetch Looks Error:', err));
@@ -46,7 +47,7 @@ const Home = () => {
   ]);
 
   useEffect(() => {
-    fetch(`/api/styles?gender=${gender}`)
+    fetch(getApiUrl(`/api/styles?gender=${gender}`))
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -113,7 +114,15 @@ const Home = () => {
               className="category-card"
               style={{ display: 'block', height: '340px' }}
             >
-              <img src={style.image_url || style.img} alt={style.name} className="category-card-img" />
+              <img 
+                src={formatImageUrl(style.image_url || style.img)} 
+                alt={style.name} 
+                className="category-card-img" 
+                onError={(e) => { 
+                  e.currentTarget.onerror = null; 
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80'; 
+                }} 
+              />
               <div className="category-card-content">
                 <span className="category-card-title">{style.name}</span>
                 <ArrowRight size={18} color="var(--text-dark)" />
@@ -140,7 +149,15 @@ const Home = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
             {collections.map(col => (
               <Link key={col.id} to={`/${gender}?collection=${col.slug}`} className="category-card" style={{ display: 'block', height: '420px', borderRadius: '16px' }}>
-                <img src={col.cover_image} alt={col.name} className="category-card-img" />
+                <img 
+                  src={formatImageUrl(col.cover_image)} 
+                  alt={col.name} 
+                  className="category-card-img" 
+                  onError={(e) => { 
+                    e.currentTarget.onerror = null; 
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&auto=format&fit=crop&q=80'; 
+                  }} 
+                />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(43, 43, 43, 0.92) 0%, rgba(43, 43, 43, 0.25) 60%, transparent 100%)', zIndex: 1 }} />
                 <div style={{ position: 'relative', zIndex: 2, padding: '1.75rem', color: '#ffffff' }}>
                   <span className="badge-carnival" style={{ marginBottom: '0.6rem', display: 'inline-block' }}>LIMITED DROP</span>
@@ -177,7 +194,15 @@ const Home = () => {
               <div key={look.id} className="look-grid" style={{ marginBottom: '4rem' }}>
                 {/* Look Canvas */}
                 <div className="look-card">
-                  <img src={look.image_url} alt={look.name} className="look-img" />
+                  <img 
+                    src={formatImageUrl(look.image_url)} 
+                    alt={look.name} 
+                    className="look-img" 
+                    onError={(e) => { 
+                      e.currentTarget.onerror = null; 
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80'; 
+                    }} 
+                  />
                   <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', color: 'var(--text-dark)', zIndex: 10, background: 'rgba(255, 253, 249, 0.95)', backdropFilter: 'blur(10px)', padding: '1.35rem', borderRadius: '16px', border: '2px solid var(--color-primary)' }}>
                     <h3 style={{ fontSize: '1.5rem', fontWeight: 700, fontFamily: 'var(--font-title)', textTransform: 'uppercase', color: 'var(--text-dark)' }}>
                       {look.name}
@@ -195,7 +220,16 @@ const Home = () => {
                   </h4>
                   {look.products && look.products.map(prod => (
                     <div key={prod.id} className="look-prod-item" style={{ borderRadius: '16px', boxShadow: '0 8px 20px rgba(0,0,0,0.06)', border: '2px solid var(--border-light)' }}>
-                      <img src={prod.primary_image} alt={prod.name} className="look-prod-img" style={{ borderRadius: '12px' }} />
+                      <img 
+                        src={formatImageUrl(prod.primary_image)} 
+                        alt={prod.name} 
+                        className="look-prod-img" 
+                        style={{ borderRadius: '12px' }} 
+                        onError={(e) => { 
+                          e.currentTarget.onerror = null; 
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80'; 
+                        }} 
+                      />
                       <div style={{ flex: 1 }}>
                         <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
                           {prod.category?.name || 'Apparel'}

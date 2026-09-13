@@ -4,6 +4,7 @@ import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Tag, Sparkles } from 'luc
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { formatINR } from '../utils/currency';
+import { formatImageUrl } from '../services/api';
 
 const CartPage = () => {
   const {
@@ -111,7 +112,15 @@ const CartPage = () => {
                   <tr key={item.cart_item_id}>
                     <td>
                       <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
-                        <img src={item.image_url} alt={item.product_name} style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-light)' }} />
+                        <img 
+                          src={formatImageUrl(item.image_url)} 
+                          alt={item.product_name} 
+                          onError={(e) => { 
+                            e.currentTarget.onerror = null; 
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80'; 
+                          }} 
+                          style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-light)' }} 
+                        />
                         <div>
                           <Link to={`/product/${item.slug}`} style={{ fontWeight: 800, fontSize: '0.98rem', fontFamily: 'var(--font-title)', color: 'var(--color-maroon)' }}>
                             {item.product_name}

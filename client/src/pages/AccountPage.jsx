@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Package, User, MapPin, Key, LogOut, Heart, ShieldCheck, AlertCircle, CheckCircle2, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { formatINR } from '../utils/currency';
+import { formatImageUrl } from '../services/api';
 
 const AccountPage = () => {
   const { user, token, logout } = useAuth();
@@ -297,7 +298,15 @@ const AccountPage = () => {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                         {order.items?.map((item, idx) => (
                           <div key={idx} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                            <img src={item.image_url} alt="" style={{ width: '50px', height: '65px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-light)' }} />
+                            <img 
+                              src={formatImageUrl(item.image_url)} 
+                              alt="" 
+                              onError={(e) => { 
+                                e.currentTarget.onerror = null; 
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80'; 
+                              }} 
+                              style={{ width: '50px', height: '65px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-light)' }} 
+                            />
                             <div style={{ flex: 1, fontSize: '0.88rem' }}>
                               <div style={{ fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-maroon)' }}>{item.product_name}</div>
                               <div style={{ color: 'var(--text-muted)', marginTop: '0.15rem' }}>Size: {item.size} | Color: {item.color.toUpperCase()} | Qty: {item.quantity}</div>

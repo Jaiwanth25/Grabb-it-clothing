@@ -3,6 +3,7 @@ import { X, Star, ShoppingBag, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { formatINR } from '../utils/currency';
+import { formatImageUrl } from '../services/api';
 
 const QuickViewModal = ({ product, onClose }) => {
   const { addToCart } = useCart();
@@ -52,7 +53,8 @@ const QuickViewModal = ({ product, onClose }) => {
     }
   };
 
-  const primaryImage = product.primary_image || product.images?.[0]?.image_url;
+  const fallbackImg = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80';
+  const primaryImage = formatImageUrl(product.primary_image || product.images?.[0]?.image_url || fallbackImg);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -64,7 +66,12 @@ const QuickViewModal = ({ product, onClose }) => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem' }}>
           {/* Left: Product Image */}
           <div style={{ backgroundColor: 'var(--bg-subtle)', position: 'relative', height: '380px', borderRadius: '12px', overflow: 'hidden' }}>
-            <img src={primaryImage} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img 
+              src={primaryImage} 
+              alt={product.name} 
+              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackImg; }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
           </div>
 
           {/* Right: Product Summary */}
@@ -114,11 +121,11 @@ const QuickViewModal = ({ product, onClose }) => {
                       key={sz}
                       className={`btn-outline-gray ${selectedSize === sz ? 'active' : ''}`}
                       style={{
-                        backgroundColor: selectedSize === sz ? 'var(--color-maroon)' : '#fff',
-                        color: selectedSize === sz ? '#fff' : 'var(--text-main)',
-                        borderColor: selectedSize === sz ? 'var(--color-maroon)' : 'var(--border-light)',
+                        backgroundColor: selectedSize === sz ? '#000000' : '#ffffff',
+                        color: selectedSize === sz ? '#ffffff' : '#000000',
+                        borderColor: selectedSize === sz ? '#000000' : '#CCCCCC',
                         minWidth: '42px',
-                        fontWeight: 700
+                        fontWeight: 800
                       }}
                       onClick={() => setSelectedSize(sz)}
                     >
@@ -139,10 +146,10 @@ const QuickViewModal = ({ product, onClose }) => {
                       key={col}
                       className="btn-outline-gray"
                       style={{
-                        backgroundColor: selectedColor === col ? 'var(--color-maroon)' : '#fff',
-                        color: selectedColor === col ? '#fff' : 'var(--text-main)',
-                        borderColor: selectedColor === col ? 'var(--color-maroon)' : 'var(--border-light)',
-                        fontWeight: 700
+                        backgroundColor: selectedColor === col ? '#000000' : '#ffffff',
+                        color: selectedColor === col ? '#ffffff' : '#000000',
+                        borderColor: selectedColor === col ? '#000000' : '#CCCCCC',
+                        fontWeight: 800
                       }}
                       onClick={() => setSelectedColor(col)}
                     >

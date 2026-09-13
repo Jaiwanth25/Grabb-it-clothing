@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
+const fs = require('fs');
 const { requireAdmin } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
@@ -13,12 +14,36 @@ router.post('/upload', upload.array('images', 5), (req, res) => {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No image files were provided for upload.' });
     }
+
+    const host = req.get('host');
+    const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+    const backendBaseUrl = `${protocol}://${host}`;
+
     const urls = req.files.map(file => {
+      // 1. If uploaded to Cloudinary, return the remote CDN URL
       if (file.path && (file.path.startsWith('http://') || file.path.startsWith('https://'))) {
         return file.path;
       }
-      return `/uploads/${file.filename}`;
+
+      // 2. If stored locally and file is <= 3MB, convert to base64 Data URL so it is permanently stored
+      // in the database, never breaks on Vercel, and never gets lost on Render restarts!
+      try {
+        if (file.path && fs.existsSync(file.path)) {
+          const stats = fs.statSync(file.path);
+          if (stats.size <= 3 * 1024 * 1024) {
+            const data = fs.readFileSync(file.path);
+            const mime = file.mimetype || 'image/jpeg';
+            return `data:${mime};base64,${data.toString('base64')}`;
+          }
+        }
+      } catch (e) {
+        console.error('Error reading uploaded image for data URL:', e);
+      }
+
+      // 3. Fallback to full backend absolute URL
+      return `${backendBaseUrl}/uploads/${file.filename}`;
     });
+
     res.json({ urls, message: 'Images uploaded successfully' });
   } catch (err) {
     console.error('File Upload Error:', err);

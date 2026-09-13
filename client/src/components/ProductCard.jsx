@@ -4,14 +4,16 @@ import { Heart, Eye, ShoppingBag, Star } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { formatINR } from '../utils/currency';
+import { formatImageUrl } from '../services/api';
 
 const ProductCard = ({ product, onQuickView }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
   const [adding, setAdding] = useState(false);
 
-  const primaryImage = product.primary_image || product.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80';
-  const secondaryImage = product.secondary_image || product.images?.[1]?.image_url || primaryImage;
+  const fallbackImg = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80';
+  const primaryImage = formatImageUrl(product.primary_image || product.images?.[0]?.image_url || fallbackImg);
+  const secondaryImage = formatImageUrl(product.secondary_image || product.images?.[1]?.image_url || primaryImage);
 
   const hasDiscount = product.sale_price !== null && product.sale_price < product.price;
   const discountPercent = hasDiscount ? Math.round(((product.price - product.sale_price) / product.price) * 100) : 0;
@@ -42,8 +44,18 @@ const ProductCard = ({ product, onQuickView }) => {
     <div className="product-card">
       <div className="product-card-img-wrapper">
         <Link to={`/product/${product.slug}`}>
-          <img src={primaryImage} alt={product.name} className="product-card-img primary" />
-          <img src={secondaryImage} alt={product.name} className="product-card-img secondary" />
+          <img 
+            src={primaryImage} 
+            alt={product.name} 
+            className="product-card-img primary" 
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackImg; }}
+          />
+          <img 
+            src={secondaryImage} 
+            alt={product.name} 
+            className="product-card-img secondary" 
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackImg; }}
+          />
         </Link>
 
         {/* Dynamic Badges Managed via Admin */}

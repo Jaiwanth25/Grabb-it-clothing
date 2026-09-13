@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useGender } from '../context/GenderContext';
-import { getApiUrl } from '../services/api';
+import { getApiUrl, formatImageUrl } from '../services/api';
 
 const defaultMenCategories = [
   {
@@ -153,7 +153,7 @@ const CategorySection = ({ gender: propGender }) => {
             <Link key={cat.id || cat.slug} to={targetUrl} className="category-circle-card">
               <div className="category-circle-img-wrap">
                 <img
-                  src={cat.image_url || cat.img}
+                  src={formatImageUrl(cat.image_url || cat.img)}
                   alt={cat.name}
                   className="category-circle-img"
                   onError={(e) => {

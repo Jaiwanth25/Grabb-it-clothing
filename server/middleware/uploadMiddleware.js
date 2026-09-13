@@ -18,7 +18,7 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
     cloudinary: cloudinary,
     params: {
       folder: 'grabb-it-clothing',
-      allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg', 'heic', 'heif', 'bmp', 'tiff', 'ico']
     }
   });
 } else {
@@ -34,24 +34,26 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      const ext = path.extname(file.originalname);
+      const ext = path.extname(file.originalname) || '.jpg';
       cb(null, file.fieldname + '-' + uniqueSuffix + ext);
     }
   });
 }
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
+  const isImageMime = file.mimetype && file.mimetype.startsWith('image/');
+  const isImageExt = /\.(jpg|jpeg|png|webp|gif|avif|svg|heic|heif|bmp|tiff|ico)$/i.test(file.originalname);
+  if (isImageMime || isImageExt) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed!'), false);
+    cb(new Error('Only image files (JPG, PNG, WEBP, GIF, SVG, AVIF, HEIC, etc.) are allowed!'), false);
   }
 };
 
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 25 * 1024 * 1024 } // 25MB limit
 });
 
 module.exports = upload;

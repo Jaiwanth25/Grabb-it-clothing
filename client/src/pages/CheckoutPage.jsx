@@ -4,6 +4,7 @@ import { CheckCircle2, CreditCard, ShieldCheck, Truck, ArrowLeft, QrCode, Buildi
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { formatINR } from '../utils/currency';
+import { formatImageUrl } from '../services/api';
 
 const CheckoutPage = () => {
   const { cartItems, subtotal, discountAmount, appliedCoupon, clearCart } = useCart();
@@ -463,7 +464,7 @@ const CheckoutPage = () => {
                   </h4>
                   <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     {paymentSettings?.upi?.qrCodeUrl && (
-                      <img src={paymentSettings.upi.qrCodeUrl} alt="UPI QR Code" style={{ width: '130px', height: '130px', border: '1px solid var(--border-light)', borderRadius: '8px' }} />
+                      <img src={formatImageUrl(paymentSettings.upi.qrCodeUrl)} alt="UPI QR Code" style={{ width: '130px', height: '130px', border: '1px solid var(--border-light)', borderRadius: '8px' }} />
                     )}
                     <div style={{ fontSize: '0.88rem', lineHeight: '1.6' }}>
                       <div>UPI ID: <strong style={{ color: 'var(--color-saffron)', fontSize: '0.95rem' }}>{paymentSettings?.upi?.upiId || 'grabb-it@upi'}</strong></div>
@@ -542,7 +543,15 @@ const CheckoutPage = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '280px', overflowY: 'auto', marginBottom: '1.5rem' }}>
             {cartItems.map(item => (
               <div key={item.cart_item_id} style={{ display: 'flex', gap: '0.85rem', alignItems: 'center' }}>
-                <img src={item.image_url} alt="" style={{ width: '55px', height: '70px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-light)' }} />
+                <img 
+                  src={formatImageUrl(item.image_url)} 
+                  alt="" 
+                  onError={(e) => { 
+                    e.currentTarget.onerror = null; 
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80'; 
+                  }} 
+                  style={{ width: '55px', height: '70px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-light)' }} 
+                />
                 <div style={{ flex: 1, fontSize: '0.85rem' }}>
                   <div style={{ fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-maroon)' }}>{item.product_name}</div>
                   <div style={{ color: 'var(--text-muted)', marginTop: '0.15rem' }}>{item.size} / {item.color.toUpperCase()} x {item.quantity}</div>

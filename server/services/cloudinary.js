@@ -25,7 +25,7 @@ async function uploadImage(filePath, folder = 'grabb-it-products') {
     try {
       const result = await cloudinary.uploader.upload(filePath, {
         folder,
-        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg', 'heic', 'heif', 'bmp', 'tiff', 'ico'],
         transformation: [{ quality: 'auto', fetch_format: 'auto' }]
       });
       // Delete temporary local file after Cloudinary upload

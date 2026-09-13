@@ -13,6 +13,23 @@ export function getApiUrl(endpoint) {
   return `${API_BASE_URL}${endpoint}`;
 }
 
+export function formatImageUrl(url) {
+  if (!url) {
+    return 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80';
+  }
+  // Full HTTP/HTTPS or Base64 Data URL
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  // Relative uploads path
+  if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+    const cleanPath = url.startsWith('/') ? url : `/${url}`;
+    const base = API_BASE_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000' : '');
+    return `${base}${cleanPath}`;
+  }
+  return url;
+}
+
 export async function fetchApi(endpoint, options = {}) {
   const url = getApiUrl(endpoint);
   

@@ -6,6 +6,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard';
 import { formatINR } from '../utils/currency';
+import { getApiUrl, formatImageUrl } from '../services/api';
 
 const ProductDetails = () => {
   const { slug } = useParams();
@@ -42,7 +43,7 @@ const ProductDetails = () => {
     setLoading(true);
     setPincodeResult(null);
     setPincodeError('');
-    fetch(`/api/products/${slug}`)
+    fetch(getApiUrl(`/api/products/${slug}`))
       .then(res => res.json())
       .then(data => {
         setProduct(data);
@@ -169,7 +170,7 @@ const ProductDetails = () => {
 
     setSubmittingReview(true);
     try {
-      const res = await fetch('/api/reviews', {
+      const res = await fetch(getApiUrl('/api/reviews'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +185,7 @@ const ProductDetails = () => {
       if (res.ok) {
         setNewComment('');
         alert('Thank you! Your feedback has been verified and registered.');
-        fetch(`/api/products/${slug}`).then(r => r.json()).then(d => setProduct(d));
+        fetch(getApiUrl(`/api/products/${slug}`)).then(r => r.json()).then(d => setProduct(d));
       }
     } catch (err) {
       console.error(err);
@@ -222,8 +223,12 @@ const ProductDetails = () => {
           {/* Main Visual Display */}
           <div style={{ backgroundColor: '#ffffff', position: 'relative', width: '100%', height: '620px', overflow: 'hidden', borderRadius: '16px', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-subtle)' }}>
             <img
-              src={selectedImage || product.primary_image}
+              src={formatImageUrl(selectedImage || product.primary_image)}
               alt={product.name}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80';
+              }}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
             {product.sale_price !== null && product.sale_price < product.price && (
@@ -245,7 +250,7 @@ const ProductDetails = () => {
                   style={{
                     width: '90px',
                     height: '110px',
-                    border: selectedImage === img.image_url ? '2px solid var(--color-saffron)' : '1px solid var(--border-light)',
+                    border: selectedImage === img.image_url ? '2px solid #000000' : '1px solid var(--border-light)',
                     padding: '2px',
                     backgroundColor: '#ffffff',
                     borderRadius: '8px',
@@ -253,7 +258,15 @@ const ProductDetails = () => {
                     cursor: 'pointer'
                   }}
                 >
-                  <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }} />
+                  <img 
+                    src={formatImageUrl(img.image_url)} 
+                    alt="" 
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80';
+                    }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }} 
+                  />
                 </button>
               ))}
             </div>
@@ -312,8 +325,8 @@ const ProductDetails = () => {
           {/* COLOR SELECTOR */}
           {uniqueColors.length > 0 && (
             <div>
-              <label style={{ fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-maroon)' }}>
-                COLOR: <strong style={{ color: 'var(--color-saffron)' }}>{selectedColor.toUpperCase()}</strong>
+              <label style={{ fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#000000' }}>
+                COLOR: <strong style={{ color: '#000000', marginLeft: '4px' }}>{selectedColor.toUpperCase()}</strong>
               </label>
               <div className="color-swatches-grid" style={{ marginTop: '0.6rem' }}>
                 {uniqueColors.map(col => (
@@ -336,12 +349,12 @@ const ProductDetails = () => {
           {uniqueSizes.length > 0 && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label style={{ fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-maroon)' }}>
-                  SELECT SIZE: {selectedSize && <strong style={{ color: 'var(--color-saffron)' }}>{selectedSize}</strong>}
+                <label style={{ fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#000000' }}>
+                  SELECT SIZE: {selectedSize && <strong style={{ color: '#000000', marginLeft: '4px' }}>{selectedSize}</strong>}
                 </label>
                 <button 
                   onClick={() => setShowSizeGuide(true)} 
-                  style={{ fontSize: '0.78rem', textDecoration: 'underline', fontWeight: 800, color: 'var(--color-maroon)' }}
+                  style={{ fontSize: '0.78rem', textDecoration: 'underline', fontWeight: 800, color: '#000000' }}
                 >
                   SIZE GUIDE
                 </button>
@@ -356,16 +369,20 @@ const ProductDetails = () => {
                       disabled={!selectedColor}
                       className="btn-outline-gray"
                       style={{
-                        backgroundColor: isSelected ? 'var(--color-maroon)' : '#ffffff',
-                        color: isSelected ? '#ffffff' : sizeAvailable ? 'var(--text-main)' : 'var(--text-light)',
-                        borderColor: isSelected ? 'var(--color-maroon)' : sizeAvailable ? 'var(--border-medium)' : 'var(--border-light)',
+                        backgroundColor: isSelected ? '#000000' : '#ffffff',
+                        color: isSelected ? '#ffffff' : sizeAvailable ? '#000000' : '#888888',
+                        borderColor: isSelected ? '#000000' : sizeAvailable ? '#CCCCCC' : '#E5E5E5',
+                        borderWidth: isSelected ? '2px' : '1px',
+                        boxShadow: isSelected ? '0 4px 12px rgba(0,0,0,0.2)' : 'none',
                         minWidth: '52px',
                         height: '46px',
                         fontWeight: 800,
+                        fontSize: '0.88rem',
                         borderRadius: '8px',
                         textDecoration: sizeAvailable ? 'none' : 'line-through',
                         opacity: sizeAvailable ? 1 : 0.4,
-                        cursor: sizeAvailable ? 'pointer' : 'not-allowed'
+                        cursor: sizeAvailable ? 'pointer' : 'not-allowed',
+                        transition: 'all 150ms ease'
                       }}
                       onClick={() => sizeAvailable && setSelectedSize(sz)}
                     >

@@ -251,9 +251,9 @@ const ProductListing = () => {
               key={sz}
               className="btn-outline-gray"
               style={{
-                backgroundColor: selectedSize === sz ? 'var(--color-maroon)' : 'transparent',
-                color: selectedSize === sz ? '#ffffff' : 'var(--text-main)',
-                borderColor: selectedSize === sz ? 'var(--color-maroon)' : 'var(--border-light)',
+                backgroundColor: selectedSize === sz ? '#000000' : '#ffffff',
+                color: selectedSize === sz ? '#ffffff' : '#000000',
+                borderColor: selectedSize === sz ? '#000000' : 'var(--border-light)',
                 padding: '0.4rem 0.75rem',
                 fontSize: '0.75rem',
                 fontWeight: 700

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { formatINR } from '../utils/currency';
-import { getApiUrl } from '../services/api';
+import { getApiUrl, formatImageUrl } from '../services/api';
 
 const AdminDashboard = () => {
   const { user, token, logout } = useAuth();
@@ -997,7 +997,7 @@ const AdminDashboard = () => {
                         <tbody>
                           {(products || []).map(p => (
                             <tr key={p.id}>
-                              <td><img src={p.primary_image} alt="" style={{ width: '40px', height: '50px', objectFit: 'cover', borderRadius: '8px' }} /></td>
+                              <td><img src={formatImageUrl(p.primary_image)} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80'; }} style={{ width: '40px', height: '50px', objectFit: 'cover', borderRadius: '8px' }} /></td>
                               <td><code>{p.sku}</code></td>
                               <td><strong>{p.name}</strong></td>
                               <td style={{ textTransform: 'uppercase' }}>{p.gender}</td>
@@ -1161,7 +1161,7 @@ const AdminDashboard = () => {
                         <tbody>
                           {(banners || []).map(b => (
                             <tr key={b.id}>
-                              <td><img src={b.image_url} alt="" style={{ width: '120px', height: '45px', objectFit: 'cover', borderRadius: '8px' }} /></td>
+                              <td><img src={formatImageUrl(b.image_url)} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&auto=format&fit=crop&q=80'; }} style={{ width: '120px', height: '45px', objectFit: 'cover', borderRadius: '8px' }} /></td>
                               <td><strong>{b.title}</strong></td>
                               <td>{b.subtitle}</td>
                               <td><code>{b.button_link}</code></td>
@@ -1189,26 +1189,26 @@ const AdminDashboard = () => {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h2 style={{ fontSize: '1.15rem', fontWeight: 800, textTransform: 'uppercase', fontFamily: 'var(--font-title)' }}>
-                      Shop The Look Outfit Campaigns
+                      Shop The Look (Outfit Inspiration)
                     </h2>
                     <button className="btn-primary" onClick={() => setShowLookModal(true)}>
-                      <Plus size={16} /> ADD OUTFIT LOOK
+                      <Plus size={16} /> ADD NEW LOOK
                     </button>
                   </div>
 
                   {(looks || []).length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem 1rem', backgroundColor: '#ffffff', borderRadius: '16px', border: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
-                      No outfit looks created yet. Click "Add Outfit Look" to tag model outfits!
+                      No outfits listed yet.
                     </div>
                   ) : (
                     <div className="table-responsive">
                       <table className="custom-table">
                         <thead>
                           <tr>
-                            <th>Outfit Photo</th>
-                            <th>Look Name</th>
+                            <th>Look Photo</th>
+                            <th>Name</th>
                             <th>Description</th>
-                            <th>Tagged Products</th>
+                            <th>Products Included</th>
                             <th>Status</th>
                             <th>Actions</th>
                           </tr>
@@ -1216,7 +1216,7 @@ const AdminDashboard = () => {
                         <tbody>
                           {(looks || []).map(l => (
                             <tr key={l.id}>
-                              <td><img src={l.image_url} alt="" style={{ width: '60px', height: '75px', objectFit: 'cover', borderRadius: '8px' }} /></td>
+                              <td><img src={formatImageUrl(l.image_url)} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80'; }} style={{ width: '60px', height: '75px', objectFit: 'cover', borderRadius: '8px' }} /></td>
                               <td><strong>{l.name}</strong></td>
                               <td>{l.description}</td>
                               <td><strong>{l.products?.length || 0} Products Tagged</strong></td>
@@ -1271,7 +1271,7 @@ const AdminDashboard = () => {
                         <tbody>
                           {(collections || []).map(col => (
                             <tr key={col.id}>
-                              <td><img src={col.cover_image} alt="" style={{ width: '60px', height: '45px', objectFit: 'cover', borderRadius: '8px' }} /></td>
+                              <td><img src={formatImageUrl(col.cover_image)} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&auto=format&fit=crop&q=80'; }} style={{ width: '60px', height: '45px', objectFit: 'cover', borderRadius: '8px' }} /></td>
                               <td><strong>{col.name}</strong></td>
                               <td>{col.slug}</td>
                               <td style={{ textTransform: 'uppercase' }}>{col.gender}</td>
@@ -1335,8 +1335,9 @@ const AdminDashboard = () => {
                             <tr key={c.id}>
                               <td>
                                 <img
-                                  src={c.image_url || 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=200&auto=format&fit=crop&q=80'}
+                                  src={formatImageUrl(c.image_url)}
                                   alt={c.name}
+                                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=200&auto=format&fit=crop&q=80'; }}
                                   style={{ width: '54px', height: '54px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--color-primary)' }}
                                 />
                               </td>
@@ -1432,8 +1433,9 @@ const AdminDashboard = () => {
                             <tr key={st.id}>
                               <td>
                                 <img
-                                  src={st.image_url}
+                                  src={formatImageUrl(st.image_url)}
                                   alt={st.name}
+                                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80'; }}
                                   style={{ width: '70px', height: '90px', borderRadius: '12px', objectFit: 'cover', border: '2px solid var(--color-primary)' }}
                                 />
                               </td>
@@ -1797,7 +1799,7 @@ const AdminDashboard = () => {
                         <label className="form-label">Upload / Replace UPI QR Code Image</label>
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/*, .jpg, .jpeg, .png, .webp, .gif, .avif, .svg, .heic, .heif, .bmp, .tiff, .ico"
                           onChange={handleFileSelect}
                           className="form-input"
                           style={{ padding: '0.5rem' }}
@@ -1805,7 +1807,7 @@ const AdminDashboard = () => {
 
                         {paymentSettingsForm.upi_qr_url && (
                           <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: '#ffffff', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-                            <img src={paymentSettingsForm.upi_qr_url} alt="UPI QR" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+                            <img src={formatImageUrl(paymentSettingsForm.upi_qr_url)} alt="UPI QR" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
                             <div>
                               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Current QR Image Active</span>
                               <button
@@ -2087,7 +2089,7 @@ const AdminDashboard = () => {
                 <input
                   type="file"
                   multiple
-                  accept="image/*"
+                  accept="image/*, .jpg, .jpeg, .png, .webp, .gif, .avif, .svg, .heic, .heif, .bmp, .tiff, .ico"
                   onChange={handleFileSelect}
                   className="form-input"
                   style={{ padding: '0.5rem' }}
@@ -2355,7 +2357,7 @@ const AdminDashboard = () => {
                 <label className="form-label">Category Picture (Upload from Computer or enter Image URL)</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*, .jpg, .jpeg, .png, .webp, .gif, .avif, .svg, .heic, .heif, .bmp, .tiff, .ico"
                   onChange={handleFileSelect}
                   className="form-input"
                   style={{ padding: '0.5rem', marginBottom: '0.5rem' }}
@@ -2445,7 +2447,7 @@ const AdminDashboard = () => {
                 <label className="form-label">Style Card Picture (Upload from Computer or enter Image URL)</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*, .jpg, .jpeg, .png, .webp, .gif, .avif, .svg, .heic, .heif, .bmp, .tiff, .ico"
                   onChange={handleFileSelect}
                   className="form-input"
                   style={{ padding: '0.5rem', marginBottom: '0.5rem' }}
