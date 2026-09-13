@@ -5,8 +5,16 @@
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
+export function getApiUrl(endpoint) {
+  if (!endpoint) return '';
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    return endpoint;
+  }
+  return `${API_BASE_URL}${endpoint}`;
+}
+
 export async function fetchApi(endpoint, options = {}) {
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const url = getApiUrl(endpoint);
   
   const defaultHeaders = {
     'Content-Type': 'application/json'

@@ -42,10 +42,12 @@ router.get('/', async (req, res) => {
       params.push(gender.toLowerCase());
     }
 
-    // Category Filter
+    // Category Filter (Flexible slug, name, or ID with strict gender isolation)
     if (category) {
-      query += ` AND c.slug = ? `;
-      params.push(category);
+      const catVal = category.toString().trim().toLowerCase();
+      const genderPrefix = gender ? `${gender.toLowerCase().trim()}-` : '';
+      query += ` AND (LOWER(c.slug) = ? OR LOWER(c.slug) = ? OR LOWER(c.name) = ? OR CAST(c.id AS TEXT) = ?) `;
+      params.push(catVal, `${genderPrefix}${catVal}`, catVal, category.toString().trim());
     }
 
     // Collection Filter

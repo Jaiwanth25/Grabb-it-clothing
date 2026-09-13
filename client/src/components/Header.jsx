@@ -5,6 +5,7 @@ import { Menu, Search, User, ShoppingBag, Heart, X, Shield, ArrowRight, Bell, Sp
 import { useGender } from '../context/GenderContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../services/api';
 
 const Header = () => {
   const { gender, setGender } = useGender();
@@ -21,7 +22,7 @@ const Header = () => {
   const [topTickerMessage, setTopTickerMessage] = useState('FESTIVE DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF');
 
   useEffect(() => {
-    fetch('/api/settings')
+    fetch(getApiUrl('/api/settings'))
       .then(res => res.json())
       .then(data => {
         if (data && data.freeShippingMessage) {
@@ -57,7 +58,7 @@ const Header = () => {
     }
     
     const fetchNotifications = () => {
-      fetch('/api/notifications', {
+      fetch(getApiUrl('/api/notifications'), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -81,7 +82,7 @@ const Header = () => {
 
   const handleMarkAsRead = async (id) => {
     try {
-      const res = await fetch(`/api/notifications/${id}/read`, {
+      const res = await fetch(getApiUrl(`/api/notifications/${id}/read`), {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -98,7 +99,7 @@ const Header = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      const res = await fetch(`/api/notifications/mark-all-read`, {
+      const res = await fetch(getApiUrl('/api/notifications/mark-all-read'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -113,10 +114,10 @@ const Header = () => {
     }
   };
 
-  const handleGenderSelect = () => {
-    setGender('men');
-    if (location.pathname === '/' || location.pathname === '/men') {
-      navigate('/men');
+  const handleGenderSelect = (g) => {
+    setGender(g);
+    if (location.pathname === '/' || location.pathname === '/men' || location.pathname === '/women') {
+      navigate(`/${g}`);
     }
   };
 
@@ -169,10 +170,21 @@ const Header = () => {
 
         {/* CENTER: Desktop Menu Links */}
         <div className="header-center desktop-only">
-          <Link to="/men" className="gender-btn active" onClick={() => setGender('men')}>
+          <Link 
+            to="/men" 
+            className={`gender-btn ${gender === 'men' ? 'active' : ''}`} 
+            onClick={() => setGender('men')}
+          >
             MEN
           </Link>
-          <Link to="/men?isNew=true" className="gender-btn">
+          <Link 
+            to="/women" 
+            className={`gender-btn ${gender === 'women' ? 'active' : ''}`} 
+            onClick={() => setGender('women')}
+          >
+            WOMEN
+          </Link>
+          <Link to={`/${gender}?isNew=true`} className="gender-btn">
             NEW DROPS
           </Link>
           <Link to={`/${gender}?isTrending=true`} className="gender-btn">
@@ -203,11 +215,23 @@ const Header = () => {
             <Search size={16} color="var(--text-dark)" />
             <input
               type="text"
-              placeholder="Search Men's fashion..."
+              placeholder={gender === 'women' ? "Search Women's fashion..." : "Search Men's fashion..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
+
+          {/* Admin Portal shortcut for Admin Users */}
+          {(user?.role === 'admin' || isAdmin) && (
+            <Link 
+              to="/admin" 
+              className="icon-btn" 
+              title="Admin Dashboard"
+              style={{ color: 'var(--color-maroon, #4a0e17)', position: 'relative' }}
+            >
+              <Shield size={22} />
+            </Link>
+          )}
 
           {/* Account */}
           <Link to={user ? "/account" : "/login"} className="icon-btn" title="Account">
@@ -340,6 +364,11 @@ const Header = () => {
 
               <Link to="/men" className="drawer-nav-item" onClick={() => { setGender('men'); setDrawerOpen(false); }}>
                 <span>👕 Men</span>
+                <ArrowRight size={16} color="var(--text-dark)" />
+              </Link>
+
+              <Link to="/women" className="drawer-nav-item" onClick={() => { setGender('women'); setDrawerOpen(false); }}>
+                <span>👗 Women</span>
                 <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
 

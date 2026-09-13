@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { formatINR } from '../utils/currency';
+import { getApiUrl } from '../services/api';
 
 const AdminDashboard = () => {
   const { user, token, logout } = useAuth();
@@ -133,20 +134,20 @@ const AdminDashboard = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [statsRes, prodRes, catRes, banRes, ordRes, invRes, custRes, coupRes, colRes, revRes, looksRes, setRes, paySetRes, stylesRes] = await Promise.all([
-        fetch('/api/admin/stats', { headers }),
-        fetch('/api/admin/products', { headers }),
-        fetch('/api/admin/categories', { headers }),
-        fetch('/api/admin/banners', { headers }),
-        fetch('/api/admin/orders', { headers }),
-        fetch('/api/admin/inventory', { headers }),
-        fetch('/api/admin/customers', { headers }),
-        fetch('/api/admin/coupons', { headers }),
-        fetch('/api/admin/collections', { headers }),
-        fetch('/api/admin/reviews', { headers }),
-        fetch('/api/admin/looks', { headers }),
-        fetch('/api/admin/settings', { headers }),
-        fetch('/api/admin/payment-settings', { headers }),
-        fetch('/api/admin/styles', { headers })
+        fetch(getApiUrl('/api/admin/stats'), { headers }),
+        fetch(getApiUrl('/api/admin/products'), { headers }),
+        fetch(getApiUrl('/api/admin/categories'), { headers }),
+        fetch(getApiUrl('/api/admin/banners'), { headers }),
+        fetch(getApiUrl('/api/admin/orders'), { headers }),
+        fetch(getApiUrl('/api/admin/inventory'), { headers }),
+        fetch(getApiUrl('/api/admin/customers'), { headers }),
+        fetch(getApiUrl('/api/admin/coupons'), { headers }),
+        fetch(getApiUrl('/api/admin/collections'), { headers }),
+        fetch(getApiUrl('/api/admin/reviews'), { headers }),
+        fetch(getApiUrl('/api/admin/looks'), { headers }),
+        fetch(getApiUrl('/api/admin/settings'), { headers }),
+        fetch(getApiUrl('/api/admin/payment-settings'), { headers }),
+        fetch(getApiUrl('/api/admin/styles'), { headers })
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
@@ -214,7 +215,7 @@ const AdminDashboard = () => {
         formData.append('images', file);
       });
 
-      const res = await fetch('/api/admin/upload', {
+      const res = await fetch(getApiUrl('/api/admin/upload'), {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData
@@ -270,7 +271,7 @@ const AdminDashboard = () => {
       const url = productForm.id ? `/api/admin/products/${productForm.id}` : '/api/admin/products';
       const method = productForm.id ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await fetch(getApiUrl(url), {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -296,7 +297,7 @@ const AdminDashboard = () => {
     const { type, id } = deleteConfirm;
     try {
       let endpoint = `/api/admin/${type}/${id}`;
-      const res = await fetch(endpoint, {
+      const res = await fetch(getApiUrl(endpoint), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -313,7 +314,7 @@ const AdminDashboard = () => {
   // Order Status Updates
   const handleUpdateOrderStatus = async (orderId, updateFields) => {
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+      const res = await fetch(getApiUrl(`/api/admin/orders/${orderId}/status`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(updateFields)
@@ -350,7 +351,7 @@ const AdminDashboard = () => {
       const url = categoryForm.id ? `/api/admin/categories/${categoryForm.id}` : '/api/admin/categories';
       const method = categoryForm.id ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await fetch(getApiUrl(url), {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -388,7 +389,7 @@ const AdminDashboard = () => {
       const url = styleForm.id ? `/api/admin/styles/${styleForm.id}` : '/api/admin/styles';
       const method = styleForm.id ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await fetch(getApiUrl(url), {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -410,7 +411,7 @@ const AdminDashboard = () => {
   const handleSaveBanner = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/admin/banners', {
+      const res = await fetch(getApiUrl('/api/admin/banners'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(bannerForm)
@@ -428,7 +429,7 @@ const AdminDashboard = () => {
   const handleSaveCoupon = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/admin/coupons', {
+      const res = await fetch(getApiUrl('/api/admin/coupons'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(couponForm)
@@ -450,7 +451,7 @@ const AdminDashboard = () => {
       const url = collectionForm.id ? `/api/admin/collections/${collectionForm.id}` : '/api/admin/collections';
       const method = collectionForm.id ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await fetch(getApiUrl(url), {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(collectionForm)
@@ -468,7 +469,7 @@ const AdminDashboard = () => {
   const handleSaveLook = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/admin/looks', {
+      const res = await fetch(getApiUrl('/api/admin/looks'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(lookForm)
@@ -487,7 +488,7 @@ const AdminDashboard = () => {
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/admin/settings', {
+      const res = await fetch(getApiUrl('/api/admin/settings'), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(settingsForm)
@@ -517,7 +518,7 @@ const AdminDashboard = () => {
         upi_qr_url: uploadedQrUrl
       };
 
-      const res = await fetch('/api/admin/payment-settings', {
+      const res = await fetch(getApiUrl('/api/admin/payment-settings'), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -534,7 +535,7 @@ const AdminDashboard = () => {
 
   const handleDeleteQrCode = async () => {
     try {
-      const res = await fetch('/api/admin/payment-settings/qr', {
+      const res = await fetch(getApiUrl('/api/admin/payment-settings/qr'), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

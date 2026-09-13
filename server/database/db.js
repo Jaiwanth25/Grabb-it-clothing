@@ -9,11 +9,27 @@ class DBAbstraction {
   constructor() {
     this.isPg = !!databaseUrl;
     if (this.isPg) {
-      this.pool = new Pool({
-        connectionString: databaseUrl,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-      });
-    } else {
+      try {
+        this.pool = new Pool({
+          connectionString: databaseUrl,
+          connectionTimeoutMillis: 5000,
+          ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+        });
+        this.pool.on('error', (err) => {
+          console.warn('PostgreSQL pool error, falling back to SQLite:', err.message);
+          this.isPg = false;
+          this.ensureSqlite();
+        });
+      } catch (err) {
+        console.warn('Failed to initialize PostgreSQL pool, falling back to SQLite:', err.message);
+        this.isPg = false;
+      }
+    }
+    this.ensureSqlite();
+  }
+
+  ensureSqlite() {
+    if (!this.sqliteDb) {
       const dbPath = path.join(__dirname, 'grabb_it.db');
       this.sqliteDb = new Database(dbPath);
       this.sqliteDb.pragma('foreign_keys = ON');
@@ -68,30 +84,55 @@ class DBAbstraction {
 
   async query(sql, params = [], executor = null) {
     if (this.isPg) {
-      const client = executor || this.pool;
-      const res = await client.query(this.formatPgSql(sql), params);
-      return res.rows;
+      try {
+        const client = executor || this.pool;
+        const res = await client.query(this.formatPgSql(sql), params);
+        return res.rows;
+      } catch (err) {
+        console.warn('PostgreSQL query error, falling back to SQLite:', err.message);
+        this.isPg = false;
+        this.ensureSqlite();
+        return this.sqliteDb.prepare(sql).all(...params);
+      }
     } else {
+      this.ensureSqlite();
       return this.sqliteDb.prepare(sql).all(...params);
     }
   }
 
   async queryOne(sql, params = [], executor = null) {
     if (this.isPg) {
-      const client = executor || this.pool;
-      const res = await client.query(this.formatPgSql(sql), params);
-      return res.rows[0] || null;
+      try {
+        const client = executor || this.pool;
+        const res = await client.query(this.formatPgSql(sql), params);
+        return res.rows[0] || null;
+      } catch (err) {
+        console.warn('PostgreSQL queryOne error, falling back to SQLite:', err.message);
+        this.isPg = false;
+        this.ensureSqlite();
+        return this.sqliteDb.prepare(sql).get(...params) || null;
+      }
     } else {
+      this.ensureSqlite();
       return this.sqliteDb.prepare(sql).get(...params) || null;
     }
   }
 
   async run(sql, params = [], executor = null) {
     if (this.isPg) {
-      const client = executor || this.pool;
-      const res = await client.query(this.formatPgSql(sql), params);
-      return { changes: res.rowCount, lastInsertRowid: null };
+      try {
+        const client = executor || this.pool;
+        const res = await client.query(this.formatPgSql(sql), params);
+        return { changes: res.rowCount, lastInsertRowid: null };
+      } catch (err) {
+        console.warn('PostgreSQL run error, falling back to SQLite:', err.message);
+        this.isPg = false;
+        this.ensureSqlite();
+        const info = this.sqliteDb.prepare(sql).run(...params);
+        return { changes: info.changes, lastInsertRowid: info.lastInsertRowid };
+      }
     } else {
+      this.ensureSqlite();
       const info = this.sqliteDb.prepare(sql).run(...params);
       return { changes: info.changes, lastInsertRowid: info.lastInsertRowid };
     }
@@ -99,16 +140,25 @@ class DBAbstraction {
 
   async insert(sql, params = [], executor = null) {
     if (this.isPg) {
-      const client = executor || this.pool;
-      let pgSql = sql.trim();
-      if (!/RETURNING\s+/i.test(pgSql)) {
-        pgSql += ' RETURNING id';
+      try {
+        const client = executor || this.pool;
+        let pgSql = sql.trim();
+        if (!/RETURNING\s+/i.test(pgSql)) {
+          pgSql += ' RETURNING id';
+        }
+        const res = await client.query(this.formatPgSql(pgSql), params);
+        const insertedRow = res.rows[0] || {};
+        const insertedId = insertedRow.id !== undefined ? insertedRow.id : Object.values(insertedRow)[0];
+        return { changes: res.rowCount, lastInsertRowid: insertedId, id: insertedId, row: insertedRow };
+      } catch (err) {
+        console.warn('PostgreSQL insert error, falling back to SQLite:', err.message);
+        this.isPg = false;
+        this.ensureSqlite();
+        const info = this.sqliteDb.prepare(sql).run(...params);
+        return { changes: info.changes, lastInsertRowid: info.lastInsertRowid, id: info.lastInsertRowid };
       }
-      const res = await client.query(this.formatPgSql(pgSql), params);
-      const insertedRow = res.rows[0] || {};
-      const insertedId = insertedRow.id !== undefined ? insertedRow.id : Object.values(insertedRow)[0];
-      return { changes: res.rowCount, lastInsertRowid: insertedId, id: insertedId, row: insertedRow };
     } else {
+      this.ensureSqlite();
       const info = this.sqliteDb.prepare(sql).run(...params);
       return { changes: info.changes, lastInsertRowid: info.lastInsertRowid, id: info.lastInsertRowid };
     }
@@ -116,48 +166,55 @@ class DBAbstraction {
 
   async transaction(callback) {
     if (this.isPg) {
-      const client = await this.pool.connect();
-      const txWrapper = {
-        query: (sql, params = []) => this.query(sql, params, client),
-        queryOne: (sql, params = []) => this.queryOne(sql, params, client),
-        run: (sql, params = []) => this.run(sql, params, client),
-        insert: (sql, params = []) => this.insert(sql, params, client),
-        client
-      };
       try {
-        await client.query('BEGIN');
-        const result = await callback(txWrapper);
-        await client.query('COMMIT');
-        return result;
-      } catch (err) {
-        await client.query('ROLLBACK');
-        throw err;
-      } finally {
-        client.release();
+        const client = await this.pool.connect();
+        const txWrapper = {
+          query: (sql, params = []) => this.query(sql, params, client),
+          queryOne: (sql, params = []) => this.queryOne(sql, params, client),
+          run: (sql, params = []) => this.run(sql, params, client),
+          insert: (sql, params = []) => this.insert(sql, params, client),
+          client
+        };
+        try {
+          await client.query('BEGIN');
+          const result = await callback(txWrapper);
+          await client.query('COMMIT');
+          return result;
+        } catch (err) {
+          await client.query('ROLLBACK');
+          throw err;
+        } finally {
+          client.release();
+        }
+      } catch (pgConnErr) {
+        console.warn('PostgreSQL transaction error, falling back to SQLite:', pgConnErr.message);
+        this.isPg = false;
+        this.ensureSqlite();
       }
-    } else {
-      const txWrapper = {
-        query: (sql, params = []) => this.query(sql, params),
-        queryOne: (sql, params = []) => this.queryOne(sql, params),
-        run: (sql, params = []) => this.run(sql, params),
-        insert: (sql, params = []) => this.insert(sql, params),
-        client: null
-      };
-
-      return new Promise((resolve, reject) => {
-        this.sqliteTxQueue = this.sqliteTxQueue.then(async () => {
-          try {
-            this.sqliteDb.exec('BEGIN IMMEDIATE');
-            const result = await callback(txWrapper);
-            this.sqliteDb.exec('COMMIT');
-            resolve(result);
-          } catch (err) {
-            try { this.sqliteDb.exec('ROLLBACK'); } catch (rbErr) {}
-            reject(err);
-          }
-        }).catch(reject);
-      });
     }
+
+    this.ensureSqlite();
+    const txWrapper = {
+      query: (sql, params = []) => this.query(sql, params),
+      queryOne: (sql, params = []) => this.queryOne(sql, params),
+      run: (sql, params = []) => this.run(sql, params),
+      insert: (sql, params = []) => this.insert(sql, params),
+      client: null
+    };
+
+    return new Promise((resolve, reject) => {
+      this.sqliteTxQueue = this.sqliteTxQueue.then(async () => {
+        try {
+          this.sqliteDb.exec('BEGIN IMMEDIATE');
+          const result = await callback(txWrapper);
+          this.sqliteDb.exec('COMMIT');
+          resolve(result);
+        } catch (err) {
+          try { this.sqliteDb.exec('ROLLBACK'); } catch (rbErr) {}
+          reject(err);
+        }
+      }).catch(reject);
+    });
   }
 }
 

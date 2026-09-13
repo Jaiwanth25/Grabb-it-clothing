@@ -64,6 +64,17 @@ async function seedDatabase() {
       { name: 'Outerwear', slug: 'men-outerwear', img: 'https://images.unsplash.com/photo-1548883354-7622d03aca27?w=800&auto=format&fit=crop&q=80' },
     ];
 
+    const womenCategoriesData = [
+      { name: 'T-Shirts', slug: 'women-t-shirts', img: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80' },
+      { name: 'Shirts', slug: 'women-shirts', img: 'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=800&auto=format&fit=crop&q=80' },
+      { name: 'Jeans', slug: 'women-jeans', img: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&auto=format&fit=crop&q=80' },
+      { name: 'Pants', slug: 'women-pants', img: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&auto=format&fit=crop&q=80' },
+      { name: 'Joggers', slug: 'women-joggers', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80' },
+      { name: 'Tops', slug: 'women-tops', img: 'https://images.unsplash.com/photo-1534126511673-b6899657816a?w=800&auto=format&fit=crop&q=80' },
+      { name: 'Shorts', slug: 'women-shorts', img: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&auto=format&fit=crop&q=80' },
+      { name: 'Denims', slug: 'women-denims', img: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800&auto=format&fit=crop&q=80' },
+    ];
+
     const categoryMap = {};
 
     for (let index = 0; index < menCategoriesData.length; index++) {
@@ -72,6 +83,15 @@ async function seedDatabase() {
         INSERT INTO categories (name, slug, gender, image_url, display_order, is_active)
         VALUES (?, ?, ?, ?, ?, 1)
       `, [cat.name, cat.slug, 'men', cat.img, index + 1]);
+      categoryMap[cat.slug] = res.id;
+    }
+
+    for (let index = 0; index < womenCategoriesData.length; index++) {
+      const cat = womenCategoriesData[index];
+      const res = await db.insert(`
+        INSERT INTO categories (name, slug, gender, image_url, display_order, is_active)
+        VALUES (?, ?, ?, ?, ?, 1)
+      `, [cat.name, cat.slug, 'women', cat.img, index + 1]);
       categoryMap[cat.slug] = res.id;
     }
 
@@ -102,6 +122,7 @@ async function seedDatabase() {
 
     // 4. Products & Variants & Images
     const rawProducts = [
+      // Men's Products
       {
         name: 'Essential Oversized Heavyweight Tee',
         slug: 'men-essential-oversized-heavyweight-tee',
@@ -134,7 +155,7 @@ async function seedDatabase() {
         isNew: 1,
         isTrending: 1,
         isFeatured: 1,
-        images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800', 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800'],
+        images: ['https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800', 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800'],
         colors: [{ name: 'Beige', hex: '#F5F5DC' }, { name: 'Olive', hex: '#556B2F' }],
         sizes: ['S', 'M', 'L', 'XL']
       },
@@ -155,6 +176,224 @@ async function seedDatabase() {
         images: ['https://images.unsplash.com/photo-1542272604-780c36856842?w=800', 'https://images.unsplash.com/photo-1582552938357-32b906df40cb?w=800'],
         colors: [{ name: 'Dark Indigo', hex: '#1C2833' }],
         sizes: ['M', 'L', 'XL']
+      },
+      {
+        name: 'Pleated Minimalist Chino Pants',
+        slug: 'men-pleated-minimalist-chino-pants',
+        gender: 'men',
+        categorySlug: 'men-pants',
+        price: 2499.00,
+        salePrice: 1999.00,
+        sku: 'GRB-M-PNT-004',
+        description: 'Tailored fit chinos in durable stretch cotton twill.',
+        rating: 4.7,
+        reviewCount: 19,
+        isNew: 1,
+        isTrending: 0,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=800'],
+        colors: [{ name: 'Khaki', hex: '#C3B091' }],
+        sizes: ['30', '32', '34']
+      },
+      {
+        name: 'Heavy Fleece Relaxed Joggers',
+        slug: 'men-heavy-fleece-relaxed-joggers',
+        gender: 'men',
+        categorySlug: 'men-joggers',
+        price: 1899.00,
+        salePrice: 1499.00,
+        sku: 'GRB-M-JOG-005',
+        description: 'Cozy 380 GSM fleece joggers with elasticated waistband and deep pockets.',
+        rating: 4.8,
+        reviewCount: 31,
+        isNew: 0,
+        isTrending: 1,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800'],
+        colors: [{ name: 'Charcoal', hex: '#36454F' }],
+        sizes: ['S', 'M', 'L', 'XL']
+      },
+      {
+        name: 'Pure French Linen Resort Shirt',
+        slug: 'men-pure-french-linen-resort-shirt',
+        gender: 'men',
+        categorySlug: 'men-linen',
+        price: 2799.00,
+        salePrice: 2299.00,
+        sku: 'GRB-M-LIN-006',
+        description: 'Breathable 100% natural flax linen with an easy drape for hot weather.',
+        rating: 4.9,
+        reviewCount: 15,
+        isNew: 1,
+        isTrending: 1,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800'],
+        colors: [{ name: 'Natural', hex: '#EAE6DF' }],
+        sizes: ['M', 'L', 'XL']
+      },
+      {
+        name: 'Tailored Wool-Blend Minimalist Coat',
+        slug: 'men-tailored-wool-blend-minimalist-coat',
+        gender: 'men',
+        categorySlug: 'men-outerwear',
+        price: 4999.00,
+        salePrice: 3999.00,
+        sku: 'GRB-M-OUT-007',
+        description: 'Structured wool-blend overcoat with concealed placket and satin lining.',
+        rating: 5.0,
+        reviewCount: 22,
+        isNew: 1,
+        isTrending: 0,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1548883354-7622d03aca27?w=800'],
+        colors: [{ name: 'Black', hex: '#111111' }],
+        sizes: ['M', 'L', 'XL']
+      },
+
+      // Women's Products
+      {
+        name: 'Women Essential Boxy Crop Tee',
+        slug: 'women-essential-boxy-crop-tee',
+        gender: 'women',
+        categorySlug: 'women-t-shirts',
+        price: 999.00,
+        salePrice: 799.00,
+        sku: 'GRB-W-TSH-001',
+        description: 'Ultra-soft combed cotton boxy tee with ribbed crew neck.',
+        rating: 4.8,
+        reviewCount: 35,
+        isNew: 1,
+        isTrending: 1,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800'],
+        colors: [{ name: 'White', hex: '#FFFFFF' }, { name: 'Black', hex: '#111111' }],
+        sizes: ['XS', 'S', 'M', 'L']
+      },
+      {
+        name: 'Relaxed Silk-Blend Button Down Shirt',
+        slug: 'women-relaxed-silk-blend-button-down-shirt',
+        gender: 'women',
+        categorySlug: 'women-shirts',
+        price: 2199.00,
+        salePrice: 1799.00,
+        sku: 'GRB-W-SHR-002',
+        description: 'Sleek, fluid button-down shirt designed for versatile work-to-weekend styling.',
+        rating: 4.7,
+        reviewCount: 18,
+        isNew: 1,
+        isTrending: 1,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=800'],
+        colors: [{ name: 'Sage', hex: '#9CAF88' }],
+        sizes: ['S', 'M', 'L']
+      },
+      {
+        name: 'High-Rise Vintage Wide Leg Jeans',
+        slug: 'women-high-rise-vintage-wide-leg-jeans',
+        gender: 'women',
+        categorySlug: 'women-jeans',
+        price: 2799.00,
+        salePrice: 2299.00,
+        sku: 'GRB-W-JNS-003',
+        description: '100% rigid cotton denim with a flattering high waist and wide-leg break.',
+        rating: 4.9,
+        reviewCount: 52,
+        isNew: 0,
+        isTrending: 1,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800'],
+        colors: [{ name: 'Vintage Blue', hex: '#4A6984' }],
+        sizes: ['26', '28', '30', '32']
+      },
+      {
+        name: 'Tailored High-Waist Pleated Trousers',
+        slug: 'women-tailored-high-waist-pleated-trousers',
+        gender: 'women',
+        categorySlug: 'women-pants',
+        price: 2499.00,
+        salePrice: 1999.00,
+        sku: 'GRB-W-PNT-004',
+        description: 'Effortless wide-leg trousers cut in fluid crease-resistant crepe.',
+        rating: 4.8,
+        reviewCount: 27,
+        isNew: 1,
+        isTrending: 1,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800'],
+        colors: [{ name: 'Cream', hex: '#FFFDD0' }],
+        sizes: ['S', 'M', 'L']
+      },
+      {
+        name: 'Everyday Minimalist Lounge Joggers',
+        slug: 'women-everyday-minimalist-lounge-joggers',
+        gender: 'women',
+        categorySlug: 'women-joggers',
+        price: 1699.00,
+        salePrice: 1299.00,
+        sku: 'GRB-W-JOG-005',
+        description: 'Brushed organic fleece joggers with high-rise waist and tapered cuffs.',
+        rating: 4.6,
+        reviewCount: 14,
+        isNew: 0,
+        isTrending: 0,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800'],
+        colors: [{ name: 'Muted Gray', hex: '#A9A9A9' }],
+        sizes: ['XS', 'S', 'M', 'L']
+      },
+      {
+        name: 'Sculpted Square-Neck Knit Top',
+        slug: 'women-sculpted-square-neck-knit-top',
+        gender: 'women',
+        categorySlug: 'women-tops',
+        price: 1399.00,
+        salePrice: 1099.00,
+        sku: 'GRB-W-TOP-006',
+        description: 'Double-layered stretch knit top with clean contouring neckline.',
+        rating: 4.9,
+        reviewCount: 40,
+        isNew: 1,
+        isTrending: 1,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1534126511673-b6899657816a?w=800'],
+        colors: [{ name: 'Ebony', hex: '#1C1C1C' }],
+        sizes: ['XS', 'S', 'M', 'L']
+      },
+      {
+        name: 'Relaxed Denim Bermuda Shorts',
+        slug: 'women-relaxed-denim-bermuda-shorts',
+        gender: 'women',
+        categorySlug: 'women-shorts',
+        price: 1799.00,
+        salePrice: 1399.00,
+        sku: 'GRB-W-SHT-007',
+        description: 'Authentic 90s wash denim shorts with raw hem and comfortable mid-rise.',
+        rating: 4.7,
+        reviewCount: 19,
+        isNew: 1,
+        isTrending: 0,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800'],
+        colors: [{ name: 'Light Indigo', hex: '#779ECB' }],
+        sizes: ['26', '28', '30']
+      },
+      {
+        name: 'Oversized Raw Denim Trucker Jacket',
+        slug: 'women-oversized-raw-denim-trucker-jacket',
+        gender: 'women',
+        categorySlug: 'women-denims',
+        price: 3499.00,
+        salePrice: 2899.00,
+        sku: 'GRB-W-DNM-008',
+        description: 'Classic heavy cotton denim jacket cut in a boxy, modern slouch fit.',
+        rating: 4.9,
+        reviewCount: 38,
+        isNew: 1,
+        isTrending: 1,
+        isFeatured: 1,
+        images: ['https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800'],
+        colors: [{ name: 'Raw Blue', hex: '#1B3F8B' }],
+        sizes: ['S', 'M', 'L']
       }
     ];
 

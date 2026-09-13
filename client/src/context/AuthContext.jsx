@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getApiUrl } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -16,11 +17,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      fetch('/api/auth/me', {
+      fetch(getApiUrl('/api/auth/me'), {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => {
           if (res.ok) return res.json();
+          if (res.status === 401 || res.status === 403) {
+            // Token is expired or invalid
+            setUser(null);
+            setToken('');
+            localStorage.removeItem('grabb_it_token');
+            localStorage.removeItem('grabb_it_user');
+          }
           return null;
         })
         .then(data => {
@@ -30,7 +38,7 @@ export const AuthProvider = ({ children }) => {
           }
         })
         .catch(() => {
-          // Do not log out if local user session exists
+          // Keep local user session on network failure
         })
         .finally(() => setLoading(false));
     } else {

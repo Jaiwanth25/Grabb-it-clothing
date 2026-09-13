@@ -1,23 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, Link } from 'react-router-dom';
 import { SlidersHorizontal, X, Star, Sparkles, Filter } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import QuickViewModal from '../components/QuickViewModal';
 import { useGender } from '../context/GenderContext';
 import { formatINR } from '../utils/currency';
+import { getApiUrl } from '../services/api';
 
 const ProductListing = () => {
   const { gender: globalGender, setGender } = useGender();
   const location = useLocation();
   const navigate = useNavigate();
+  const { category: routeCategory } = useParams();
   const queryParams = new URLSearchParams(location.search);
 
-  // Active storefront gender is men
-  const pathGender = 'men';
+  // Determine active gender from query param, URL path, or global context
+  let activeGender = queryParams.get('gender');
+  if (!activeGender) {
+    if (location.pathname.startsWith('/women')) {
+      activeGender = 'women';
+    } else if (location.pathname.startsWith('/men')) {
+      activeGender = 'men';
+    } else {
+      activeGender = globalGender || 'men';
+    }
+  }
 
   useEffect(() => {
-    setGender('men');
-  }, [location.pathname]);
+    if (activeGender && activeGender !== globalGender) {
+      setGender(activeGender);
+    }
+  }, [activeGender, globalGender]);
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -26,7 +39,8 @@ const ProductListing = () => {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Filters State
-  const [selectedCategory, setSelectedCategory] = useState(queryParams.get('category') || '');
+  const initialCategory = queryParams.get('category') || routeCategory || '';
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedCollection, setSelectedCollection] = useState(queryParams.get('collection') || '');
   const [selectedSize, setSelectedSize] = useState(queryParams.get('size') || '');
   const [selectedColor, setSelectedColor] = useState(queryParams.get('color') || '');
@@ -63,27 +77,27 @@ const ProductListing = () => {
 
   // Fetch Categories for active gender
   useEffect(() => {
-    fetch(`/api/categories?gender=${pathGender}`)
+    fetch(getApiUrl(`/api/categories?gender=${activeGender}`))
       .then(res => res.json())
       .then(data => setCategories(Array.isArray(data) ? data : []))
       .catch(err => {
         console.error('Fetch categories error:', err);
         setCategories([]);
       });
-  }, [pathGender]);
+  }, [activeGender]);
 
-  // Sync state from query params on navigate (e.g. search click)
+  // Sync state from query params on navigate (e.g. search click, URL change)
   useEffect(() => {
-    setSelectedCategory(queryParams.get('category') || '');
+    setSelectedCategory(queryParams.get('category') || routeCategory || '');
     setSelectedCollection(queryParams.get('collection') || '');
     setSearchTerm(queryParams.get('search') || '');
-  }, [location.search]);
+  }, [location.search, routeCategory]);
 
   // Fetch Products based on filters
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
-    params.set('gender', pathGender);
+    params.set('gender', activeGender);
     if (selectedCategory) params.set('category', selectedCategory);
     if (selectedCollection) params.set('collection', selectedCollection);
     if (selectedSize) params.set('size', selectedSize);
@@ -99,7 +113,7 @@ const ProductListing = () => {
     if (queryParams.get('isNew')) params.set('isNew', 'true');
     if (queryParams.get('isTrending')) params.set('isTrending', 'true');
 
-    fetch(`/api/products?${params.toString()}`)
+    fetch(getApiUrl(`/api/products?${params.toString()}`))
       .then(res => res.json())
       .then(data => {
         setProducts(Array.isArray(data) ? data : []);
@@ -110,7 +124,19 @@ const ProductListing = () => {
         setProducts([]);
         setLoading(false);
       });
-  }, [pathGender, selectedCategory, selectedCollection, selectedSize, selectedColor, minPrice, maxPrice, selectedDiscount, selectedRating, inStockOnly, sortBy, searchTerm, location.search]);
+  }, [activeGender, selectedCategory, selectedCollection, selectedSize, selectedColor, minPrice, maxPrice, selectedDiscount, selectedRating, inStockOnly, sortBy, searchTerm, location.search]);
+
+  const handleCategorySelect = (catSlug) => {
+    setSelectedCategory(catSlug);
+    const newParams = new URLSearchParams(location.search);
+    newParams.set('gender', activeGender);
+    if (catSlug) {
+      newParams.set('category', catSlug);
+    } else {
+      newParams.delete('category');
+    }
+    navigate(`/products?${newParams.toString()}`);
+  };
 
   const clearAllFilters = () => {
     setSelectedCategory('');
@@ -124,7 +150,7 @@ const ProductListing = () => {
     setInStockOnly(false);
     setSortBy('recommended');
     setSearchTerm('');
-    navigate(`/${pathGender}`);
+    navigate(`/${activeGender}`);
   };
 
   const handlePriceBracketClick = (bracket) => {
@@ -137,7 +163,11 @@ const ProductListing = () => {
     }
   };
 
-  const activeCategoryObj = Array.isArray(categories) ? categories.find(c => c?.slug === selectedCategory) : null;
+  const activeCategoryObj = Array.isArray(categories) ? categories.find(c => 
+    c?.slug === selectedCategory || 
+    c?.slug?.replace(/^(men-|women-)/, '') === selectedCategory ||
+    c?.name?.toLowerCase() === selectedCategory?.toLowerCase()
+  ) : null;
 
   const renderFiltersContent = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -148,19 +178,24 @@ const ProductListing = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <button
             style={{ textAlign: 'left', fontSize: '0.88rem', fontWeight: selectedCategory === '' ? 800 : 500, color: selectedCategory === '' ? 'var(--color-saffron)' : 'var(--text-muted)', borderBottom: selectedCategory === '' ? '2px solid var(--color-saffron)' : 'none', paddingBottom: '2px', width: 'fit-content' }}
-            onClick={() => setSelectedCategory('')}
+            onClick={() => handleCategorySelect('')}
           >
             All Apparel
           </button>
-          {categories.map(cat => (
-            <button
-              key={cat.id}
-              style={{ textAlign: 'left', fontSize: '0.88rem', color: selectedCategory === cat.slug ? 'var(--color-maroon)' : 'var(--text-muted)', fontWeight: selectedCategory === cat.slug ? 800 : 500, paddingBottom: '2px', borderBottom: selectedCategory === cat.slug ? '2px solid var(--color-saffron)' : 'none', width: 'fit-content' }}
-              onClick={() => setSelectedCategory(cat.slug)}
-            >
-              {cat.name}
-            </button>
-          ))}
+          {categories.map(cat => {
+            const isSelected = selectedCategory === cat.slug || 
+                               selectedCategory === cat.slug.replace(/^(men-|women-)/, '') || 
+                               selectedCategory?.toLowerCase() === cat.name?.toLowerCase();
+            return (
+              <button
+                key={cat.id}
+                style={{ textAlign: 'left', fontSize: '0.88rem', color: isSelected ? 'var(--color-maroon)' : 'var(--text-muted)', fontWeight: isSelected ? 800 : 500, paddingBottom: '2px', borderBottom: isSelected ? '2px solid var(--color-saffron)' : 'none', width: 'fit-content' }}
+                onClick={() => handleCategorySelect(cat.slug)}
+              >
+                {cat.name}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -301,7 +336,7 @@ const ProductListing = () => {
       {/* Breadcrumbs */}
       <div className="breadcrumbs" style={{ fontFamily: 'var(--font-title)', fontSize: '0.78rem', letterSpacing: '1px' }}>
         <Link to="/">HOME</Link> / 
-        <Link to={`/${pathGender}`}>{pathGender.toUpperCase()}</Link>
+        <Link to={`/${activeGender}`}>{activeGender.toUpperCase()}</Link>
         {activeCategoryObj && <span> / {activeCategoryObj.name.toUpperCase()}</span>}
         {selectedCollection && <span> / {selectedCollection.replace('-', ' ').toUpperCase()}</span>}
         {searchTerm && <span> / SEARCH: "{searchTerm}"</span>}
@@ -312,10 +347,10 @@ const ProductListing = () => {
         <div>
           <h1 className="plp-title">
             {activeCategoryObj 
-              ? `${pathGender.toUpperCase()} ${activeCategoryObj.name}` 
+              ? `${activeGender.toUpperCase()}'S ${activeCategoryObj.name}` 
               : selectedCollection
               ? `${selectedCollection.replace('-', ' ').toUpperCase()}`
-              : `${pathGender.toUpperCase()}'S APPAREL`}
+              : `${activeGender.toUpperCase()}'S APPAREL`}
           </h1>
           <span className="plp-count-text">
             {products.length} {products.length === 1 ? 'PRODUCT' : 'PRODUCTS'} FOUND

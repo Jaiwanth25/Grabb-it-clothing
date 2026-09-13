@@ -34,7 +34,7 @@ function Layout({ children }) {
 }
 
 function ProtectedAdminRoute({ children }) {
-  const { user, token } = useAuth();
+  const { user, token, loading } = useAuth();
   
   const currentToken = token || localStorage.getItem('grabb_it_token');
   const currentUser = user || (() => {
@@ -45,6 +45,14 @@ function ProtectedAdminRoute({ children }) {
       return null;
     }
   })();
+
+  if (loading && currentToken) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', color: '#000000', fontWeight: 800, letterSpacing: '1px' }}>
+        AUTHENTICATING ADMIN ACCESS...
+      </div>
+    );
+  }
 
   if (!currentToken || !currentUser) {
     return <Navigate to="/admin/login" replace />;
@@ -67,8 +75,11 @@ function App() {
               <Routes>
                 {/* Customer Routes with Header & Footer */}
                 <Route path="/" element={<Layout><Home /></Layout>} />
+                <Route path="/products" element={<Layout><ProductListing /></Layout>} />
                 <Route path="/men" element={<Layout><ProductListing /></Layout>} />
-                <Route path="/women" element={<Navigate to="/men" replace />} />
+                <Route path="/women" element={<Layout><ProductListing /></Layout>} />
+                <Route path="/men/:category" element={<Layout><ProductListing /></Layout>} />
+                <Route path="/women/:category" element={<Layout><ProductListing /></Layout>} />
                 <Route path="/offers" element={<Layout><ProductListing /></Layout>} />
                 <Route path="/product/:slug" element={<Layout><ProductDetails /></Layout>} />
                 <Route path="/cart" element={<Layout><CartPage /></Layout>} />
@@ -81,6 +92,7 @@ function App() {
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<Layout><AdminLogin /></Layout>} />
                 <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+                <Route path="/admin/*" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
 
                 {/* 404 Catch All */}
                 <Route path="*" element={<Navigate to="/" replace />} />

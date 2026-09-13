@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../services/api';
 import { ShieldCheck, KeyRound, ArrowRight, Sparkles, CheckCircle2, Lock } from 'lucide-react';
 
 const AdminLogin = () => {
@@ -35,8 +36,7 @@ const AdminLogin = () => {
     }
 
     try {
-      // 1. Primary Backend API Login Request
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password: cleanPassword })
@@ -61,24 +61,6 @@ const AdminLogin = () => {
         return;
       }
 
-      // 2. Failover Authorization for Master Admin Credentials
-      if (cleanEmail === 'admin@grabb-it.com' && cleanPassword === 'Admin@123456') {
-        const masterAdminUser = {
-          id: 1,
-          name: 'Grabb-It Administrator',
-          email: 'admin@grabb-it.com',
-          role: 'admin',
-          phone: '+91 98765 43210'
-        };
-        const masterToken = data.token || 'grabb_it_master_admin_session_token_' + Date.now();
-
-        setSuccessMsg('ADMIN AUTHORIZED! REDIRECTING TO CONTROL PANEL...');
-        login(masterAdminUser, masterToken);
-        navigate('/admin', { replace: true });
-        return;
-      }
-
-      // If credentials do not match master or API
       throw new Error(data.error || 'Invalid Admin credentials. Use admin@grabb-it.com / Admin@123456');
 
     } catch (err) {

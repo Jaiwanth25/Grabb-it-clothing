@@ -217,6 +217,41 @@ async function ensureAdminUser() {
   }
 }
 
+async function ensureDefaultCategories() {
+  try {
+    const existing = await db.queryOne('SELECT COUNT(*) as count FROM categories');
+    if (!existing || parseInt(existing.count) === 0) {
+      console.log('Categories table empty. Initializing default Men and Women categories...');
+      const defaultCats = [
+        { name: 'T-Shirts', slug: 'men-t-shirts', gender: 'men', img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80', order: 1 },
+        { name: 'Shirts', slug: 'men-shirts', gender: 'men', img: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80', order: 2 },
+        { name: 'Jeans', slug: 'men-jeans', gender: 'men', img: 'https://images.unsplash.com/photo-1542272604-780c36856842?w=800&auto=format&fit=crop&q=80', order: 3 },
+        { name: 'Pants', slug: 'men-pants', gender: 'men', img: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=800&auto=format&fit=crop&q=80', order: 4 },
+        { name: 'Joggers', slug: 'men-joggers', gender: 'men', img: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&auto=format&fit=crop&q=80', order: 5 },
+        { name: 'Linen', slug: 'men-linen', gender: 'men', img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80', order: 6 },
+        { name: 'Outerwear', slug: 'men-outerwear', gender: 'men', img: 'https://images.unsplash.com/photo-1548883354-7622d03aca27?w=800&auto=format&fit=crop&q=80', order: 7 },
+        { name: 'T-Shirts', slug: 'women-t-shirts', gender: 'women', img: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80', order: 1 },
+        { name: 'Shirts', slug: 'women-shirts', gender: 'women', img: 'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=800&auto=format&fit=crop&q=80', order: 2 },
+        { name: 'Jeans', slug: 'women-jeans', gender: 'women', img: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&auto=format&fit=crop&q=80', order: 3 },
+        { name: 'Pants', slug: 'women-pants', gender: 'women', img: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&auto=format&fit=crop&q=80', order: 4 },
+        { name: 'Joggers', slug: 'women-joggers', gender: 'women', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80', order: 5 },
+        { name: 'Tops', slug: 'women-tops', gender: 'women', img: 'https://images.unsplash.com/photo-1534126511673-b6899657816a?w=800&auto=format&fit=crop&q=80', order: 6 },
+        { name: 'Shorts', slug: 'women-shorts', gender: 'women', img: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&auto=format&fit=crop&q=80', order: 7 },
+        { name: 'Denims', slug: 'women-denims', gender: 'women', img: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800&auto=format&fit=crop&q=80', order: 8 }
+      ];
+      for (const cat of defaultCats) {
+        await db.insert(
+          'INSERT INTO categories (name, slug, gender, image_url, display_order, is_active) VALUES (?, ?, ?, ?, ?, 1)',
+          [cat.name, cat.slug, cat.gender, cat.img, cat.order]
+        );
+      }
+      console.log('Default categories initialized successfully.');
+    }
+  } catch (err) {
+    console.warn('Auto-categories initialization notice:', err.message);
+  }
+}
+
 const server = app.listen(PORT, async () => {
   console.log(`=================================`);
   console.log(`GRABB-IT Backend Server Active`);
@@ -226,6 +261,7 @@ const server = app.listen(PORT, async () => {
   console.log(`API Root: http://localhost:${PORT}/api`);
   console.log(`=================================`);
   await ensureAdminUser();
+  await ensureDefaultCategories();
 });
 
 // Graceful Shutdown
