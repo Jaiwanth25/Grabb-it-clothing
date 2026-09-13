@@ -76,7 +76,7 @@ const Header = () => {
     };
 
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 15000);
+    const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, [user, token]);
 

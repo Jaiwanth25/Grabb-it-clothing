@@ -14,6 +14,9 @@ if (!process.env.JWT_SECRET) {
 }
 
 const app = express();
+// Enable trust proxy so express-rate-limit and req.ip use the real client IP behind Render/Vercel reverse proxies
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
@@ -51,14 +54,22 @@ try {
   const rateLimit = require('express-rate-limit');
   const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500,
-    message: { error: 'Too many requests from this IP, please try again later.' }
+    max: 10000, // 10,000 requests per 15 min so storefront browsing never throttles users
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests from this IP, please try again later.' },
+    skip: (req) => {
+      // Never rate-limit preflight CORS OPTIONS, health checks, or auth requests under the general API limiter
+      return req.method === 'OPTIONS' || req.path.includes('/health') || req.path.includes('/auth');
+    }
   });
   app.use('/api/', apiLimiter);
 
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 30,
+    max: 100, // 100 attempts per 15 min
+    standardHeaders: true,
+    legacyHeaders: false,
     message: { error: 'Too many authentication attempts, please try again in 15 minutes.' }
   });
   app.use('/api/auth/login', authLimiter);
