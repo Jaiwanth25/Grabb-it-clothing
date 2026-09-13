@@ -1074,7 +1074,26 @@ router.delete('/categories/:id', async (req, res) => {
 // --- SHOP BY STYLE MANAGEMENT ---
 router.get('/styles', async (req, res) => {
   try {
-    const styles = await db.query('SELECT * FROM styles ORDER BY display_order ASC, id DESC', []);
+    // Migration safeguard: Ensure any style row with null ID in SQLite receives its numeric rowid
+    try {
+      if (!db.isPg) {
+        await db.run('UPDATE styles SET id = rowid WHERE id IS NULL');
+      }
+    } catch (e) {}
+
+    const styles = await db.query(`
+      SELECT 
+        COALESCE(id, 1) AS id, 
+        name, 
+        search_query, 
+        image_url, 
+        gender, 
+        display_order, 
+        is_active, 
+        created_at 
+      FROM styles 
+      ORDER BY display_order ASC, id DESC
+    `, []);
     res.json(styles || []);
   } catch (err) {
     console.error('Fetch Admin Styles Error:', err);
@@ -1102,13 +1121,22 @@ router.post('/styles', async (req, res) => {
 router.put('/styles/:id', async (req, res) => {
   try {
     const { name, search_query, image_url, gender = 'men', display_order = 0, is_active = 1 } = req.body;
-    const styleId = req.params.id;
+    const rawId = req.params.id;
+    const numId = parseInt(rawId);
 
-    await db.run(`
-      UPDATE styles SET
-        name = ?, search_query = ?, image_url = ?, gender = ?, display_order = ?, is_active = ?
-      WHERE id = ?
-    `, [name, search_query || name, image_url, gender.toLowerCase(), parseInt(display_order) || 0, is_active ? 1 : 0, styleId]);
+    if (isNaN(numId)) {
+      await db.run(`
+        UPDATE styles SET
+          name = ?, search_query = ?, image_url = ?, gender = ?, display_order = ?, is_active = ?
+        WHERE name = ?
+      `, [name, search_query || name, image_url, gender.toLowerCase(), parseInt(display_order) || 0, is_active ? 1 : 0, rawId]);
+    } else {
+      await db.run(`
+        UPDATE styles SET
+          name = ?, search_query = ?, image_url = ?, gender = ?, display_order = ?, is_active = ?
+        WHERE id = ?
+      `, [name, search_query || name, image_url, gender.toLowerCase(), parseInt(display_order) || 0, is_active ? 1 : 0, numId]);
+    }
 
     res.json({ message: 'Style updated successfully' });
   } catch (err) {
@@ -1119,7 +1147,15 @@ router.put('/styles/:id', async (req, res) => {
 
 router.delete('/styles/:id', async (req, res) => {
   try {
-    await db.run('DELETE FROM styles WHERE id = ?', [req.params.id]);
+    const rawId = req.params.id;
+    const numId = parseInt(rawId);
+
+    if (isNaN(numId)) {
+      const decodedName = decodeURIComponent(rawId);
+      await db.run('DELETE FROM styles WHERE name = ?', [decodedName]);
+    } else {
+      await db.run('DELETE FROM styles WHERE id = ?', [numId]);
+    }
     res.json({ message: 'Style deleted successfully' });
   } catch (err) {
     console.error('Delete Style Error:', err);

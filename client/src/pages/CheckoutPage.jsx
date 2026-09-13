@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircle2, CreditCard, ShieldCheck, Truck, ArrowLeft, QrCode, Building2, AlertCircle, Sparkles } from 'lucide-react';
+import { CheckCircle2, CreditCard, ShieldCheck, Truck, ArrowLeft, QrCode, Building2, AlertCircle, Sparkles, ZoomIn, Maximize2, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { formatINR } from '../utils/currency';
@@ -12,6 +12,7 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Confirmation
+  const [showEnlargedQr, setShowEnlargedQr] = useState(false);
   const [formData, setFormData] = useState({
     customer_name: user ? user.name : '',
     email: user ? user.email : '',
@@ -462,14 +463,74 @@ const CheckoutPage = () => {
                   <h4 style={{ fontSize: '0.88rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--color-maroon)' }}>
                     UPI PAYMENT INSTRUCTIONS
                   </h4>
-                  <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '1.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                     {paymentSettings?.upi?.qrCodeUrl && (
-                      <img src={formatImageUrl(paymentSettings.upi.qrCodeUrl)} alt="UPI QR Code" style={{ width: '130px', height: '130px', border: '1px solid var(--border-light)', borderRadius: '8px' }} />
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.65rem' }}>
+                        <div 
+                          onClick={() => setShowEnlargedQr(true)}
+                          style={{ 
+                            position: 'relative', 
+                            cursor: 'pointer',
+                            borderRadius: '16px',
+                            padding: '10px',
+                            backgroundColor: '#ffffff',
+                            border: '2px solid #000000',
+                            boxShadow: '0 6px 18px rgba(0,0,0,0.1)',
+                            transition: 'all 0.2s ease'
+                          }}
+                          title="Click to Enlarge QR Code"
+                        >
+                          <img 
+                            src={formatImageUrl(paymentSettings.upi.qrCodeUrl)} 
+                            alt="UPI QR Code" 
+                            style={{ width: '230px', height: '230px', objectFit: 'contain', display: 'block', borderRadius: '10px' }} 
+                          />
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '14px',
+                            right: '14px',
+                            backgroundColor: 'rgba(0,0,0,0.85)',
+                            color: '#ffffff',
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            backdropFilter: 'blur(4px)'
+                          }}>
+                            <Maximize2 size={12} /> Click to Enlarge
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowEnlargedQr(true)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#000000',
+                            fontWeight: 800,
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            textDecoration: 'underline',
+                            padding: '4px 8px'
+                          }}
+                        >
+                          <ZoomIn size={14} /> Tap / Click to enlarge full screen
+                        </button>
+                      </div>
                     )}
-                    <div style={{ fontSize: '0.88rem', lineHeight: '1.6' }}>
-                      <div>UPI ID: <strong style={{ color: 'var(--color-saffron)', fontSize: '0.95rem' }}>{paymentSettings?.upi?.upiId || 'grabb-it@upi'}</strong></div>
+                    <div style={{ fontSize: '0.95rem', lineHeight: '1.8', flex: 1, minWidth: '220px', paddingTop: '0.5rem' }}>
+                      <div>UPI ID: <strong style={{ color: 'var(--color-saffron)', fontSize: '1.05rem', fontFamily: 'monospace' }}>{paymentSettings?.upi?.upiId || 'grabb-it@upi'}</strong></div>
                       <div>Payee Name: <strong>{paymentSettings?.upi?.displayName || 'GRABB-IT CLOTHING'}</strong></div>
-                      <div>Amount: <strong>{formatINR(finalTotal)}</strong></div>
+                      <div>Amount: <strong style={{ fontSize: '1.15rem', color: '#000000' }}>{formatINR(finalTotal)}</strong></div>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.65rem', lineHeight: 1.45 }}>
+                        Open PhonePe, Google Pay, Paytm, BHIM or any UPI app and scan the QR code to complete payment.
+                      </p>
                     </div>
                   </div>
 
@@ -584,6 +645,90 @@ const CheckoutPage = () => {
             </div>
           </div>
         </div>
+
+      {/* ENLARGED QR LIGHTBOX MODAL */}
+      {showEnlargedQr && paymentSettings?.upi?.qrCodeUrl && (
+        <div 
+          className="modal-overlay" 
+          onClick={() => setShowEnlargedQr(false)}
+          style={{ zIndex: 9999, backgroundColor: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(8px)', padding: '1rem' }}
+        >
+          <div 
+            className="modal-box" 
+            onClick={e => e.stopPropagation()} 
+            style={{ 
+              maxWidth: '460px', 
+              textAlign: 'center', 
+              padding: '2rem 1.75rem', 
+              borderRadius: '20px', 
+              border: '2px solid #000000',
+              backgroundColor: '#ffffff',
+              position: 'relative',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
+            }}
+          >
+            <button 
+              type="button" 
+              onClick={() => setShowEnlargedQr(false)}
+              style={{ 
+                position: 'absolute', 
+                top: '14px', 
+                right: '14px', 
+                background: '#f0f0f0', 
+                border: 'none', 
+                borderRadius: '50%', 
+                width: '36px', 
+                height: '36px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                cursor: 'pointer' 
+              }}
+              title="Close"
+            >
+              <X size={20} color="#000000" />
+            </button>
+
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', fontFamily: 'var(--font-title)', letterSpacing: '0.5px', marginBottom: '0.25rem', color: '#000000' }}>
+              SCAN TO PAY VIA UPI
+            </h3>
+            <p style={{ color: '#666666', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
+              Works with PhonePe, Google Pay, Paytm, BHIM, and all UPI banking apps
+            </p>
+
+            <div style={{ 
+              display: 'inline-block', 
+              padding: '16px', 
+              backgroundColor: '#ffffff', 
+              borderRadius: '16px', 
+              border: '3px solid #000000',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+              marginBottom: '1.25rem'
+            }}>
+              <img 
+                src={formatImageUrl(paymentSettings.upi.qrCodeUrl)} 
+                alt="Enlarged UPI Payment QR Code" 
+                style={{ width: '320px', height: '320px', maxWidth: '78vw', maxHeight: '78vw', objectFit: 'contain', display: 'block', borderRadius: '8px' }} 
+              />
+            </div>
+
+            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: '10px', fontSize: '0.88rem', marginBottom: '1.25rem', textAlign: 'left', lineHeight: 1.6 }}>
+              <div>Payee: <strong>{paymentSettings?.upi?.displayName || 'GRABB-IT CLOTHING PVT LTD'}</strong></div>
+              <div>UPI ID: <strong style={{ color: 'var(--color-saffron)', fontFamily: 'monospace' }}>{paymentSettings?.upi?.upiId || 'grabb-it@upi'}</strong></div>
+              <div>Amount to Pay: <strong style={{ fontSize: '1.05rem', color: '#000000' }}>{formatINR(finalTotal)}</strong></div>
+            </div>
+
+            <button 
+              type="button" 
+              className="btn-primary" 
+              style={{ width: '100%', padding: '0.85rem' }} 
+              onClick={() => setShowEnlargedQr(false)}
+            >
+              DONE / BACK TO CHECKOUT
+            </button>
+          </div>
+        </div>
+      )}
 
       </div>
     </main>

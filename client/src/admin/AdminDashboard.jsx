@@ -328,9 +328,10 @@ const AdminDashboard = () => {
 
   const handleConfirmDelete = async () => {
     if (!deleteConfirm) return;
-    const { type, id } = deleteConfirm;
+    const { type, id, title } = deleteConfirm;
     try {
-      let endpoint = `/api/admin/${type}/${id}`;
+      const targetParam = (id !== null && id !== undefined && id !== '') ? id : encodeURIComponent(title);
+      let endpoint = `/api/admin/${type}/${targetParam}`;
       const res = await fetch(getApiUrl(endpoint), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }

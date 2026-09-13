@@ -71,8 +71,21 @@ class DBAbstraction {
       try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN is_sale INTEGER DEFAULT 0"); } catch(err) {}
       try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN is_limited INTEGER DEFAULT 0"); } catch(err) {}
       try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN custom_badge_text TEXT"); } catch(err) {}
-      try { this.sqliteDb.exec("ALTER TABLE products ADD COLUMN custom_badge_color TEXT"); } catch(err) {}
       try { this.sqliteDb.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_single_admin ON users(role) WHERE role = 'admin'"); } catch(err) {}
+      try {
+        this.sqliteDb.exec(`
+          CREATE TABLE IF NOT EXISTS styles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            search_query TEXT NOT NULL,
+            image_url TEXT NOT NULL,
+            gender TEXT DEFAULT 'men',
+            display_order INTEGER DEFAULT 0,
+            is_active INTEGER DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+      } catch (err) {}
     }
   }
 

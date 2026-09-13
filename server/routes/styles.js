@@ -33,6 +33,13 @@ async function ensureStylesTable() {
       `);
     }
 
+    // Safe migration: Ensure any row with null ID in SQLite receives its rowid
+    try {
+      if (!db.isPg) {
+        await db.run('UPDATE styles SET id = rowid WHERE id IS NULL');
+      }
+    } catch (e) {}
+
     const countRow = await db.queryOne('SELECT COUNT(*) as count FROM styles');
     if (countRow && parseInt(countRow.count) === 0) {
       const defaultStyles = [
@@ -48,6 +55,11 @@ async function ensureStylesTable() {
           VALUES (?, ?, ?, ?, ?, 1)
         `, [st.name, st.search_query, st.image_url, st.gender, st.display_order]);
       }
+      try {
+        if (!db.isPg) {
+          await db.run('UPDATE styles SET id = rowid WHERE id IS NULL');
+        }
+      } catch (e) {}
     }
   } catch (err) {
     console.error('Ensure Styles Table Error:', err);
