@@ -42,9 +42,27 @@ class ErrorBoundary extends React.Component {
           <h1 style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '1px' }}>
             SOMETHING WENT WRONG
           </h1>
-          <p style={{ color: '#666666', fontSize: '0.95rem', maxWidth: '480px', marginBottom: '2rem', lineHeight: '1.6' }}>
+          <p style={{ color: '#666666', fontSize: '0.95rem', maxWidth: '480px', marginBottom: '1.5rem', lineHeight: '1.6' }}>
             The page encountered an unexpected rendering issue. Don't worry, your cart and session data are safe.
           </p>
+
+          {this.state.error?.message && (
+            <div style={{
+              marginBottom: '2rem',
+              padding: '0.75rem 1.25rem',
+              backgroundColor: '#FFF5F5',
+              border: '1px solid #FED7D7',
+              borderRadius: '12px',
+              color: '#C53030',
+              fontSize: '0.82rem',
+              fontFamily: 'monospace',
+              maxWidth: '540px',
+              wordBreak: 'break-word',
+              textAlign: 'left'
+            }}>
+              <strong>Error:</strong> {this.state.error.message}
+            </div>
+          )}
           
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingBag, FolderTree, Image, PackageCheck,
   Users, Ticket, Plus, Edit, Trash2, X, Shield, RefreshCw,
-  Settings, Layers, MessageSquare, CreditCard, Menu, Eye, Camera, AlertCircle
+  Settings, Layers, MessageSquare, CreditCard, Menu, Eye, Camera, AlertCircle, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { formatINR } from '../utils/currency';
@@ -150,24 +150,58 @@ const AdminDashboard = () => {
         fetch(getApiUrl('/api/admin/styles'), { headers })
       ]);
 
-      if (statsRes.ok) setStats(await statsRes.json());
-      if (prodRes.ok) setProducts(await prodRes.json());
+      if (statsRes.ok) {
+        const s = await statsRes.json();
+        setStats(s && typeof s === 'object' ? s : {});
+      }
+      if (prodRes.ok) {
+        const p = await prodRes.json();
+        setProducts(Array.isArray(p) ? p : []);
+      }
       if (catRes.ok) {
         const catData = await catRes.json();
-        setCategories(catData);
-        if (catData.length && !productForm.category_id) {
-          setProductForm(prev => ({ ...prev, category_id: catData[0].id }));
+        const safeCat = Array.isArray(catData) ? catData : [];
+        setCategories(safeCat);
+        if (safeCat.length && !productForm.category_id) {
+          setProductForm(prev => ({ ...prev, category_id: safeCat[0].id }));
         }
       }
-      if (stylesRes && stylesRes.ok) setStyles(await stylesRes.json());
-      if (banRes.ok) setBanners(await banRes.json());
-      if (ordRes.ok) setOrders(await ordRes.json());
-      if (invRes.ok) setInventory(await invRes.json());
-      if (custRes.ok) setCustomers(await custRes.json());
-      if (coupRes.ok) setCoupons(await coupRes.json());
-      if (colRes.ok) setCollections(await colRes.json());
-      if (revRes.ok) setReviews(await revRes.json());
-      if (looksRes.ok) setLooks(await looksRes.json());
+      if (stylesRes && stylesRes.ok) {
+        const st = await stylesRes.json();
+        setStyles(Array.isArray(st) ? st : []);
+      }
+      if (banRes.ok) {
+        const b = await banRes.json();
+        setBanners(Array.isArray(b) ? b : []);
+      }
+      if (ordRes.ok) {
+        const o = await ordRes.json();
+        setOrders(Array.isArray(o) ? o : []);
+      }
+      if (invRes.ok) {
+        const i = await invRes.json();
+        setInventory(Array.isArray(i) ? i : []);
+      }
+      if (custRes.ok) {
+        const c = await custRes.json();
+        setCustomers(Array.isArray(c) ? c : []);
+      }
+      if (coupRes.ok) {
+        const cp = await coupRes.json();
+        setCoupons(Array.isArray(cp) ? cp : []);
+      }
+      if (colRes.ok) {
+        const cl = await colRes.json();
+        setCollections(Array.isArray(cl) ? cl : []);
+      }
+      if (revRes.ok) {
+        const r = await revRes.json();
+        setReviews(Array.isArray(r) ? r : []);
+      }
+      if (looksRes.ok) {
+        const l = await looksRes.json();
+        setLooks(Array.isArray(l) ? l : []);
+      }
       if (setRes.ok) {
         const setMap = await setRes.json();
         if (setMap && Object.keys(setMap).length) {
@@ -729,7 +763,7 @@ const AdminDashboard = () => {
                           <ShoppingBag size={24} color="var(--text-dark)" />
                         </div>
                         <span style={{ fontSize: '0.75rem', fontWeight: 800, backgroundColor: 'var(--color-primary)', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
-                          {orders.filter(o => o.order_status === 'Pending').length} Pending
+                          {(orders || []).filter(o => o.order_status === 'Pending').length} Pending
                         </span>
                       </div>
                       <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '1rem', fontFamily: 'var(--font-title)' }}>📦 View Customer Orders</h3>
