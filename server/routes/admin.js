@@ -643,6 +643,7 @@ router.put('/collections/:id', async (req, res) => {
 // DELETE /api/admin/collections/:id
 router.delete('/collections/:id', async (req, res) => {
   try {
+    await db.run('DELETE FROM collection_products WHERE collection_id = ?', [req.params.id]);
     await db.run('DELETE FROM collections WHERE id = ?', [req.params.id]);
     res.json({ message: 'Collection deleted successfully' });
   } catch (err) {

@@ -39,10 +39,10 @@ const AdminDashboard = () => {
   const [showProductModal, setShowProductModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showStyleModal, setShowStyleModal] = useState(false);
-  const [showBannerModal, setShowBannerModal] = useState(false);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
   const [showLookModal, setShowLookModal] = useState(false);
+  const [productSearchFilter, setProductSearchFilter] = useState('');
 
   // Direct File Image Upload States
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -73,10 +73,7 @@ const AdminDashboard = () => {
     id: null, name: '', search_query: '', image_url: '', gender: 'men', display_order: 0, is_active: true
   });
 
-  const [bannerForm, setBannerForm] = useState({
-    title: 'THE FESTIVE DROP', subtitle: 'Vibrant Colors. Contemporary Fits.', button_text: 'SHOP COLLECTION NOW', button_link: '/men',
-    image_url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&auto=format&fit=crop&q=80', mobile_image_url: '', gender: 'all', display_order: 0, is_active: true
-  });
+
 
   const [couponForm, setCouponForm] = useState({
     code: '', discount_type: 'percentage', discount_value: '',
@@ -442,23 +439,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Banner Save
-  const handleSaveBanner = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(getApiUrl('/api/admin/banners'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(bannerForm)
-      });
-      if (!res.ok) throw new Error('Failed to save banner');
-      setShowBannerModal(false);
-      fetchData();
-      alert('✓ Hero Banner published successfully!');
-    } catch (err) {
-      alert(err.message);
-    }
-  };
 
   // Coupon Save
   const handleSaveCoupon = async (e) => {
@@ -479,22 +459,80 @@ const AdminDashboard = () => {
     }
   };
 
-  // Collection Save
+  // Collection Management (Add, Edit, Image Upload, Product Linking)
+  const handleOpenCreateCollection = () => {
+    setCollectionForm({
+      id: null,
+      name: '',
+      description: '',
+      cover_image: '',
+      banner_image: '',
+      gender: 'men',
+      is_active: true,
+      selectedProducts: []
+    });
+    setSelectedFiles([]);
+    setImagePreviews([]);
+    setProductSearchFilter('');
+    setShowCollectionModal(true);
+  };
+
+  const handleEditCollection = (col) => {
+    setCollectionForm({
+      id: col.id,
+      name: col.name || '',
+      description: col.description || '',
+      cover_image: col.cover_image || '',
+      banner_image: col.banner_image || col.cover_image || '',
+      gender: col.gender || 'men',
+      is_active: col.is_active === 1 || col.is_active === true,
+      selectedProducts: (col.products || []).map(p => p.id)
+    });
+    setSelectedFiles([]);
+    setImagePreviews([]);
+    setProductSearchFilter('');
+    setShowCollectionModal(true);
+  };
+
   const handleSaveCollection = async (e) => {
     e.preventDefault();
     try {
+      let finalCoverImage = collectionForm.cover_image;
+      if (selectedFiles.length > 0) {
+        const urls = await uploadSelectedFiles();
+        if (urls && urls.length > 0) {
+          finalCoverImage = urls[0];
+        }
+      }
+
+      const payload = {
+        name: collectionForm.name,
+        description: collectionForm.description,
+        cover_image: finalCoverImage,
+        banner_image: collectionForm.banner_image || finalCoverImage,
+        gender: collectionForm.gender,
+        is_active: collectionForm.is_active ? 1 : 0,
+        products: collectionForm.selectedProducts || []
+      };
+
       const url = collectionForm.id ? `/api/admin/collections/${collectionForm.id}` : '/api/admin/collections';
       const method = collectionForm.id ? 'PUT' : 'POST';
 
       const res = await fetch(getApiUrl(url), {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(collectionForm)
+        body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error('Failed to save collection');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save collection');
+
       setShowCollectionModal(false);
+      setSelectedFiles([]);
+      setImagePreviews([]);
+      setProductSearchFilter('');
+      setCollectionForm({ id: null, name: '', description: '', cover_image: '', banner_image: '', gender: 'men', is_active: true, selectedProducts: [] });
       fetchData();
-      alert('✓ Collection drop published successfully!');
+      alert(`✓ Collection drop ${collectionForm.id ? 'updated' : 'published'} successfully!`);
     } catch (err) {
       alert(err.message);
     }
@@ -591,7 +629,6 @@ const AdminDashboard = () => {
     { id: 'styles', label: 'Shop by Style (Vibe Cards)', icon: Sparkles },
     { id: 'coupons', label: 'Special Offers & Coupons', icon: Ticket },
     { id: 'collections', label: 'Campaign Collections', icon: Image },
-    { id: 'banners', label: 'Homepage Banners', icon: Image },
     { id: 'looks', label: 'Shop The Look', icon: Camera },
     { id: 'customers', label: 'Registered Customers', icon: Users },
     { id: 'reviews', label: 'Customer Reviews', icon: MessageSquare },
@@ -620,17 +657,17 @@ const AdminDashboard = () => {
           transition: 'transform 0.3s ease'
         }}
       >
-        <div style={{ padding: '1.5rem', borderBottom: '2px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--color-primary)' }}>
+        <div style={{ padding: '1.5rem', borderBottom: '2px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#000000' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Shield size={24} color="var(--text-dark)" />
-            <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-dark)', letterSpacing: '0.5px' }}>
+            <Shield size={24} color="#FFFFFF" />
+            <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: '1.2rem', color: '#FFFFFF', letterSpacing: '0.5px' }}>
               GRABB-IT ADMIN
             </span>
           </div>
           <button 
             className="mobile-only"
             onClick={() => setMobileSidebarOpen(false)}
-            style={{ color: 'var(--text-dark)' }}
+            style={{ color: '#FFFFFF' }}
           >
             <X size={20} />
           </button>
@@ -653,8 +690,8 @@ const AdminDashboard = () => {
                   justifyContent: 'space-between',
                   padding: '0.75rem 1rem',
                   borderRadius: '12px',
-                  backgroundColor: isActive ? 'var(--color-primary)' : 'transparent',
-                  color: 'var(--text-dark)',
+                  backgroundColor: isActive ? '#000000' : 'transparent',
+                  color: isActive ? '#FFFFFF' : 'var(--text-dark)',
                   fontWeight: isActive ? 800 : 600,
                   fontSize: '0.88rem',
                   textAlign: 'left',
@@ -662,11 +699,18 @@ const AdminDashboard = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <IconComp size={18} color="var(--text-dark)" />
-                  <span>{item.label}</span>
+                  <IconComp size={18} color={isActive ? '#FFFFFF' : 'var(--text-dark)'} />
+                  <span style={{ color: isActive ? '#FFFFFF' : 'inherit' }}>{item.label}</span>
                 </div>
                 {item.badge > 0 && (
-                  <span style={{ backgroundColor: 'var(--color-secondary)', color: 'var(--text-dark)', fontSize: '0.72rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px' }}>
+                  <span style={{
+                    backgroundColor: isActive ? '#FFFFFF' : 'var(--color-secondary)',
+                    color: isActive ? '#000000' : 'var(--text-dark)',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '9999px'
+                  }}>
                     {item.badge}
                   </span>
                 )}
@@ -743,7 +787,7 @@ const AdminDashboard = () => {
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <PackageCheck size={24} color="var(--text-dark)" />
+                          <PackageCheck size={24} color="#FFFFFF" />
                         </div>
                         <span style={{ fontSize: '0.75rem', fontWeight: 800, backgroundColor: 'var(--color-highlight)', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
                           {products.length} Products
@@ -763,7 +807,7 @@ const AdminDashboard = () => {
                         <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--color-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <ShoppingBag size={24} color="var(--text-dark)" />
                         </div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 800, backgroundColor: 'var(--color-primary)', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, backgroundColor: '#000000', color: '#FFFFFF', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
                           {(orders || []).filter(o => o.order_status === 'Pending').length} Pending
                         </span>
                       </div>
@@ -792,7 +836,7 @@ const AdminDashboard = () => {
                     </div>
 
                     <div 
-                      onClick={() => setActiveTab('banners')}
+                      onClick={() => setActiveTab('collections')}
                       style={{ cursor: 'pointer', backgroundColor: '#ffffff', border: '2px solid var(--border-light)', padding: '1.5rem', borderRadius: '16px', boxShadow: 'var(--shadow-card)', transition: 'transform 200ms ease' }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -800,12 +844,12 @@ const AdminDashboard = () => {
                           <Image size={24} color="var(--text-dark)" />
                         </div>
                         <span style={{ fontSize: '0.75rem', fontWeight: 800, backgroundColor: 'var(--color-highlight)', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
-                          {banners.length} Banners
+                          {collections.length} Drops
                         </span>
                       </div>
-                      <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '1rem', fontFamily: 'var(--font-title)' }}>🖼 Change Homepage Banners</h3>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '1rem', fontFamily: 'var(--font-title)' }}>🌟 Campaign Collections</h3>
                       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                        Upload hero pictures, set main headlines, button links, and preview live.
+                        Curate exclusive drops, upload cover pictures, and link clothing products.
                       </p>
                     </div>
 
@@ -817,7 +861,7 @@ const AdminDashboard = () => {
                         <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--color-highlight)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Camera size={24} color="var(--text-dark)" />
                         </div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 800, backgroundColor: 'var(--color-primary)', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, backgroundColor: '#000000', color: '#FFFFFF', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
                           {looks.length} Looks
                         </span>
                       </div>
@@ -1130,60 +1174,6 @@ const AdminDashboard = () => {
                 </div>
               )}
 
-              {/* TAB 5: HOMEPAGE BANNERS & VISUAL LIVE PREVIEW */}
-              {activeTab === 'banners' && (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2 style={{ fontSize: '1.15rem', fontWeight: 800, textTransform: 'uppercase', fontFamily: 'var(--font-title)' }}>
-                      Homepage Hero Campaign Banners
-                    </h2>
-                    <button className="btn-primary" onClick={() => setShowBannerModal(true)}>
-                      <Plus size={16} /> ADD HERO BANNER
-                    </button>
-                  </div>
-
-                  {(banners || []).length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '4rem 1rem', backgroundColor: '#ffffff', borderRadius: '16px', border: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
-                      No hero banners active on homepage. Click "Add Hero Banner" to publish your first banner!
-                    </div>
-                  ) : (
-                    <div className="table-responsive">
-                      <table className="custom-table">
-                        <thead>
-                          <tr>
-                            <th>Image Preview</th>
-                            <th>Headline Title</th>
-                            <th>Subtitle Info</th>
-                            <th>CTA Button Link</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(banners || []).map(b => (
-                            <tr key={b.id}>
-                              <td><img src={formatImageUrl(b.image_url)} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&auto=format&fit=crop&q=80'; }} style={{ width: '120px', height: '45px', objectFit: 'cover', borderRadius: '8px' }} /></td>
-                              <td><strong>{b.title}</strong></td>
-                              <td>{b.subtitle}</td>
-                              <td><code>{b.button_link}</code></td>
-                              <td><span className="badge-new">{b.is_active === 1 ? 'Active' : 'Disabled'}</span></td>
-                              <td>
-                                <button
-                                  onClick={() => setDeleteConfirm({ type: 'banners', id: b.id, title: b.title })}
-                                  className="btn-outline-gray"
-                                  style={{ padding: '0.35rem 0.6rem', color: '#c62828', borderColor: '#c62828' }}
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* TAB 6: SHOP THE LOOK */}
               {activeTab === 'looks' && (
@@ -1247,7 +1237,7 @@ const AdminDashboard = () => {
                     <h2 style={{ fontSize: '1.15rem', fontWeight: 800, textTransform: 'uppercase', fontFamily: 'var(--font-title)' }}>
                       Curated Campaign Collections
                     </h2>
-                    <button className="btn-primary" onClick={() => setShowCollectionModal(true)}>
+                    <button className="btn-primary" onClick={handleOpenCreateCollection}>
                       <Plus size={16} /> CREATE COLLECTION
                     </button>
                   </div>
@@ -1278,13 +1268,24 @@ const AdminDashboard = () => {
                               <td style={{ textTransform: 'uppercase' }}>{col.gender}</td>
                               <td><strong>{col.products?.length || 0} Products</strong></td>
                               <td>
-                                <button
-                                  onClick={() => setDeleteConfirm({ type: 'collections', id: col.id, title: col.name })}
-                                  className="btn-outline-gray"
-                                  style={{ padding: '0.35rem 0.6rem', color: '#c62828', borderColor: '#c62828' }}
-                                >
-                                  <Trash2 size={14} />
-                                </button>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                  <button
+                                    onClick={() => handleEditCollection(col)}
+                                    className="btn-outline-gray"
+                                    style={{ padding: '0.35rem 0.6rem' }}
+                                    title="Edit Collection & Attached Products"
+                                  >
+                                    <Edit size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirm({ type: 'collections', id: col.id, title: col.name })}
+                                    className="btn-outline-gray"
+                                    style={{ padding: '0.35rem 0.6rem', color: '#c62828', borderColor: '#c62828' }}
+                                    title="Delete Collection"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -2164,119 +2165,206 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* ADD BANNER MODAL WITH VISUAL LIVE PREVIEW */}
-      {showBannerModal && (
-        <div className="modal-overlay" onClick={() => setShowBannerModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '650px' }}>
-            <button className="modal-close-btn" onClick={() => setShowBannerModal(false)}><X size={20} /></button>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1rem', fontFamily: 'var(--font-title)' }}>ADD HOMEPAGE HERO BANNER</h3>
-            
-            {/* VISUAL LIVE PREVIEW BOX */}
-            <div style={{ marginBottom: '1.5rem', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--color-primary)', position: 'relative', height: '180px', backgroundColor: '#111' }}>
-              <img src={bannerForm.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '1.5rem', color: '#fff', backgroundColor: 'rgba(0,0,0,0.3)' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--color-primary)' }}>LIVE PREVIEW</span>
-                <h4 style={{ fontSize: '1.4rem', fontWeight: 900, fontFamily: 'var(--font-title)', margin: '0.25rem 0' }}>{bannerForm.title || 'HERO BANNER TITLE'}</h4>
-                <p style={{ fontSize: '0.85rem', color: '#eee', marginBottom: '0.75rem' }}>{bannerForm.subtitle || 'Subtitle information'}</p>
-                <button type="button" className="btn-primary" style={{ width: 'fit-content', padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>
-                  {bannerForm.button_text || 'SHOP NOW'}
-                </button>
-              </div>
-            </div>
-
-            <form onSubmit={handleSaveBanner} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div className="form-group">
-                <label className="form-label">Banner Headline Title</label>
-                <input type="text" className="form-input" value={bannerForm.title} onChange={e => setBannerForm({ ...bannerForm, title: e.target.value })} required />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Subtitle Info</label>
-                <input type="text" className="form-input" value={bannerForm.subtitle} onChange={e => setBannerForm({ ...bannerForm, subtitle: e.target.value })} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label">Desktop Image URL</label>
-                  <input type="url" className="form-input" value={bannerForm.image_url} onChange={e => setBannerForm({ ...bannerForm, image_url: e.target.value })} required />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Button Destination Link</label>
-                  <input type="text" className="form-input" value={bannerForm.button_link} onChange={e => setBannerForm({ ...bannerForm, button_link: e.target.value })} required />
-                </div>
-              </div>
-              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }}>PUBLISH HERO BANNER</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* CREATE OFFER MODAL */}
-      {showCouponModal && (
-        <div className="modal-overlay" onClick={() => setShowCouponModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <button className="modal-close-btn" onClick={() => setShowCouponModal(false)}><X size={20} /></button>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1.5rem', fontFamily: 'var(--font-title)' }}>CREATE SPECIAL OFFER</h3>
-            <form onSubmit={handleSaveCoupon} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div className="form-group">
-                <label className="form-label">Promo Code (e.g. FESTIVE20)</label>
-                <input type="text" className="form-input" style={{ textTransform: 'uppercase' }} value={couponForm.code} onChange={e => setCouponForm({ ...couponForm, code: e.target.value })} required />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label">Discount Type</label>
-                  <select className="form-select" value={couponForm.discount_type} onChange={e => setCouponForm({ ...couponForm, discount_type: e.target.value })}>
-                    <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount (₹)</option>
-                    <option value="free_shipping">Free Shipping</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Discount Value</label>
-                  <input type="number" className="form-input" value={couponForm.discount_value} onChange={e => setCouponForm({ ...couponForm, discount_value: e.target.value })} required />
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Minimum Purchase Order Amount (₹)</label>
-                <input type="number" className="form-input" value={couponForm.min_order_amount} onChange={e => setCouponForm({ ...couponForm, min_order_amount: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Target Scope Target</label>
-                <select className="form-select" value={couponForm.target_scope} onChange={e => setCouponForm({ ...couponForm, target_scope: e.target.value })}>
-                  <option value="all">Entire Store</option>
-                  <option value="men">Men's Apparel Only</option>
-                  <option value="women">Women's Apparel Only</option>
-                </select>
-              </div>
-              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }}>CREATE OFFER</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* CREATE COLLECTION MODAL */}
+      {/* CREATE / EDIT COLLECTION MODAL WITH PHOTO UPLOAD & PRODUCT LINKING */}
       {showCollectionModal && (
         <div className="modal-overlay" onClick={() => setShowCollectionModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '550px' }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '620px', maxHeight: '90vh', overflowY: 'auto' }}>
             <button className="modal-close-btn" onClick={() => setShowCollectionModal(false)}><X size={20} /></button>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1.5rem', fontFamily: 'var(--font-title)' }}>
-              CREATE COLLECTION DROP
+              {collectionForm.id ? 'EDIT CAMPAIGN COLLECTION' : 'CREATE COLLECTION DROP'}
             </h3>
             <form onSubmit={handleSaveCollection} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="form-group">
                 <label className="form-label">Collection Title</label>
-                <input type="text" className="form-input" value={collectionForm.name} onChange={e => setCollectionForm({ ...collectionForm, name: e.target.value })} required />
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. MONOCHROME STREETWEAR 2026"
+                  value={collectionForm.name}
+                  onChange={e => setCollectionForm({ ...collectionForm, name: e.target.value })}
+                  required
+                />
               </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Target Gender</label>
+                  <select className="form-select" value={collectionForm.gender} onChange={e => setCollectionForm({ ...collectionForm, gender: e.target.value })}>
+                    <option value="men">MEN</option>
+                    <option value="women">WOMEN</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '0.5rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={collectionForm.is_active}
+                      onChange={e => setCollectionForm({ ...collectionForm, is_active: e.target.checked })}
+                    /> Active on Storefront
+                  </label>
+                </div>
+              </div>
+
               <div className="form-group">
-                <label className="form-label">Description</label>
-                <textarea rows="2" className="form-textarea" value={collectionForm.description} onChange={e => setCollectionForm({ ...collectionForm, description: e.target.value })} />
+                <label className="form-label">Description / Campaign Vibe</label>
+                <textarea
+                  rows="2"
+                  className="form-textarea"
+                  placeholder="Describe this campaign collection..."
+                  value={collectionForm.description}
+                  onChange={e => setCollectionForm({ ...collectionForm, description: e.target.value })}
+                />
               </div>
+
+              {/* COLLECTION COVER PHOTO UPLOAD & URL */}
               <div className="form-group">
-                <label className="form-label">Target Gender</label>
-                <select className="form-select" value={collectionForm.gender} onChange={e => setCollectionForm({ ...collectionForm, gender: e.target.value })}>
-                  <option value="men">MEN</option>
-                  <option value="women">WOMEN</option>
-                </select>
+                <label className="form-label">Collection Cover Picture (Upload from Computer or enter Image URL)</label>
+                <input
+                  type="file"
+                  accept="image/*, .jpg, .jpeg, .png, .webp, .gif, .avif, .svg, .heic, .heif, .bmp, .tiff, .ico"
+                  onChange={handleFileSelect}
+                  className="form-input"
+                  style={{ padding: '0.5rem', marginBottom: '0.5rem' }}
+                />
+                <input
+                  type="url"
+                  className="form-input"
+                  placeholder="https://images.unsplash.com/... (or image uploaded above)"
+                  value={collectionForm.cover_image}
+                  onChange={e => setCollectionForm({ ...collectionForm, cover_image: e.target.value })}
+                />
+
+                {/* IMAGE PREVIEW */}
+                {(imagePreviews.length > 0 || collectionForm.cover_image) && (
+                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: '12px' }}>
+                    <img
+                      src={imagePreviews[0] || formatImageUrl(collectionForm.cover_image)}
+                      alt="Collection Preview"
+                      style={{ width: '80px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '2px solid var(--color-primary)' }}
+                      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&auto=format&fit=crop&q=80'; }}
+                    />
+                    <div>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-dark)' }}>Cover Image Active</span>
+                      <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0 }}>This picture displays in the Curated Campaigns carousel on the homepage.</p>
+                    </div>
+                  </div>
+                )}
               </div>
-              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }}>PUBLISH COLLECTION DROP</button>
+
+              {/* ATTACH PRODUCTS SECTION */}
+              <div className="form-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label className="form-label" style={{ marginBottom: 0 }}>
+                    Attach Store Products ({(collectionForm.selectedProducts || []).length} attached)
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                      type="button"
+                      style={{ fontSize: '0.72rem', background: 'none', border: 'none', color: '#000000', textDecoration: 'underline', cursor: 'pointer', fontWeight: 700 }}
+                      onClick={() => {
+                        const filteredIds = products
+                          .filter(p => !productSearchFilter || p.name.toLowerCase().includes(productSearchFilter.toLowerCase()) || (p.sku && p.sku.toLowerCase().includes(productSearchFilter.toLowerCase())))
+                          .map(p => p.id);
+                        const newSelected = Array.from(new Set([...(collectionForm.selectedProducts || []), ...filteredIds]));
+                        setCollectionForm({ ...collectionForm, selectedProducts: newSelected });
+                      }}
+                    >
+                      Select Filtered
+                    </button>
+                    <button
+                      type="button"
+                      style={{ fontSize: '0.72rem', background: 'none', border: 'none', color: '#c62828', textDecoration: 'underline', cursor: 'pointer', fontWeight: 700 }}
+                      onClick={() => setCollectionForm({ ...collectionForm, selectedProducts: [] })}
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Filter products by name or SKU..."
+                  value={productSearchFilter}
+                  onChange={e => setProductSearchFilter(e.target.value)}
+                  style={{ marginBottom: '0.5rem', fontSize: '0.82rem', padding: '0.45rem 0.75rem' }}
+                />
+
+                <div style={{
+                  maxHeight: '190px',
+                  overflowY: 'auto',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: '10px',
+                  padding: '0.5rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.35rem',
+                  backgroundColor: 'var(--bg-subtle)'
+                }}>
+                  {products
+                    .filter(p => !productSearchFilter || p.name.toLowerCase().includes(productSearchFilter.toLowerCase()) || (p.sku && p.sku.toLowerCase().includes(productSearchFilter.toLowerCase())))
+                    .length === 0 ? (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', padding: '1.2rem' }}>
+                      No matching products found in store.
+                    </div>
+                  ) : (
+                    products
+                      .filter(p => !productSearchFilter || p.name.toLowerCase().includes(productSearchFilter.toLowerCase()) || (p.sku && p.sku.toLowerCase().includes(productSearchFilter.toLowerCase())))
+                      .map(p => {
+                        const isSelected = (collectionForm.selectedProducts || []).includes(p.id);
+                        const pImg = p.images && p.images.length ? formatImageUrl(p.images[0].image_url) : null;
+                        return (
+                          <label
+                            key={p.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.6rem',
+                              padding: '0.45rem 0.6rem',
+                              borderRadius: '8px',
+                              backgroundColor: isSelected ? '#FFFFFF' : 'transparent',
+                              border: isSelected ? '1px solid #000000' : '1px solid transparent',
+                              cursor: 'pointer',
+                              transition: 'all 150ms ease'
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={e => {
+                                if (e.target.checked) {
+                                  setCollectionForm({ ...collectionForm, selectedProducts: [...(collectionForm.selectedProducts || []), p.id] });
+                                } else {
+                                  setCollectionForm({ ...collectionForm, selectedProducts: (collectionForm.selectedProducts || []).filter(id => id !== p.id) });
+                                }
+                              }}
+                            />
+                            {pImg && (
+                              <img
+                                src={pImg}
+                                alt=""
+                                style={{ width: '30px', height: '36px', objectFit: 'cover', borderRadius: '4px' }}
+                                onError={e => { e.currentTarget.style.display = 'none'; }}
+                              />
+                            )}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '0.82rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {p.name}
+                              </div>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                {p.sku ? `SKU: ${p.sku} • ` : ''}{formatINR(p.sale_price || p.price)} • {p.gender?.toUpperCase()}
+                              </div>
+                            </div>
+                          </label>
+                        );
+                      })
+                  )}
+                </div>
+              </div>
+
+              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }} disabled={uploadingImages}>
+                {uploadingImages ? 'UPLOADING COVER PHOTO...' : (collectionForm.id ? 'UPDATE CAMPAIGN COLLECTION' : 'PUBLISH COLLECTION DROP')}
+              </button>
             </form>
           </div>
         </div>

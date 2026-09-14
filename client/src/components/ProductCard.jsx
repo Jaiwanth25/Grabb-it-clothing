@@ -59,14 +59,21 @@ const ProductCard = ({ product, onQuickView }) => {
         </Link>
 
         {/* Dynamic Badges Managed via Admin */}
-        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 10 }}>
+        <div className="product-card-badge-container" style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 10 }}>
           {hasDiscount && <span className="badge-discount">-{discountPercent}% OFF</span>}
-          {product.is_new === 1 && <span className="badge-new">NEW</span>}
-          {product.is_hot === 1 && <span className="badge-discount">HOT 🔥</span>}
-          {product.is_trending === 1 && <span className="badge-trending">TRENDING</span>}
-          {product.is_bestseller === 1 && <span className="badge-new" style={{ backgroundColor: 'var(--color-secondary)' }}>BEST SELLER</span>}
-          {product.is_sale === 1 && <span className="badge-discount">SALE</span>}
-          {product.is_limited === 1 && <span className="badge-trending" style={{ backgroundColor: 'var(--color-highlight)' }}>LIMITED</span>}
+          {product.is_new === 1 ? (
+            <span className="badge-new">NEW</span>
+          ) : product.is_hot === 1 ? (
+            <span className="badge-discount">HOT 🔥</span>
+          ) : product.is_sale === 1 ? (
+            <span className="badge-discount">SALE</span>
+          ) : product.is_bestseller === 1 ? (
+            <span className="badge-new" style={{ backgroundColor: 'var(--color-secondary)' }}>BEST SELLER</span>
+          ) : product.is_trending === 1 ? (
+            <span className="badge-trending">TRENDING</span>
+          ) : product.is_limited === 1 ? (
+            <span className="badge-trending" style={{ backgroundColor: 'var(--color-highlight)' }}>LIMITED</span>
+          ) : null}
           {product.custom_badge_text && (
             <span style={{ backgroundColor: product.custom_badge_color || '#FFB3C1', color: '#2B2B2B', fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
               {product.custom_badge_text}
@@ -89,7 +96,22 @@ const ProductCard = ({ product, onQuickView }) => {
           <Heart size={21} fill={isFavorite ? "currentColor" : "none"} strokeWidth={2.2} />
         </button>
 
-        {/* Quick Actions */}
+        {/* Mobile Floating Quick Action (Unobtrusive 34px icon button) */}
+        <button
+          type="button"
+          className="product-card-mobile-action"
+          aria-label="Quick View"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof onQuickView === 'function') onQuickView(product);
+          }}
+          title="Quick View"
+        >
+          <Eye size={16} />
+        </button>
+
+        {/* Desktop Hover Quick Actions */}
         <div className="product-card-actions">
           <button
             className="btn-secondary"
