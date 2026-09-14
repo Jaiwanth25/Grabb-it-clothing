@@ -69,7 +69,7 @@ const Home = () => {
       <NewArrivalsSection />
 
       {/* 4. Brand Positioning Banner */}
-      <section style={{ textAlign: 'center', padding: '3.5rem 1rem 2.5rem 1rem' }} className="container">
+      <section className="container brand-positioning-banner">
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
           <Sparkles size={16} color="var(--color-primary)" />
           <span className="badge-carnival">
@@ -77,7 +77,7 @@ const Home = () => {
           </span>
           <Sparkles size={16} color="var(--color-primary)" />
         </div>
-        <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '2.75rem', fontWeight: 800, marginTop: '0.5rem', color: 'var(--text-dark)', lineHeight: 1.15 }}>
+        <h1 className="brand-positioning-title">
           MINIMALIST STREETWEAR <span style={{ color: 'var(--color-primary)' }}>&amp; EVERYDAY FITS.</span>
         </h1>
         <p style={{ maxWidth: '640px', margin: '1rem auto 1.75rem auto', color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.6, fontWeight: 600 }}>
@@ -106,13 +106,13 @@ const Home = () => {
             VIEW ALL STYLES
           </Link>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.75rem' }}>
+        <div className="style-cards-grid">
           {(stylesList || []).map((style, i) => (
             <Link 
               key={style.id || i} 
               to={`/${gender}?search=${encodeURIComponent(style.search_query || style.search || style.name)}`} 
               className="category-card"
-              style={{ display: 'block', height: '340px' }}
+              style={{ height: '340px' }}
             >
               <img 
                 src={formatImageUrl(style.image_url || style.img)} 
@@ -146,9 +146,9 @@ const Home = () => {
               <h2 className="section-title">EXCLUSIVE DROPS &amp; EDITORIALS</h2>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+          <div className="collections-grid">
             {collections.map(col => (
-              <Link key={col.id} to={`/${gender}?collection=${col.slug}`} className="category-card" style={{ display: 'block', height: '420px', borderRadius: '16px' }}>
+              <Link key={col.id} to={`/${gender}?collection=${col.slug}`} className="category-card" style={{ height: '420px', borderRadius: '16px' }}>
                 <img 
                   src={formatImageUrl(col.cover_image)} 
                   alt={col.name} 
