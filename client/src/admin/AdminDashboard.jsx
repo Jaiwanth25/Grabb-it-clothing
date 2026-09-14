@@ -2056,14 +2056,14 @@ const AdminDashboard = () => {
                   <label className="form-label">Gender Target</label>
                   <select className="form-select" value={productForm.gender} onChange={e => setProductForm({ ...productForm, gender: e.target.value })}>
                     <option value="men">MEN</option>
-                    <option value="women">WOMEN</option>
+                    <option value="unisex">UNISEX</option>
                   </select>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Category</label>
                   <select className="form-select" value={productForm.category_id} onChange={e => setProductForm({ ...productForm, category_id: e.target.value })} required>
-                    {categories.filter(c => c.gender === productForm.gender).map(c => (
+                    {categories.filter(c => c.gender === productForm.gender || c.gender === 'men' || c.gender === 'unisex').map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
@@ -2165,6 +2165,48 @@ const AdminDashboard = () => {
         </div>
       )}
 
+      {/* CREATE OFFER MODAL */}
+      {showCouponModal && (
+        <div className="modal-overlay" onClick={() => setShowCouponModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <button className="modal-close-btn" onClick={() => setShowCouponModal(false)}><X size={20} /></button>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1.5rem', fontFamily: 'var(--font-title)' }}>CREATE SPECIAL OFFER</h3>
+            <form onSubmit={handleSaveCoupon} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-group">
+                <label className="form-label">Promo Code (e.g. FESTIVE20)</label>
+                <input type="text" className="form-input" style={{ textTransform: 'uppercase' }} value={couponForm.code} onChange={e => setCouponForm({ ...couponForm, code: e.target.value })} required />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Discount Type</label>
+                  <select className="form-select" value={couponForm.discount_type} onChange={e => setCouponForm({ ...couponForm, discount_type: e.target.value })}>
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount (₹)</option>
+                    <option value="free_shipping">Free Shipping</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Discount Value</label>
+                  <input type="number" className="form-input" value={couponForm.discount_value} onChange={e => setCouponForm({ ...couponForm, discount_value: e.target.value })} required />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Minimum Purchase Order Amount (₹)</label>
+                <input type="number" className="form-input" value={couponForm.min_order_amount} onChange={e => setCouponForm({ ...couponForm, min_order_amount: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Target Scope Target</label>
+                <select className="form-select" value={couponForm.target_scope} onChange={e => setCouponForm({ ...couponForm, target_scope: e.target.value })}>
+                  <option value="all">Entire Store</option>
+                  <option value="men">Men's Apparel Only</option>
+                </select>
+              </div>
+              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }}>CREATE OFFER</button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* CREATE / EDIT COLLECTION MODAL WITH PHOTO UPLOAD & PRODUCT LINKING */}
       {showCollectionModal && (
         <div className="modal-overlay" onClick={() => setShowCollectionModal(false)}>
@@ -2191,7 +2233,7 @@ const AdminDashboard = () => {
                   <label className="form-label">Target Gender</label>
                   <select className="form-select" value={collectionForm.gender} onChange={e => setCollectionForm({ ...collectionForm, gender: e.target.value })}>
                     <option value="men">MEN</option>
-                    <option value="women">WOMEN</option>
+                    <option value="unisex">UNISEX</option>
                   </select>
                 </div>
                 <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '0.5rem' }}>
@@ -2391,7 +2433,7 @@ const AdminDashboard = () => {
                 <label className="form-label">Target Gender</label>
                 <select className="form-select" value={lookForm.gender} onChange={e => setLookForm({ ...lookForm, gender: e.target.value })}>
                   <option value="men">MEN</option>
-                  <option value="women">WOMEN</option>
+                  <option value="unisex">UNISEX</option>
                 </select>
               </div>
               <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }}>PUBLISH OUTFIT LOOK</button>
@@ -2426,7 +2468,6 @@ const AdminDashboard = () => {
                   <label className="form-label">Target Gender</label>
                   <select className="form-select" value={categoryForm.gender} onChange={e => setCategoryForm({ ...categoryForm, gender: e.target.value })}>
                     <option value="men">MEN</option>
-                    <option value="women">WOMEN</option>
                     <option value="unisex">UNISEX</option>
                   </select>
                 </div>
@@ -2525,8 +2566,7 @@ const AdminDashboard = () => {
                   <label className="form-label">Target Gender</label>
                   <select className="form-select" value={styleForm.gender} onChange={e => setStyleForm({ ...styleForm, gender: e.target.value })}>
                     <option value="men">MEN</option>
-                    <option value="women">WOMEN</option>
-                    <option value="all">ALL</option>
+                    <option value="all">ALL / UNISEX</option>
                   </select>
                 </div>
               </div>

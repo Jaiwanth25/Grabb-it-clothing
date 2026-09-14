@@ -14,23 +14,14 @@ const ProductListing = () => {
   const { category: routeCategory } = useParams();
   const queryParams = new URLSearchParams(location.search);
 
-  // Determine active gender from query param, URL path, or global context
-  let activeGender = queryParams.get('gender');
-  if (!activeGender) {
-    if (location.pathname.startsWith('/women')) {
-      activeGender = 'women';
-    } else if (location.pathname.startsWith('/men')) {
-      activeGender = 'men';
-    } else {
-      activeGender = globalGender || 'men';
-    }
-  }
+  // Grabb-it store focuses on Men's / Streetwear apparel
+  const activeGender = 'men';
 
   useEffect(() => {
-    if (activeGender && activeGender !== globalGender) {
-      setGender(activeGender);
+    if (globalGender !== 'men') {
+      setGender('men');
     }
-  }, [activeGender, globalGender]);
+  }, [globalGender]);
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -336,7 +327,7 @@ const ProductListing = () => {
       {/* Breadcrumbs */}
       <div className="breadcrumbs" style={{ fontFamily: 'var(--font-title)', fontSize: '0.78rem', letterSpacing: '1px' }}>
         <Link to="/">HOME</Link> / 
-        <Link to={`/${activeGender}`}>{activeGender.toUpperCase()}</Link>
+        <Link to="/men">MEN</Link>
         {activeCategoryObj && <span> / {activeCategoryObj.name.toUpperCase()}</span>}
         {selectedCollection && <span> / {selectedCollection.replace('-', ' ').toUpperCase()}</span>}
         {searchTerm && <span> / SEARCH: "{searchTerm}"</span>}
@@ -347,10 +338,10 @@ const ProductListing = () => {
         <div>
           <h1 className="plp-title">
             {activeCategoryObj 
-              ? `${activeGender.toUpperCase()}'S ${activeCategoryObj.name}` 
+              ? `MEN'S ${activeCategoryObj.name}` 
               : selectedCollection
               ? `${selectedCollection.replace('-', ' ').toUpperCase()}`
-              : `${activeGender.toUpperCase()}'S APPAREL`}
+              : "MEN'S APPAREL"}
           </h1>
           <span className="plp-count-text">
             {products.length} {products.length === 1 ? 'PRODUCT' : 'PRODUCTS'} FOUND

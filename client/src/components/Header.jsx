@@ -114,17 +114,17 @@ const Header = () => {
     }
   };
 
-  const handleGenderSelect = (g) => {
-    setGender(g);
-    if (location.pathname === '/' || location.pathname === '/men' || location.pathname === '/women') {
-      navigate(`/${g}`);
+  const handleGenderSelect = () => {
+    setGender('men');
+    if (location.pathname === '/' || location.pathname === '/men') {
+      navigate('/men');
     }
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/${gender}?search=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`/men?search=${encodeURIComponent(searchQuery.trim())}`);
       setDrawerOpen(false);
     }
   };
@@ -172,22 +172,15 @@ const Header = () => {
         <div className="header-center desktop-only">
           <Link 
             to="/men" 
-            className={`gender-btn ${gender === 'men' ? 'active' : ''}`} 
+            className={`gender-btn ${location.pathname === '/men' || location.pathname === '/' ? 'active' : ''}`} 
             onClick={() => setGender('men')}
           >
             MEN
           </Link>
-          <Link 
-            to="/women" 
-            className={`gender-btn ${gender === 'women' ? 'active' : ''}`} 
-            onClick={() => setGender('women')}
-          >
-            WOMEN
-          </Link>
-          <Link to={`/${gender}?isNew=true`} className="gender-btn">
+          <Link to="/men?isNew=true" className="gender-btn">
             NEW DROPS
           </Link>
-          <Link to={`/${gender}?isTrending=true`} className="gender-btn">
+          <Link to="/men?isTrending=true" className="gender-btn">
             TRENDING
           </Link>
           <a href="#collections" className="gender-btn" onClick={(e) => {
@@ -215,7 +208,7 @@ const Header = () => {
             <Search size={16} color="var(--text-dark)" />
             <input
               type="text"
-              placeholder={gender === 'women' ? "Search Women's fashion..." : "Search Men's fashion..."}
+              placeholder="Search Men's fashion, streetwear, tees..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -363,21 +356,16 @@ const Header = () => {
               </Link>
 
               <Link to="/men" className="drawer-nav-item" onClick={() => { setGender('men'); setDrawerOpen(false); }}>
-                <span>👕 Men</span>
+                <span>👕 Men's Apparel</span>
                 <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
 
-              <Link to="/women" className="drawer-nav-item" onClick={() => { setGender('women'); setDrawerOpen(false); }}>
-                <span>👗 Women</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
-              </Link>
-
-              <Link to={`/${gender}?isNew=true`} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
+              <Link to="/men?isNew=true" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>✨ New Drops</span>
                 <ArrowRight size={16} color="var(--text-dark)" />
               </Link>
 
-              <Link to={`/${gender}?isTrending=true`} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
+              <Link to="/men?isTrending=true" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>🔥 Trending</span>
                 <ArrowRight size={16} color="var(--text-dark)" />
               </Link>

@@ -77,9 +77,9 @@ function App() {
                 <Route path="/" element={<Layout><Home /></Layout>} />
                 <Route path="/products" element={<Layout><ProductListing /></Layout>} />
                 <Route path="/men" element={<Layout><ProductListing /></Layout>} />
-                <Route path="/women" element={<Layout><ProductListing /></Layout>} />
+                <Route path="/women" element={<Navigate to="/men" replace />} />
                 <Route path="/men/:category" element={<Layout><ProductListing /></Layout>} />
-                <Route path="/women/:category" element={<Layout><ProductListing /></Layout>} />
+                <Route path="/women/:category" element={<Navigate to="/men" replace />} />
                 <Route path="/offers" element={<Layout><ProductListing /></Layout>} />
                 <Route path="/product/:slug" element={<Layout><ProductDetails /></Layout>} />
                 <Route path="/cart" element={<Layout><CartPage /></Layout>} />
