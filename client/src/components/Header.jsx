@@ -148,7 +148,7 @@ const Header = () => {
             aria-label="Open Navigation Menu"
             title="Open Side Menu"
           >
-            <Menu size={22} color="var(--text-dark)" />
+            <Menu size={22} color="currentColor" />
           </button>
           
           <Link to="/" className="header-brand-container">
@@ -205,7 +205,7 @@ const Header = () => {
         <div className="header-right">
           {/* Desktop Search */}
           <form onSubmit={handleSearchSubmit} className="search-input-box desktop-only">
-            <Search size={16} color="var(--text-dark)" />
+            <Search size={16} color="currentColor" />
             <input
               type="text"
               placeholder="Search Men's fashion, streetwear, tees..."
@@ -220,20 +220,20 @@ const Header = () => {
               to="/admin" 
               className="icon-btn" 
               title="Admin Dashboard"
-              style={{ color: 'var(--color-maroon, #4a0e17)', position: 'relative' }}
+              style={{ position: 'relative' }}
             >
-              <Shield size={22} />
+              <Shield size={22} color="currentColor" />
             </Link>
           )}
 
           {/* Account */}
-          <Link to={user ? "/account" : "/login"} className="icon-btn" title="Account">
-            <User size={22} color="var(--text-dark)" />
+          <Link to={user ? "/account" : "/login"} className="icon-btn" title="Account" aria-label="Account">
+            <User size={22} color="currentColor" />
           </Link>
 
           {/* Wishlist */}
-          <Link to="/wishlist" className="icon-btn" title="Wishlist">
-            <Heart size={22} color="var(--text-dark)" />
+          <Link to="/wishlist" className="icon-btn" title="Wishlist" aria-label="Wishlist">
+            <Heart size={22} color="currentColor" />
           </Link>
 
           {/* Notifications Bell */}
@@ -243,9 +243,10 @@ const Header = () => {
                 className="icon-btn" 
                 onClick={() => setShowNotifications(!showNotifications)}
                 title="Notifications"
+                aria-label="Notifications"
                 style={{ position: 'relative' }}
               >
-                <Bell size={22} color="var(--text-dark)" />
+                <Bell size={22} color="currentColor" />
                 {unreadCount > 0 && <span className="cart-count-badge">{unreadCount}</span>}
               </button>
               
@@ -298,8 +299,8 @@ const Header = () => {
           )}
 
           {/* Cart */}
-          <Link to="/cart" className="icon-btn" title="Shopping Bag">
-            <ShoppingBag size={22} color="var(--text-dark)" />
+          <Link to="/cart" className="icon-btn" title="Shopping Bag" aria-label="Shopping Bag">
+            <ShoppingBag size={22} color="currentColor" />
             {count > 0 && <span className="cart-count-badge">{count}</span>}
           </Link>
         </div>
@@ -329,16 +330,16 @@ const Header = () => {
                 onClick={() => setDrawerOpen(false)} 
                 className="icon-btn" 
                 aria-label="Close menu"
-                style={{ color: 'var(--text-dark)', width: '38px', height: '38px' }}
+                style={{ width: '38px', height: '38px' }}
               >
-                <X size={24} color="var(--text-dark)" />
+                <X size={24} color="currentColor" />
               </button>
             </div>
 
             {/* Drawer Search Input */}
             <div style={{ padding: '1rem 1rem 0.5rem 1rem', flexShrink: 0 }}>
               <form onSubmit={handleSearchSubmit} className="search-input-box" style={{ width: '100%' }}>
-                <Search size={16} color="var(--text-dark)" />
+                <Search size={16} color="currentColor" />
                 <input
                   type="text"
                   placeholder="Search outfits & products..."
@@ -352,27 +353,27 @@ const Header = () => {
             <div className="drawer-nav-list">
               <Link to="/" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>🏠 Home</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
 
               <Link to="/men" className="drawer-nav-item" onClick={() => { setGender('men'); setDrawerOpen(false); }}>
                 <span>👕 Men's Apparel</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
 
               <Link to="/men?isNew=true" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>✨ New Drops</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
 
               <Link to="/men?isTrending=true" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>🔥 Trending</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
 
               <Link to="/offers" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>🏷️ Offers</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
 
               <a 
@@ -392,7 +393,7 @@ const Header = () => {
                 }}
               >
                 <span>📦 Collections</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </a>
 
               <a 
@@ -412,27 +413,27 @@ const Header = () => {
                 }}
               >
                 <span>👀 Shop the Look</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </a>
 
               <Link to="/wishlist" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>❤️ Wishlist</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
 
               <Link to="/cart" className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>🛒 Cart ({count})</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
 
               <Link to={user ? "/account" : "/login"} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>📦 My Orders</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
 
               <Link to={user ? "/account" : "/login"} className="drawer-nav-item" onClick={() => setDrawerOpen(false)}>
                 <span>👤 My Account</span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
 
               {/* ADMIN OPTION — MUST ALWAYS BE THE LAST ITEM */}
@@ -443,9 +444,9 @@ const Header = () => {
                 onClick={() => setDrawerOpen(false)}
               >
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800 }}>
-                  <Shield size={18} color="var(--text-dark)" /> 🔐 ADMIN
+                  <Shield size={18} color="currentColor" /> 🔐 ADMIN
                 </span>
-                <ArrowRight size={16} color="var(--text-dark)" />
+                <ArrowRight size={16} color="currentColor" />
               </Link>
             </div>
           </div>

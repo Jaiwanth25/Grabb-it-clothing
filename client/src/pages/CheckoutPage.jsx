@@ -684,9 +684,11 @@ const CheckoutPage = () => {
                 justifyContent: 'center', 
                 cursor: 'pointer' 
               }}
+              className="modal-close-btn"
               title="Close"
+              aria-label="Close QR Modal"
             >
-              <X size={20} color="#000000" />
+              <X size={20} color="currentColor" />
             </button>
 
             <h3 style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', fontFamily: 'var(--font-title)', letterSpacing: '0.5px', marginBottom: '0.25rem', color: '#000000' }}>

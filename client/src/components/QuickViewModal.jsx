@@ -119,14 +119,7 @@ const QuickViewModal = ({ product, onClose }) => {
                   {uniqueSizes.map((sz) => (
                     <button
                       key={sz}
-                      className={`btn-outline-gray ${selectedSize === sz ? 'active' : ''}`}
-                      style={{
-                        backgroundColor: selectedSize === sz ? '#000000' : '#ffffff',
-                        color: selectedSize === sz ? '#ffffff' : '#000000',
-                        borderColor: selectedSize === sz ? '#000000' : '#CCCCCC',
-                        minWidth: '42px',
-                        fontWeight: 800
-                      }}
+                      className={`size-selector-btn ${selectedSize === sz ? 'active' : ''}`}
                       onClick={() => setSelectedSize(sz)}
                     >
                       {sz}
@@ -144,13 +137,7 @@ const QuickViewModal = ({ product, onClose }) => {
                   {uniqueColors.map((col) => (
                     <button
                       key={col}
-                      className="btn-outline-gray"
-                      style={{
-                        backgroundColor: selectedColor === col ? '#000000' : '#ffffff',
-                        color: selectedColor === col ? '#ffffff' : '#000000',
-                        borderColor: selectedColor === col ? '#000000' : '#CCCCCC',
-                        fontWeight: 800
-                      }}
+                      className={`size-selector-btn ${selectedColor === col ? 'active' : ''}`}
                       onClick={() => setSelectedColor(col)}
                     >
                       {col}
@@ -186,8 +173,9 @@ const QuickViewModal = ({ product, onClose }) => {
                 className="btn-secondary"
                 style={{ padding: '0.75rem' }}
                 onClick={() => toggleWishlist(product.id)}
+                aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
               >
-                <Heart size={18} fill={isFavorite ? 'var(--color-magenta)' : 'none'} color={isFavorite ? 'var(--color-magenta)' : 'var(--color-maroon)'} />
+                <Heart size={18} fill={isFavorite ? '#e11d48' : 'none'} color={isFavorite ? '#e11d48' : 'currentColor'} />
               </button>
             </div>
 

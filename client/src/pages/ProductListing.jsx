@@ -240,14 +240,12 @@ const ProductListing = () => {
           {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(sz => (
             <button
               key={sz}
-              className="btn-outline-gray"
+              className={`size-selector-btn ${selectedSize === sz ? 'active' : ''}`}
               style={{
-                backgroundColor: selectedSize === sz ? '#000000' : '#ffffff',
-                color: selectedSize === sz ? '#ffffff' : '#000000',
-                borderColor: selectedSize === sz ? '#000000' : 'var(--border-light)',
-                padding: '0.4rem 0.75rem',
-                fontSize: '0.75rem',
-                fontWeight: 700
+                minWidth: '38px',
+                height: '36px',
+                padding: '0 0.5rem',
+                fontSize: '0.75rem'
               }}
               onClick={() => setSelectedSize(selectedSize === sz ? '' : sz)}
             >
@@ -442,8 +440,8 @@ const ProductListing = () => {
                 {(selectedCategory || selectedCollection || selectedSize || selectedColor || minPrice || maxPrice || selectedDiscount || selectedRating || inStockOnly) && (
                   <button onClick={clearAllFilters} style={{ fontSize: '0.75rem', color: 'var(--color-magenta)', fontWeight: 800 }}>RESET</button>
                 )}
-                <button onClick={() => setMobileFilterOpen(false)} className="icon-btn">
-                  <X size={20} color="var(--color-maroon)" />
+                <button onClick={() => setMobileFilterOpen(false)} className="icon-btn" aria-label="Close filters">
+                  <X size={20} color="currentColor" />
                 </button>
               </div>
             </div>

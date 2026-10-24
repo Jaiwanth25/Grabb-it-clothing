@@ -180,6 +180,85 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/sse', sseRoutes);
 
+// Newsletter Subscription API
+app.post('/api/newsletter', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ error: 'Email address is required.' });
+    }
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return res.status(400).json({ error: 'Please provide a valid email address.' });
+    }
+
+    try {
+      if (db.isPg) {
+        await db.query(
+          'INSERT INTO newsletter_subscribers (email) VALUES ($1) ON CONFLICT (email) DO NOTHING',
+          [cleanEmail]
+        );
+      } else {
+        await db.query(
+          'INSERT OR IGNORE INTO newsletter_subscribers (email) VALUES (?)',
+          [cleanEmail]
+        );
+      }
+    } catch (insertErr) {
+      console.warn('Newsletter insert warning:', insertErr.message);
+    }
+
+    return res.json({
+      success: true,
+      message: 'Welcome to the movement! Use code WELCOME15 for 15% off your first order.'
+    });
+  } catch (err) {
+    console.error('Newsletter Subscription Error:', err);
+    return res.status(500).json({ error: 'Failed to process subscription. Please try again.' });
+  }
+});
+
+// Contact Support Inquiry API
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, phone, orderId, subject, message } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Please provide your full name.' });
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+      return res.status(400).json({ error: 'Please provide a valid email address.' });
+    }
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: 'Please enter your message or inquiry.' });
+    }
+
+    try {
+      if (db.isPg) {
+        await db.query(
+          'INSERT INTO contact_inquiries (name, email, phone, order_id, subject, message) VALUES ($1, $2, $3, $4, $5, $6)',
+          [name.trim(), email.trim(), phone?.trim() || null, orderId?.trim() || null, subject?.trim() || 'General Inquiry', message.trim()]
+        );
+      } else {
+        await db.query(
+          'INSERT INTO contact_inquiries (name, email, phone, order_id, subject, message) VALUES (?, ?, ?, ?, ?, ?)',
+          [name.trim(), email.trim(), phone?.trim() || null, orderId?.trim() || null, subject?.trim() || 'General Inquiry', message.trim()]
+        );
+      }
+    } catch (insertErr) {
+      console.warn('Contact inquiry DB insert notice:', insertErr.message);
+    }
+
+    return res.json({
+      success: true,
+      message: 'Thank you for reaching out! Our customer care team will review your inquiry and respond within 24 business hours.'
+    });
+  } catch (err) {
+    console.error('Contact Form Submission Error:', err);
+    return res.status(500).json({ error: 'Failed to submit inquiry. Please try again later.' });
+  }
+});
+
 // Serve client static build in production
 const clientBuildPath = path.join(__dirname, '../client/dist');
 app.use(express.static(clientBuildPath));

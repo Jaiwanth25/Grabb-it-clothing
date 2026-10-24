@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -15,6 +15,17 @@ import { Login, Register } from './pages/AuthPages';
 import AdminLogin from './admin/AdminLogin';
 import AdminDashboard from './admin/AdminDashboard';
 
+// Information & Legal Pages
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import ShippingPage from './pages/ShippingPage';
+import ReturnsPage from './pages/ReturnsPage';
+import FAQPage from './pages/FAQPage';
+import SizeGuidePage from './pages/SizeGuidePage';
+import CareersPage from './pages/CareersPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
+
 // Context Providers
 import { GenderProvider } from './context/GenderContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -22,6 +33,14 @@ import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 
 import ErrorBoundary from './components/ErrorBoundary';
+
+function ScrollToTop() {
+  const { pathname, search } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname, search]);
+  return null;
+}
 
 function Layout({ children }) {
   return (
@@ -72,6 +91,7 @@ function App() {
         <GenderProvider>
           <CartProvider>
             <WishlistProvider>
+              <ScrollToTop />
               <Routes>
                 {/* Customer Routes with Header & Footer */}
                 <Route path="/" element={<Layout><Home /></Layout>} />
@@ -88,6 +108,19 @@ function App() {
                 <Route path="/account" element={<Layout><AccountPage /></Layout>} />
                 <Route path="/login" element={<Layout><Login /></Layout>} />
                 <Route path="/register" element={<Layout><Register /></Layout>} />
+
+                {/* Information, Support & Legal Pages */}
+                <Route path="/about" element={<Layout><AboutPage /></Layout>} />
+                <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
+                <Route path="/shipping" element={<Layout><ShippingPage /></Layout>} />
+                <Route path="/returns" element={<Layout><ReturnsPage /></Layout>} />
+                <Route path="/faq" element={<Layout><FAQPage /></Layout>} />
+                <Route path="/size-guide" element={<Layout><SizeGuidePage /></Layout>} />
+                <Route path="/careers" element={<Layout><CareersPage /></Layout>} />
+                <Route path="/privacy-policy" element={<Layout><PrivacyPolicyPage /></Layout>} />
+                <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
+                <Route path="/terms" element={<Layout><TermsPage /></Layout>} />
+                <Route path="/terms-of-service" element={<Navigate to="/terms" replace />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<Layout><AdminLogin /></Layout>} />

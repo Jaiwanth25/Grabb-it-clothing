@@ -366,23 +366,12 @@ const ProductDetails = () => {
                   return (
                     <button
                       key={sz}
-                      disabled={!selectedColor}
-                      className="btn-outline-gray"
+                      disabled={!selectedColor || !sizeAvailable}
+                      className={`size-selector-btn ${isSelected ? 'active' : ''}`}
                       style={{
-                        backgroundColor: isSelected ? '#000000' : '#ffffff',
-                        color: isSelected ? '#ffffff' : sizeAvailable ? '#000000' : '#888888',
-                        borderColor: isSelected ? '#000000' : sizeAvailable ? '#CCCCCC' : '#E5E5E5',
-                        borderWidth: isSelected ? '2px' : '1px',
-                        boxShadow: isSelected ? '0 4px 12px rgba(0,0,0,0.2)' : 'none',
                         minWidth: '52px',
                         height: '46px',
-                        fontWeight: 800,
-                        fontSize: '0.88rem',
-                        borderRadius: '8px',
-                        textDecoration: sizeAvailable ? 'none' : 'line-through',
-                        opacity: sizeAvailable ? 1 : 0.4,
-                        cursor: sizeAvailable ? 'pointer' : 'not-allowed',
-                        transition: 'all 150ms ease'
+                        textDecoration: sizeAvailable ? 'none' : 'line-through'
                       }}
                       onClick={() => sizeAvailable && setSelectedSize(sz)}
                     >
@@ -450,8 +439,9 @@ const ProductDetails = () => {
               className="btn-secondary"
               style={{ width: '52px', height: '52px', padding: 0 }}
               onClick={() => toggleWishlist(product.id)}
+              aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
             >
-              <Heart size={20} fill={isFavorite ? 'var(--color-magenta)' : 'none'} color={isFavorite ? 'var(--color-magenta)' : 'var(--color-maroon)'} />
+              <Heart size={20} fill={isFavorite ? '#e11d48' : 'none'} color={isFavorite ? '#e11d48' : 'currentColor'} />
             </button>
           </div>
 

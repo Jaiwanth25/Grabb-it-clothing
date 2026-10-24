@@ -201,6 +201,12 @@ input, select, textarea {
   transform: translateY(-2px);
 }
 
+.btn-primary:hover svg,
+.btn-primary:focus-visible svg {
+  stroke: #000000 !important;
+  color: #000000 !important;
+}
+
 .btn-secondary {
   background-color: #FFFFFF;
   color: #000000;
@@ -222,6 +228,12 @@ input, select, textarea {
   background-color: #000000;
   color: #FFFFFF;
   transform: translateY(-2px);
+}
+
+.btn-secondary:hover svg,
+.btn-secondary:focus-visible svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
 }
 
 .btn-saffron {
@@ -247,6 +259,12 @@ input, select, textarea {
   transform: translateY(-2px);
 }
 
+.btn-saffron:hover svg,
+.btn-saffron:focus-visible svg {
+  stroke: #000000 !important;
+  color: #000000 !important;
+}
+
 @media (max-width: 768px) {
   .btn-primary, .btn-secondary, .btn-saffron {
     padding: 0.75rem 1.6rem;
@@ -267,15 +285,64 @@ input, select, textarea {
 }
 
 .btn-outline-gray:hover {
-  border-color: #000000;
-  background-color: #000000;
-  color: #FFFFFF;
+  border-color: #000000 !important;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+.btn-outline-gray:hover svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
 }
 
 .btn-outline-gray.active {
   border-color: #000000 !important;
   background-color: #000000 !important;
   color: #FFFFFF !important;
+}
+
+.btn-outline-gray.active svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
+}
+
+/* Dedicated Streetwear Size Selector Pill */
+.size-selector-btn {
+  min-width: 45px;
+  height: 45px;
+  padding: 0 0.75rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-medium);
+  background-color: #FFFFFF;
+  color: #000000;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.size-selector-btn:hover {
+  border-color: #000000 !important;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+
+.size-selector-btn.active {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border-color: #000000 !important;
+}
+
+.size-selector-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background-color: #F5F5F5;
+  color: #888888;
+  border-color: #E5E5E5;
 }
 
 /* Nav Links */
@@ -295,9 +362,19 @@ input, select, textarea {
   background-color: #000000;
 }
 
+.gender-btn:hover svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
+}
+
 .gender-btn.active {
   color: #FFFFFF;
   background-color: #000000;
+}
+
+.gender-btn.active svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
 }
 
 .icon-btn {
@@ -309,11 +386,18 @@ input, select, textarea {
   color: #000000;
   transition: all 0.2s ease;
   border-radius: 50%;
+  cursor: pointer;
 }
 
 .icon-btn:hover {
   background-color: #000000;
   color: #FFFFFF;
+}
+
+.icon-btn:hover svg,
+.icon-btn:focus-visible svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
 }
 
 /* Badges */
@@ -1130,8 +1214,15 @@ input, select, textarea {
 }
 
 .modal-close-btn:hover {
-  background-color: var(--color-primary);
+  background-color: #000000;
+  color: #FFFFFF !important;
   transform: scale(1.05);
+}
+
+.modal-close-btn:hover svg,
+.modal-close-btn:focus-visible svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
 }
 
 /* Signature Carnival Section */
@@ -1348,26 +1439,56 @@ input, select, textarea {
 }
 
 .footer-links a {
-  color: #e2d5e3;
+  color: #d4c8b8;
   font-size: 0.92rem;
   font-weight: 600;
   transition: color 200ms ease, padding-left 200ms ease;
+  text-decoration: none;
 }
 
 .footer-links a:hover {
-  color: var(--color-primary);
+  color: #f59e0b !important;
   padding-left: 6px;
 }
 
+.footer-links a:focus-visible {
+  outline: 2px solid #f59e0b !important;
+  outline-offset: 3px;
+  color: #f59e0b !important;
+}
+
+.footer-social-icon {
+  color: var(--color-turmeric);
+  transition: transform 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+}
+
+.footer-social-icon:hover {
+  transform: translateY(-2px);
+  color: #ffffff !important;
+}
+
 .footer-bottom {
-  border-top: 1px solid rgba(255, 179, 193, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
   padding-top: 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 0.88rem;
-  color: #b8a6ba;
+  color: #d4c8b8;
   font-weight: 600;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-bottom a {
+  color: #d4c8b8;
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.footer-bottom a:hover {
+  color: #f59e0b !important;
 }
 
 /* Color Swatches Grid */
@@ -1532,10 +1653,17 @@ input, select, textarea {
   text-decoration: none;
 }
 
-.drawer-nav-item:hover {
-  background-color: var(--color-primary);
-  color: var(--text-dark);
+.drawer-nav-item:hover,
+.drawer-nav-item:focus-visible {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
   transform: translateX(4px);
+}
+
+.drawer-nav-item:hover svg,
+.drawer-nav-item:focus-visible svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
 }
 
 /* Admin Section Separator & Fixed Item */
@@ -2202,6 +2330,280 @@ html, body {
   }
 }
 
+/* Accessibility Keyboard Focus Indicators */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #f59e0b !important;
+  outline-offset: 2px !important;
+}
 
+/* Category Card Content Hover Contrast */
+.category-card:hover .category-card-content {
+  background: #000000;
+  color: #FFFFFF;
+  border-color: #000000;
+}
 
+.category-card:hover .category-card-content .category-card-title {
+  color: #FFFFFF;
+}
 
+.category-card:hover .category-card-content svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   LEGAL & INFORMATION PAGES STYLING (Streetwear Aesthetic)
+   ========================================================================== */
+
+.info-page-header {
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #000000;
+}
+
+.info-page-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.info-page-title {
+  font-family: var(--font-title);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: #000000;
+  line-height: 1.1;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.info-page-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 720px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.info-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2.5rem 0;
+}
+
+.info-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--border-light);
+  border-radius: 16px;
+  padding: 1.75rem;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  border-color: #000000;
+  box-shadow: var(--shadow-hover);
+}
+
+.info-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: #000000;
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.info-card-title {
+  font-family: var(--font-title);
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.info-card-text {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.info-content-block {
+  margin-bottom: 3rem;
+}
+
+.info-section-title {
+  font-family: var(--font-title);
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #000000;
+  margin: 2rem 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.info-prose {
+  font-size: 0.98rem;
+  color: #333333;
+  line-height: 1.75;
+}
+
+.info-prose p {
+  margin-bottom: 1.25rem;
+}
+
+.info-prose ul, .info-prose ol {
+  margin: 1rem 0 1.5rem 1.5rem;
+}
+
+.info-prose li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.info-callout {
+  background-color: var(--bg-subtle);
+  border-left: 4px solid #000000;
+  border-radius: 0 12px 12px 0;
+  padding: 1.25rem 1.5rem;
+  margin: 1.75rem 0;
+  font-size: 0.92rem;
+  color: #222222;
+  line-height: 1.6;
+}
+
+.info-callout.gold {
+  border-left-color: #f59e0b;
+  background-color: #FFFBEB;
+}
+
+/* FAQ Accordion Styling */
+.faq-item {
+  border: 1.5px solid var(--border-light);
+  border-radius: 14px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  background-color: #FFFFFF;
+  transition: border-color 0.2s ease;
+}
+
+.faq-item.open {
+  border-color: #000000;
+}
+
+.faq-question-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  font-family: var(--font-title);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #000000;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.faq-question-btn:hover {
+  background-color: var(--bg-subtle);
+}
+
+.faq-answer-panel {
+  padding: 0 1.5rem 1.25rem 1.5rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* Size Guide Table Responsive Styling */
+.size-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0 2.5rem 0;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-light);
+}
+
+.size-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.92rem;
+  min-width: 540px;
+}
+
+.size-table th {
+  background-color: #000000;
+  color: #FFFFFF;
+  padding: 1rem 1.25rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.size-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-light);
+  color: #111111;
+  font-weight: 600;
+}
+
+.size-table tr:last-child td {
+  border-bottom: none;
+}
+
+.size-table tr:nth-child(even) {
+  background-color: #FAFAFA;
+}
+
+/* Contact Form Styling */
+.contact-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .contact-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-animation {
+  animation: spin 0.8s linear infinite;
+}

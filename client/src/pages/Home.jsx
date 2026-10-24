@@ -125,7 +125,7 @@ const Home = () => {
               />
               <div className="category-card-content">
                 <span className="category-card-title">{style.name}</span>
-                <ArrowRight size={18} color="var(--text-dark)" />
+                <ArrowRight size={18} color="currentColor" />
               </div>
             </Link>
           ))}
