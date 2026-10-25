@@ -12,13 +12,12 @@ class DBAbstraction {
       try {
         this.pool = new Pool({
           connectionString: databaseUrl,
-          connectionTimeoutMillis: 5000,
-          ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+          connectionTimeoutMillis: 10000,
+          ssl: databaseUrl.includes('localhost') || databaseUrl.includes('127.0.0.1') ? false : { rejectUnauthorized: false }
         });
+        this.initPgDb();
         this.pool.on('error', (err) => {
-          console.warn('PostgreSQL pool error, falling back to SQLite:', err.message);
-          this.isPg = false;
-          this.ensureSqlite();
+          console.warn('PostgreSQL pool error:', err.message);
         });
       } catch (err) {
         console.warn('Failed to initialize PostgreSQL pool, falling back to SQLite:', err.message);
@@ -26,6 +25,20 @@ class DBAbstraction {
       }
     }
     this.ensureSqlite();
+  }
+
+  async initPgDb() {
+    if (!this.isPg || !this.pool) return;
+    try {
+      const schemaPath = path.join(__dirname, 'schema_pg.sql');
+      if (fs.existsSync(schemaPath)) {
+        const schemaSql = fs.readFileSync(schemaPath, 'utf-8');
+        await this.pool.query(schemaSql);
+        console.log('PostgreSQL production schema initialized successfully.');
+      }
+    } catch (err) {
+      console.warn('PostgreSQL schema initialization notice:', err.message);
+    }
   }
 
   ensureSqlite() {
