@@ -80,7 +80,7 @@ const ReturnsPage = () => {
               <Link to="/account" style={{ color: '#000000', fontWeight: 800, textDecoration: 'underline' }}>
                 My Account &gt; Order History
               </Link>{' '}
-              or contact support directly via WhatsApp at <strong>+91 99999 88888</strong> or email at <strong>support@grabb-it.com</strong> with your Order ID and photos if necessary.
+              or contact support directly via WhatsApp at <strong>+91 78718 32815</strong> or email at <strong>grabbitmensclothing@gmail.com</strong> with your Order ID and photos if necessary.
             </li>
             <li>
               <strong>Reverse Pickup Scheduling:</strong> Once verified, our logistics team assigns a reverse pickup. Please keep the item folded in its original GRABB-IT garment bag with tags attached.

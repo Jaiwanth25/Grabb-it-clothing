@@ -52,6 +52,9 @@ function Layout({ children }) {
   );
 }
 
+const ADMIN_PORTAL_PATH = (import.meta.env.VITE_ADMIN_PATH || '/manage-store-sec26').replace(/\/+$/, '');
+const ADMIN_LOGIN_PATH = `${ADMIN_PORTAL_PATH}/login`;
+
 function ProtectedAdminRoute({ children }) {
   const { user, token, loading } = useAuth();
   
@@ -74,7 +77,7 @@ function ProtectedAdminRoute({ children }) {
   }
 
   if (!currentToken || !currentUser) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to={ADMIN_LOGIN_PATH} replace />;
   }
 
   if (currentUser.role !== 'admin') {
@@ -122,10 +125,19 @@ function App() {
                 <Route path="/terms" element={<Layout><TermsPage /></Layout>} />
                 <Route path="/terms-of-service" element={<Navigate to="/terms" replace />} />
 
-                {/* Admin Routes */}
-                <Route path="/admin/login" element={<Layout><AdminLogin /></Layout>} />
-                <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
-                <Route path="/admin/*" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+                {/* Unique Configured Admin Routes */}
+                <Route path={ADMIN_LOGIN_PATH} element={<Layout><AdminLogin /></Layout>} />
+                <Route path={ADMIN_PORTAL_PATH} element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+                <Route path={`${ADMIN_PORTAL_PATH}/*`} element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+
+                {/* Legacy public admin routes safely neutralized to home */}
+                {ADMIN_PORTAL_PATH !== '/admin' && (
+                  <>
+                    <Route path="/admin/login" element={<Navigate to="/" replace />} />
+                    <Route path="/admin" element={<Navigate to="/" replace />} />
+                    <Route path="/admin/*" element={<Navigate to="/" replace />} />
+                  </>
+                )}
 
                 {/* 404 Catch All */}
                 <Route path="*" element={<Navigate to="/" replace />} />

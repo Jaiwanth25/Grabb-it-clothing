@@ -8,9 +8,14 @@ const { startReservationCleanupScheduler } = require('./services/stock_reservati
 
 dotenv.config();
 
-// Startup validation
+// Mandatory Startup Security Validation
 if (!process.env.JWT_SECRET) {
-  console.warn('NOTICE: JWT_SECRET environment variable is using fallback secret key.');
+  if (process.env.NODE_ENV === 'production') {
+    console.error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing in production. Halting process to prevent token forgery.');
+    process.exit(1);
+  } else {
+    console.warn('DEVELOPMENT NOTICE: JWT_SECRET environment variable is unset. Using development key.');
+  }
 }
 
 const app = express();
@@ -75,6 +80,36 @@ try {
   app.use('/api/auth/login', authLimiter);
   app.use('/api/auth/register', authLimiter);
   app.use('/api/auth/forgot-password', authLimiter);
+
+  // Dedicated limiters for public forms and sensitive operations
+  const formLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20, // 20 submissions per 15 min per IP to prevent spam bot flooding
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many submissions from this IP. Please try again later.' }
+  });
+  app.use('/api/newsletter', formLimiter);
+  app.use('/api/contact', formLimiter);
+
+  const checkoutLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 120, // 120 requests per 15 min
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Order/payment processing limit reached. Please wait a moment before trying again.' }
+  });
+  app.use('/api/orders', checkoutLimiter);
+  app.use('/api/payments', checkoutLimiter);
+
+  const adminLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 600, // 600 admin requests per 15 min per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Administrative request limit reached. Please wait a moment.' }
+  });
+  app.use('/api/admin', adminLimiter);
 } catch (e) {
   console.warn('Rate limiting warning:', e.message);
 }
@@ -121,9 +156,9 @@ app.get('/api/settings', async (req, res) => {
     
     const defaultSettings = {
       storeName: 'GRABB-IT CLOTHING',
-      storeEmail: 'support@grabb-it.com',
-      phone: '+91 98765 43210',
-      whatsappNumber: '+91 99999 88888',
+      storeEmail: 'grabbitmensclothing@gmail.com',
+      phone: '+91 78718 32815',
+      whatsappNumber: '+91 78718 32815',
       freeShippingThreshold: '999',
       freeShippingMessage: 'FESTIVE DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF',
       instagramUrl: 'https://instagram.com/grabb_it_clothing',
@@ -138,7 +173,9 @@ app.get('/api/settings', async (req, res) => {
     console.error('Fetch Public Settings Error:', err);
     res.json({
       storeName: 'GRABB-IT CLOTHING',
-      whatsappNumber: '+91 99999 88888',
+      storeEmail: 'grabbitmensclothing@gmail.com',
+      phone: '+91 78718 32815',
+      whatsappNumber: '+91 78718 32815',
       freeShippingThreshold: '999',
       freeShippingMessage: 'FESTIVE DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF'
     });
@@ -292,23 +329,39 @@ const bcrypt = require('bcryptjs');
 
 async function ensureAdminUser() {
   try {
-    const admin = await db.queryOne("SELECT id, email, password_hash, role FROM users WHERE email = 'admin@grabb-it.com'");
-    const adminPasswordHash = bcrypt.hashSync('Admin@123456', 10);
+    const adminEmail = (process.env.ADMIN_EMAIL || 'grabbitmensclothing@gmail.com').toLowerCase().trim();
+    const adminPhone = process.env.ADMIN_PHONE || '7871832815';
     
+    // Check if store owner admin account exists
+    let admin = await db.queryOne("SELECT id, email, password_hash, role FROM users WHERE LOWER(email) = ?", [adminEmail]);
+
+    // Check if legacy demo admin exists to migrate
     if (!admin) {
-      console.log('Admin user missing. Creating default admin@grabb-it.com...');
+      const legacyAdmin = await db.queryOne("SELECT id, email, password_hash, role FROM users WHERE email = 'admin@grabb-it.com'");
+      if (legacyAdmin) {
+        await db.run("UPDATE users SET email = ?, phone = ?, role = 'admin' WHERE id = ?", [adminEmail, adminPhone, legacyAdmin.id]);
+        admin = await db.queryOne("SELECT id, email, password_hash, role FROM users WHERE id = ?", [legacyAdmin.id]);
+        console.log('Migrated legacy admin user to official store owner account.');
+      }
+    }
+
+    if (!admin) {
+      const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || 'GrabbIt@Secure2026!';
+      const adminPasswordHash = bcrypt.hashSync(initialPassword, 10);
       await db.insert(`
         INSERT INTO users (name, email, password_hash, role, phone)
-        VALUES ('Grabb-It Admin', 'admin@grabb-it.com', ?, 'admin', '+18005550199')
-      `, [adminPasswordHash]);
-      console.log('Default admin user created successfully.');
+        VALUES ('GRABB-IT Admin', ?, ?, 'admin', ?)
+      `, [adminEmail, adminPasswordHash, adminPhone]);
+      console.log('Store owner admin account initialized.');
     } else {
-      // Always ensure password_hash and role are valid
-      await db.run("UPDATE users SET password_hash = ?, role = 'admin' WHERE email = 'admin@grabb-it.com'", [adminPasswordHash]);
-      console.log('Admin credentials verified & synchronized (admin@grabb-it.com / Admin@123456).');
+      // Ensure user has admin role
+      if (admin.role !== 'admin') {
+        await db.run("UPDATE users SET role = 'admin' WHERE id = ?", [admin.id]);
+      }
+      console.log('Store owner admin account verified.');
     }
   } catch (err) {
-    console.warn('Auto-admin verification notice:', err.message);
+    console.warn('Admin account verification notice:', err.message);
   }
 }
 

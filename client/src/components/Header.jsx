@@ -214,10 +214,10 @@ const Header = () => {
             />
           </form>
 
-          {/* Admin Portal shortcut for Admin Users */}
+          {/* Admin Portal shortcut for Authenticated Admin Users only */}
           {(user?.role === 'admin' || isAdmin) && (
             <Link 
-              to="/admin" 
+              to={import.meta.env.VITE_ADMIN_PATH || '/manage-store-sec26'} 
               className="icon-btn" 
               title="Admin Dashboard"
               style={{ position: 'relative' }}
@@ -436,18 +436,22 @@ const Header = () => {
                 <ArrowRight size={16} color="currentColor" />
               </Link>
 
-              {/* ADMIN OPTION — MUST ALWAYS BE THE LAST ITEM */}
-              <div className="drawer-admin-divider" />
-              <Link 
-                to={user?.role === 'admin' ? "/admin" : "/admin/login"} 
-                className="drawer-nav-item drawer-admin-item" 
-                onClick={() => setDrawerOpen(false)}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800 }}>
-                  <Shield size={18} color="currentColor" /> 🔐 ADMIN
-                </span>
-                <ArrowRight size={16} color="currentColor" />
-              </Link>
+              {/* ADMIN OPTION — ONLY VISIBLE TO AUTHENTICATED ADMINISTRATORS */}
+              {(user?.role === 'admin' || isAdmin) && (
+                <>
+                  <div className="drawer-admin-divider" />
+                  <Link 
+                    to={import.meta.env.VITE_ADMIN_PATH || '/manage-store-sec26'} 
+                    className="drawer-nav-item drawer-admin-item" 
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800 }}>
+                      <Shield size={18} color="currentColor" /> 🔐 ADMIN
+                    </span>
+                    <ArrowRight size={16} color="currentColor" />
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </>,

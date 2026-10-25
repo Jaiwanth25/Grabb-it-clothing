@@ -134,7 +134,7 @@ const CareersPage = () => {
                   </div>
                 </div>
                 <a
-                  href={`mailto:careers@grabb-it.com?subject=Application for ${encodeURIComponent(job.title)}`}
+                  href={`mailto:grabbitmensclothing@gmail.com?subject=Application for ${encodeURIComponent(job.title)}`}
                   className="btn btn-secondary"
                   style={{
                     display: 'inline-flex',
@@ -175,7 +175,7 @@ const CareersPage = () => {
         </p>
         <div style={{ display: 'inline-block', backgroundColor: '#0a0a0a', padding: '0.75rem 1.5rem', borderRadius: '8px', border: '1px solid #333', marginBottom: '1.5rem' }}>
           <span style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>Official Hiring Email: </span>
-          <strong style={{ color: '#f59e0b', fontSize: '1rem', letterSpacing: '0.04em' }}>careers@grabb-it.com</strong>
+          <strong style={{ color: '#f59e0b', fontSize: '1rem', letterSpacing: '0.04em' }}>grabbitmensclothing@gmail.com</strong>
         </div>
         <div>
           <Link to="/about" style={{ color: '#AAAAAA', fontSize: '0.85rem', textDecoration: 'underline' }}>

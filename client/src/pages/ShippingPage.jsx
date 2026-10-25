@@ -119,7 +119,7 @@ const ShippingPage = () => {
         </h2>
         <div className="info-prose">
           <p>
-            <strong>Inspect Before Accepting:</strong> All GRABB-IT shipments are secured with tamper-evident packaging. In the unlikely event that your package arrives visibly torn, opened, or resealed, please photograph the parcel and refuse delivery, or contact customer care immediately at <a href="mailto:support@grabb-it.com" style={{ color: '#000000', fontWeight: 800 }}>support@grabb-it.com</a> within 24 hours.
+            <strong>Inspect Before Accepting:</strong> All GRABB-IT shipments are secured with tamper-evident packaging. In the unlikely event that your package arrives visibly torn, opened, or resealed, please photograph the parcel and refuse delivery, or contact customer care immediately at <a href="mailto:grabbitmensclothing@gmail.com" style={{ color: '#000000', fontWeight: 800 }}>grabbitmensclothing@gmail.com</a> within 24 hours.
           </p>
           <p>
             <strong>Severe Weather &amp; Transit Delays:</strong> Delivery times may occasionally be extended due to regional weather disruptions, logistical strikes, or high-volume festive seasons (Diwali, New Year, Independence Day drops). Our team proactively monitors all delayed consignments.

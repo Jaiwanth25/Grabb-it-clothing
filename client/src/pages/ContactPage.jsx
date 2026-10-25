@@ -117,10 +117,10 @@ const ContactPage = () => {
             For order inquiries, returns, and general questions:
           </p>
           <a 
-            href="mailto:support@grabb-it.com" 
+            href="mailto:grabbitmensclothing@gmail.com" 
             style={{ color: '#000000', fontWeight: 800, textDecoration: 'underline', fontSize: '0.95rem' }}
           >
-            support@grabb-it.com
+            grabbitmensclothing@gmail.com
           </a>
         </div>
 
@@ -133,12 +133,12 @@ const ContactPage = () => {
             Instant order tracking &amp; exchange assistance:
           </p>
           <a 
-            href="https://wa.me/919999988888" 
+            href="https://wa.me/917871832815" 
             target="_blank" 
             rel="noopener noreferrer" 
             style={{ color: '#000000', fontWeight: 800, textDecoration: 'underline', fontSize: '0.95rem' }}
           >
-            +91 99999 88888
+            +91 78718 32815
           </a>
         </div>
 

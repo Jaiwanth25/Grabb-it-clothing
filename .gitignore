@@ -8,6 +8,15 @@ client/dist/
 
 # Local Environment & Database Files
 .env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+*.cert
+*.p12
+*.sqlite
+*.sqlite3
 .DS_Store
 *.log
 npm-debug.log*

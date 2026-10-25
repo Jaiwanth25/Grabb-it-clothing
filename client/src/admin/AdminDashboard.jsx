@@ -91,9 +91,9 @@ const AdminDashboard = () => {
 
   const [settingsForm, setSettingsForm] = useState({
     storeName: 'GRABB-IT CLOTHING',
-    storeEmail: 'support@grabb-it.com',
-    phone: '+91 98765 43210',
-    whatsappNumber: '+91 99999 88888',
+    storeEmail: 'grabbitmensclothing@gmail.com',
+    phone: '+91 78718 32815',
+    whatsappNumber: '+91 78718 32815',
     freeShippingThreshold: '999',
     freeShippingMessage: 'FESTIVE DROP: FREE EXPRESS SHIPPING ABOVE ₹999 • USE CODE: GRABB10 FOR 10% OFF',
     instagramUrl: 'https://instagram.com/grabb_it_clothing',
@@ -117,12 +117,14 @@ const AdminDashboard = () => {
     payment_instructions: 'After making payment, please note down your UTR / Transaction Reference Number and enter it during checkout.'
   });
 
+  const adminLoginPath = `${(import.meta.env.VITE_ADMIN_PATH || '/manage-store-sec26').replace(/\/+$/, '')}/login`;
+
   // Verify Admin Access
   useEffect(() => {
     if (!token) {
-      navigate('/admin/login');
+      navigate(adminLoginPath);
     }
-  }, [token, navigate]);
+  }, [token, navigate, adminLoginPath]);
 
   const fetchData = async () => {
     if (!token) return;
@@ -723,7 +725,7 @@ const AdminDashboard = () => {
           <button
             onClick={() => {
               logout();
-              navigate('/admin/login');
+              navigate(adminLoginPath);
             }}
             className="btn-secondary"
             style={{ width: '100%', padding: '0.65rem', fontSize: '0.82rem' }}
@@ -763,7 +765,7 @@ const AdminDashboard = () => {
               <RefreshCw size={14} /> Refresh Data
             </button>
             <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>
-              Shop Owner: <span style={{ color: 'var(--text-dark)' }}>{user?.email || 'admin@grabb-it.com'}</span>
+              Shop Owner: <span style={{ color: 'var(--text-dark)' }}>{user?.email || 'grabbitmensclothing@gmail.com'}</span>
             </div>
           </div>
         </header>

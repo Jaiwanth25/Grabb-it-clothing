@@ -5,8 +5,8 @@ import { getApiUrl } from '../services/api';
 import { ShieldCheck, KeyRound, ArrowRight, Sparkles, CheckCircle2, Lock } from 'lucide-react';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('admin@grabb-it.com');
-  const [password, setPassword] = useState('Admin@123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -14,11 +14,7 @@ const AdminLogin = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleAutoFill = () => {
-    setEmail('admin@grabb-it.com');
-    setPassword('Admin@123456');
-    setError('');
-  };
+  const adminPath = import.meta.env.VITE_ADMIN_PATH || '/manage-store-sec26';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,11 +53,11 @@ const AdminLogin = () => {
 
         setSuccessMsg('AUTHENTICATED! OPENING DASHBOARD...');
         login(data.user, data.token);
-        navigate('/admin', { replace: true });
+        navigate(adminPath, { replace: true });
         return;
       }
 
-      throw new Error(data.error || 'Invalid Admin credentials. Use admin@grabb-it.com / Admin@123456');
+      throw new Error(data.error || 'Invalid credentials or unauthorized account.');
 
     } catch (err) {
       setError(err.message || 'Authentication error. Please try again.');
@@ -104,47 +100,6 @@ const AdminLogin = () => {
         padding: '2.25rem 2rem',
         boxShadow: '0 12px 40px rgba(0,0,0,0.08)'
       }}>
-        
-        {/* Quick Auto-Fill Banner */}
-        <div style={{
-          backgroundColor: '#F5F5F5',
-          border: '1px solid #E5E5E5',
-          borderRadius: '16px',
-          padding: '0.85rem 1rem',
-          marginBottom: '1.75rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '0.5rem'
-        }}>
-          <div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', color: '#000000', letterSpacing: '0.5px' }}>
-              🔑 DEMO ADMIN ACCESS
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#666666', marginTop: '0.1rem' }}>
-              admin@grabb-it.com / Admin@123456
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleAutoFill}
-            style={{
-              backgroundColor: '#000000',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '9999px',
-              padding: '0.4rem 0.85rem',
-              fontSize: '0.72rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              letterSpacing: '0.5px',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            AUTO-FILL
-          </button>
-        </div>
-
         <form onSubmit={handleSubmit}>
           <div className="form-group" style={{ marginBottom: '1.25rem' }}>
             <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 800, letterSpacing: '1px', color: '#000000', textTransform: 'uppercase' }}>
@@ -154,7 +109,7 @@ const AdminLogin = () => {
               <input
                 type="email"
                 className="form-input"
-                placeholder="admin@grabb-it.com"
+                placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

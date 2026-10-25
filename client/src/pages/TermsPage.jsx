@@ -133,7 +133,7 @@ const TermsPage = () => {
             11. Inquiries & Legal Contact
           </h2>
           <p style={{ color: '#CCCCCC', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-            If you have any questions or require legal clarification regarding these Terms, please reach out to our team at <a href="mailto:support@grabb-it.com" style={{ color: '#f59e0b', textDecoration: 'underline' }}>support@grabb-it.com</a> or via our <Link to="/contact" style={{ color: '#f59e0b', textDecoration: 'underline' }}>Contact Form</Link>.
+            If you have any questions or require legal clarification regarding these Terms, please reach out to our team at <a href="mailto:grabbitmensclothing@gmail.com" style={{ color: '#f59e0b', textDecoration: 'underline' }}>grabbitmensclothing@gmail.com</a> or via our <Link to="/contact" style={{ color: '#f59e0b', textDecoration: 'underline' }}>Contact Form</Link>.
           </p>
         </section>
 

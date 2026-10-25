@@ -30,7 +30,7 @@ const FAQPage = () => {
     {
       category: 'orders',
       question: 'Can I cancel or modify my order after placing it?',
-      answer: 'Orders can be modified or cancelled within 2 hours of placement or before they are dispatched from our warehouse. Contact our support team immediately at support@grabb-it.com with your Order ID for assistance.'
+      answer: 'Orders can be modified or cancelled within 2 hours of placement or before they are dispatched from our warehouse. Contact our support team immediately at grabbitmensclothing@gmail.com with your Order ID for assistance.'
     },
     {
       category: 'shipping',
@@ -55,7 +55,7 @@ const FAQPage = () => {
     {
       category: 'returns',
       question: 'How do I initiate a return or exchange?',
-      answer: 'Visit our Returns & Exchanges page or email support@grabb-it.com with your Order ID, product details, and reason for return. Our courier partner will pick up the parcel from your doorstep within 48 to 72 hours.'
+      answer: 'Visit our Returns & Exchanges page or email grabbitmensclothing@gmail.com with your Order ID, product details, and reason for return. Our courier partner will pick up the parcel from your doorstep within 48 to 72 hours.'
     },
     {
       category: 'returns',

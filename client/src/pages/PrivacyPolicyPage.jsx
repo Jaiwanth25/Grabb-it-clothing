@@ -142,7 +142,7 @@ const PrivacyPolicyPage = () => {
           <div style={{ backgroundColor: '#141414', padding: '1.25rem', borderRadius: '8px', border: '1px solid #282828' }}>
             <p style={{ color: '#FFFFFF', fontWeight: '700', margin: '0 0 0.5rem 0' }}>Grievance Officer: Customer Support Lead</p>
             <p style={{ color: '#AAAAAA', fontSize: '0.9rem', margin: '0 0 0.5rem 0' }}>Company: GRABB-IT Clothing India</p>
-            <p style={{ color: '#AAAAAA', fontSize: '0.9rem', margin: '0 0 0.5rem 0' }}>Email: <a href="mailto:support@grabb-it.com" style={{ color: '#f59e0b' }}>support@grabb-it.com</a></p>
+            <p style={{ color: '#AAAAAA', fontSize: '0.9rem', margin: '0 0 0.5rem 0' }}>Email: <a href="mailto:grabbitmensclothing@gmail.com" style={{ color: '#f59e0b' }}>grabbitmensclothing@gmail.com</a></p>
             <p style={{ color: '#888888', fontSize: '0.8rem', margin: 0 }}>Response Time: Within 7 working days as prescribed under applicable laws.</p>
           </div>
         </section>
