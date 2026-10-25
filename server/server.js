@@ -1,12 +1,19 @@
+const path = require('path');
+const fs = require('fs');
+const dotenv = require('dotenv');
+
+// Load environment from .env.local (Neon) and server/.env
+const rootEnvPath = path.resolve(__dirname, '../.env.local');
+if (fs.existsSync(rootEnvPath)) {
+  dotenv.config({ path: rootEnvPath });
+}
+dotenv.config();
+
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const db = require('./database/db');
 const { startReservationCleanupScheduler } = require('./services/stock_reservation_cleanup');
-
-dotenv.config();
 
 // Mandatory Startup Security Validation
 if (!process.env.JWT_SECRET) {
@@ -339,14 +346,16 @@ async function ensureAdminUser() {
     if (!admin) {
       const legacyAdmin = await db.queryOne("SELECT id, email, password_hash, role FROM users WHERE email = 'admin@grabb-it.com'");
       if (legacyAdmin) {
-        await db.run("UPDATE users SET email = ?, phone = ?, role = 'admin' WHERE id = ?", [adminEmail, adminPhone, legacyAdmin.id]);
+        const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || 'Admin@123456';
+        const adminPasswordHash = bcrypt.hashSync(initialPassword, 10);
+        await db.run("UPDATE users SET email = ?, phone = ?, password_hash = ?, role = 'admin' WHERE id = ?", [adminEmail, adminPhone, adminPasswordHash, legacyAdmin.id]);
         admin = await db.queryOne("SELECT id, email, password_hash, role FROM users WHERE id = ?", [legacyAdmin.id]);
         console.log('Migrated legacy admin user to official store owner account.');
       }
     }
 
     if (!admin) {
-      const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || 'GrabbIt@Secure2026!';
+      const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || 'Admin@123456';
       const adminPasswordHash = bcrypt.hashSync(initialPassword, 10);
       await db.insert(`
         INSERT INTO users (name, email, password_hash, role, phone)

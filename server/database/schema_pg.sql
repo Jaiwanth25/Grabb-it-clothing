@@ -1,4 +1,4 @@
--- GRABB-IT PostgreSQL Production Schema
+-- GRABB-IT PostgreSQL Production Schema for Neon
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
   otp_attempts INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_single_admin ON users(role) WHERE role = 'admin';
 
 CREATE TABLE IF NOT EXISTS addresses (
   id SERIAL PRIMARY KEY,
@@ -48,7 +50,7 @@ CREATE TABLE IF NOT EXISTS products (
   slug VARCHAR(255) UNIQUE NOT NULL,
   description TEXT,
   gender VARCHAR(50) NOT NULL,
-  category_id INTEGER NOT NULL,
+  category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
   price NUMERIC(10, 2) NOT NULL,
   sale_price NUMERIC(10, 2),
   sku VARCHAR(100) UNIQUE NOT NULL,
@@ -62,8 +64,11 @@ CREATE TABLE IF NOT EXISTS products (
   is_sale INTEGER DEFAULT 0,
   is_limited INTEGER DEFAULT 0,
   custom_badge_text VARCHAR(100),
+  custom_badge_color VARCHAR(50),
   is_active INTEGER DEFAULT 1,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  display_order INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS product_images (
@@ -80,7 +85,7 @@ CREATE TABLE IF NOT EXISTS product_variants (
   product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   size VARCHAR(50) NOT NULL,
   color VARCHAR(50) NOT NULL,
-  color_hex VARCHAR(50),
+  color_hex VARCHAR(50) DEFAULT '#000000',
   stock INTEGER NOT NULL DEFAULT 0,
   reserved_stock INTEGER DEFAULT 0,
   sku VARCHAR(100) UNIQUE,
@@ -91,12 +96,17 @@ CREATE TABLE IF NOT EXISTS banners (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   subtitle TEXT,
-  image_url TEXT NOT NULL,
-  link_url TEXT,
+  button_text VARCHAR(100) DEFAULT 'SHOP NOW',
+  button_link VARCHAR(255) DEFAULT '/men',
   cta_text VARCHAR(100),
-  gender VARCHAR(50) NOT NULL,
+  link_url TEXT,
+  image_url TEXT NOT NULL,
+  mobile_image_url TEXT,
+  gender VARCHAR(50) DEFAULT 'men',
   display_order INTEGER DEFAULT 0,
   is_active INTEGER DEFAULT 1,
+  start_date TIMESTAMP,
+  end_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -112,14 +122,14 @@ CREATE TABLE IF NOT EXISTS orders (
   discount_amount NUMERIC(10, 2) DEFAULT 0,
   shipping_fee NUMERIC(10, 2) DEFAULT 0,
   total_amount NUMERIC(10, 2) NOT NULL,
-  payment_method VARCHAR(100) NOT NULL,
-  payment_status VARCHAR(50) DEFAULT 'PENDING_PAYMENT',
+  payment_method VARCHAR(100) NOT NULL DEFAULT 'Credit Card / UPI (Test Mode)',
+  payment_status VARCHAR(50) DEFAULT 'Paid',
   payment_reference TEXT,
   payment_proof_url TEXT,
   razorpay_order_id TEXT,
   razorpay_payment_id TEXT,
   razorpay_signature TEXT,
-  order_status VARCHAR(50) DEFAULT 'Placed',
+  order_status VARCHAR(50) DEFAULT 'Pending',
   courier VARCHAR(100),
   tracking_url TEXT,
   tracking_number VARCHAR(100),
@@ -141,7 +151,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   size VARCHAR(50) NOT NULL,
   color VARCHAR(50) NOT NULL,
   price NUMERIC(10, 2) NOT NULL,
-  quantity INTEGER NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
   image_url TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -174,7 +184,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   user_name VARCHAR(255) NOT NULL,
-  rating INTEGER NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   title VARCHAR(255),
   comment TEXT,
   image_url TEXT,
@@ -219,6 +229,8 @@ CREATE TABLE IF NOT EXISTS collections (
   banner_image TEXT,
   gender VARCHAR(50) NOT NULL DEFAULT 'men',
   is_active INTEGER DEFAULT 1,
+  start_date TIMESTAMP,
+  end_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -255,7 +267,8 @@ CREATE TABLE IF NOT EXISTS store_settings (
 CREATE TABLE IF NOT EXISTS payment_settings (
   setting_key VARCHAR(255) PRIMARY KEY,
   setting_value TEXT NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS styles (
@@ -284,4 +297,43 @@ CREATE TABLE IF NOT EXISTS contact_inquiries (
   subject VARCHAR(255),
   message TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS stock_reservations (
+  id SERIAL PRIMARY KEY,
+  order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
+  variant_id INTEGER NOT NULL REFERENCES product_variants(id) ON DELETE CASCADE,
+  quantity INTEGER NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'active',
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  action VARCHAR(255) NOT NULL,
+  entity_type VARCHAR(100) NOT NULL,
+  entity_id INTEGER,
+  details TEXT,
+  ip_address VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  is_read INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  refresh_token_hash TEXT NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  revoked INTEGER DEFAULT 0
 );

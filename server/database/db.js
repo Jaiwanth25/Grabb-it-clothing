@@ -3,7 +3,22 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const databaseUrl = process.env.DATABASE_URL;
+// Ensure environment variables are loaded immediately
+try {
+  const dotenv = require('dotenv');
+  const envLocalPath = path.resolve(__dirname, '../../.env.local');
+  const serverEnvPath = path.resolve(__dirname, '../.env');
+  if (fs.existsSync(envLocalPath)) {
+    dotenv.config({ path: envLocalPath });
+  }
+  if (fs.existsSync(serverEnvPath)) {
+    dotenv.config({ path: serverEnvPath });
+  }
+} catch (e) {
+  // Ignore if dotenv is not available
+}
+
+const databaseUrl = process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED;
 
 class DBAbstraction {
   constructor() {
@@ -134,10 +149,8 @@ class DBAbstraction {
         const res = await client.query(this.formatPgSql(sql), params);
         return res.rows;
       } catch (err) {
-        console.warn('PostgreSQL query error, falling back to SQLite:', err.message);
-        this.isPg = false;
-        this.ensureSqlite();
-        return this.sqliteDb.prepare(sql).all(...params);
+        console.error('PostgreSQL query error:', err.message, 'SQL:', sql);
+        throw err;
       }
     } else {
       this.ensureSqlite();
@@ -152,10 +165,8 @@ class DBAbstraction {
         const res = await client.query(this.formatPgSql(sql), params);
         return res.rows[0] || null;
       } catch (err) {
-        console.warn('PostgreSQL queryOne error, falling back to SQLite:', err.message);
-        this.isPg = false;
-        this.ensureSqlite();
-        return this.sqliteDb.prepare(sql).get(...params) || null;
+        console.error('PostgreSQL queryOne error:', err.message, 'SQL:', sql);
+        throw err;
       }
     } else {
       this.ensureSqlite();
@@ -170,11 +181,8 @@ class DBAbstraction {
         const res = await client.query(this.formatPgSql(sql), params);
         return { changes: res.rowCount, lastInsertRowid: null };
       } catch (err) {
-        console.warn('PostgreSQL run error, falling back to SQLite:', err.message);
-        this.isPg = false;
-        this.ensureSqlite();
-        const info = this.sqliteDb.prepare(sql).run(...params);
-        return { changes: info.changes, lastInsertRowid: info.lastInsertRowid };
+        console.error('PostgreSQL run error:', err.message, 'SQL:', sql);
+        throw err;
       }
     } else {
       this.ensureSqlite();
@@ -196,11 +204,8 @@ class DBAbstraction {
         const insertedId = insertedRow.id !== undefined ? insertedRow.id : Object.values(insertedRow)[0];
         return { changes: res.rowCount, lastInsertRowid: insertedId, id: insertedId, row: insertedRow };
       } catch (err) {
-        console.warn('PostgreSQL insert error, falling back to SQLite:', err.message);
-        this.isPg = false;
-        this.ensureSqlite();
-        const info = this.sqliteDb.prepare(sql).run(...params);
-        return { changes: info.changes, lastInsertRowid: info.lastInsertRowid, id: info.lastInsertRowid };
+        console.error('PostgreSQL insert error:', err.message, 'SQL:', sql);
+        throw err;
       }
     } else {
       this.ensureSqlite();
@@ -211,30 +216,24 @@ class DBAbstraction {
 
   async transaction(callback) {
     if (this.isPg) {
+      const client = await this.pool.connect();
+      const txWrapper = {
+        query: (sql, params = []) => this.query(sql, params, client),
+        queryOne: (sql, params = []) => this.queryOne(sql, params, client),
+        run: (sql, params = []) => this.run(sql, params, client),
+        insert: (sql, params = []) => this.insert(sql, params, client),
+        client
+      };
       try {
-        const client = await this.pool.connect();
-        const txWrapper = {
-          query: (sql, params = []) => this.query(sql, params, client),
-          queryOne: (sql, params = []) => this.queryOne(sql, params, client),
-          run: (sql, params = []) => this.run(sql, params, client),
-          insert: (sql, params = []) => this.insert(sql, params, client),
-          client
-        };
-        try {
-          await client.query('BEGIN');
-          const result = await callback(txWrapper);
-          await client.query('COMMIT');
-          return result;
-        } catch (err) {
-          await client.query('ROLLBACK');
-          throw err;
-        } finally {
-          client.release();
-        }
-      } catch (pgConnErr) {
-        console.warn('PostgreSQL transaction error, falling back to SQLite:', pgConnErr.message);
-        this.isPg = false;
-        this.ensureSqlite();
+        await client.query('BEGIN');
+        const result = await callback(txWrapper);
+        await client.query('COMMIT');
+        return result;
+      } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+      } finally {
+        client.release();
       }
     }
 
