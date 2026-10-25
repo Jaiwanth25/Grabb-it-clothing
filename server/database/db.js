@@ -1,7 +1,18 @@
 const { Pool } = require('pg');
-const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
+
+let Database;
+function getSqliteClass() {
+  if (!Database) {
+    try {
+      Database = require('better-sqlite3');
+    } catch (e) {
+      return null;
+    }
+  }
+  return Database;
+}
 
 // Ensure environment variables are loaded immediately
 try {
@@ -35,11 +46,11 @@ class DBAbstraction {
           console.warn('PostgreSQL pool error:', err.message);
         });
       } catch (err) {
-        console.warn('Failed to initialize PostgreSQL pool, falling back to SQLite:', err.message);
-        this.isPg = false;
+        console.warn('Failed to initialize PostgreSQL pool:', err.message);
       }
+    } else {
+      this.ensureSqlite();
     }
-    this.ensureSqlite();
   }
 
   async initPgDb() {
@@ -58,8 +69,12 @@ class DBAbstraction {
 
   ensureSqlite() {
     if (!this.sqliteDb) {
+      const SqliteClass = getSqliteClass();
+      if (!SqliteClass) {
+        return;
+      }
       const dbPath = path.join(__dirname, 'grabb_it.db');
-      this.sqliteDb = new Database(dbPath);
+      this.sqliteDb = new SqliteClass(dbPath);
       this.sqliteDb.pragma('foreign_keys = ON');
       this.initSqliteDb();
       this.sqliteTxQueue = Promise.resolve();

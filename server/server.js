@@ -340,8 +340,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Stock Reservation Cleanup Scheduler
-startReservationCleanupScheduler(60000);
+// Start Stock Reservation Cleanup Scheduler if running as standalone server
+if (require.main === module) {
+  startReservationCleanupScheduler(60000);
+}
 
 // Auto-ensure default Admin account exists on backend startup
 const bcrypt = require('bcryptjs');
@@ -421,29 +423,37 @@ async function ensureDefaultCategories() {
   }
 }
 
-const server = app.listen(PORT, async () => {
-  console.log(`=================================`);
-  console.log(`GRABB-IT Backend Server Active`);
-  console.log(`Port: ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Database Mode: ${db.isPg ? 'PostgreSQL' : 'SQLite'}`);
-  console.log(`API Root: http://localhost:${PORT}/api`);
-  console.log(`=================================`);
-  await ensureAdminUser();
-  await ensureDefaultCategories();
-});
-
-// Graceful Shutdown
-const gracefulShutdown = (signal) => {
-  console.log(`\n${signal} signal received. Closing HTTP server...`);
-  server.close(async () => {
-    if (db.isPg && db.pool) {
-      await db.pool.end();
-    }
-    console.log('Server and database connections closed. Process exiting cleanly.');
-    process.exit(0);
+if (require.main === module) {
+  const server = app.listen(PORT, async () => {
+    console.log(`=================================`);
+    console.log(`GRABB-IT Backend Server Active`);
+    console.log(`Port: ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Database Mode: ${db.isPg ? 'PostgreSQL' : 'SQLite'}`);
+    console.log(`API Root: http://localhost:${PORT}/api`);
+    console.log(`=================================`);
+    await ensureAdminUser();
+    await ensureDefaultCategories();
   });
-};
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  // Graceful Shutdown
+  const gracefulShutdown = (signal) => {
+    console.log(`\n${signal} signal received. Closing HTTP server...`);
+    server.close(async () => {
+      if (db.isPg && db.pool) {
+        await db.pool.end();
+      }
+      console.log('Server and database connections closed. Process exiting cleanly.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+} else {
+  // Serverless execution (e.g. Vercel)
+  ensureAdminUser().catch(console.warn);
+  ensureDefaultCategories().catch(console.warn);
+}
+
+module.exports = app;
