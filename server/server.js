@@ -136,16 +136,28 @@ app.use('/uploads', (req, res, next) => {
 // Health Check Endpoint
 app.get('/api/health', async (req, res) => {
   let dbStatus = 'connected';
+  let dbError = null;
   try {
     await db.queryOne('SELECT 1');
   } catch (e) {
     dbStatus = 'disconnected';
+    dbError = e.message;
+  }
+
+  let dbHost = 'none';
+  if (process.env.DATABASE_URL) {
+    try {
+      const parsed = new URL(process.env.DATABASE_URL.replace('postgresql://', 'http://'));
+      dbHost = parsed.hostname;
+    } catch (_) {}
   }
 
   res.json({
     status: 'ok',
     service: 'grabb-it-api',
     database: dbStatus,
+    databaseHost: dbHost,
+    databaseError: dbError,
     databaseType: db.isPg ? 'PostgreSQL' : 'SQLite',
     uptime: Math.floor(process.uptime()),
     timestamp: new Date().toISOString()
