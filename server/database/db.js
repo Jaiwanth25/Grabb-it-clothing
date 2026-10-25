@@ -29,7 +29,14 @@ try {
   // Ignore if dotenv is not available
 }
 
-const databaseUrl = process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED;
+const defaultNeonUrl = "postgresql://neondb_owner:npg_JL9VAa6qbMNP@ep-wild-leaf-b468nkmt-pooler.c-6.us-east-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require";
+
+let databaseUrl = process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED;
+
+// Auto-heal dead Render internal postgres hostnames (dpg-*) to active Neon database
+if (!databaseUrl || databaseUrl.includes('dpg-')) {
+  databaseUrl = defaultNeonUrl;
+}
 
 class DBAbstraction {
   constructor() {
