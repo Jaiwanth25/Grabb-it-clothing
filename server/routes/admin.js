@@ -283,13 +283,29 @@ router.post('/categories', async (req, res) => {
 // PUT /api/admin/categories/:id
 router.put('/categories/:id', async (req, res) => {
   try {
-    const { name, gender, image_url, display_order, is_active } = req.body;
-    await db.run(`
-      UPDATE categories SET name = ?, gender = ?, image_url = ?, display_order = ?, is_active = ? WHERE id = ?
-    `, [name, gender.toLowerCase(), image_url, display_order, is_active ? 1 : 0, req.params.id]);
+    const { name, slug, gender = 'men', image_url, display_order = 0, is_active = 1 } = req.body;
+    const catId = req.params.id;
 
-    res.json({ message: 'Category updated' });
+    const catSlug = slug ? slug.toLowerCase().trim() : (name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : `category-${catId}`);
+
+    // If image_url is provided, update it; otherwise preserve existing image_url
+    if (image_url !== undefined && image_url !== null) {
+      await db.run(`
+        UPDATE categories SET
+          name = ?, slug = ?, gender = ?, image_url = ?, display_order = ?, is_active = ?
+        WHERE id = ?
+      `, [name, catSlug, (gender || 'men').toLowerCase(), image_url, parseInt(display_order) || 0, is_active ? 1 : 0, catId]);
+    } else {
+      await db.run(`
+        UPDATE categories SET
+          name = ?, slug = ?, gender = ?, display_order = ?, is_active = ?
+        WHERE id = ?
+      `, [name, catSlug, (gender || 'men').toLowerCase(), parseInt(display_order) || 0, is_active ? 1 : 0, catId]);
+    }
+
+    res.json({ message: 'Category updated successfully' });
   } catch (err) {
+    console.error('Update Category Error:', err);
     res.status(500).json({ error: 'Failed to update category' });
   }
 });
@@ -298,8 +314,9 @@ router.put('/categories/:id', async (req, res) => {
 router.delete('/categories/:id', async (req, res) => {
   try {
     await db.run('DELETE FROM categories WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Category deleted' });
+    res.json({ message: 'Category deleted successfully' });
   } catch (err) {
+    console.error('Delete Category Error:', err);
     res.status(500).json({ error: 'Failed to delete category' });
   }
 });
@@ -1039,36 +1056,6 @@ router.post('/categories', async (req, res) => {
   } catch (err) {
     console.error('Create Category Error:', err);
     res.status(400).json({ error: err.message || 'Failed to create category' });
-  }
-});
-
-router.put('/categories/:id', async (req, res) => {
-  try {
-    const { name, slug, gender = 'men', image_url, display_order = 0, is_active = 1 } = req.body;
-    const catId = req.params.id;
-
-    const catSlug = slug ? slug.toLowerCase().trim() : name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-
-    await db.run(`
-      UPDATE categories SET
-        name = ?, slug = ?, gender = ?, image_url = ?, display_order = ?, is_active = ?
-      WHERE id = ?
-    `, [name, catSlug, gender.toLowerCase(), image_url || '', parseInt(display_order) || 0, is_active ? 1 : 0, catId]);
-
-    res.json({ message: 'Category updated successfully' });
-  } catch (err) {
-    console.error('Update Category Error:', err);
-    res.status(500).json({ error: 'Failed to update category' });
-  }
-});
-
-router.delete('/categories/:id', async (req, res) => {
-  try {
-    await db.run('DELETE FROM categories WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Category deleted successfully' });
-  } catch (err) {
-    console.error('Delete Category Error:', err);
-    res.status(500).json({ error: 'Failed to delete category' });
   }
 });
 
