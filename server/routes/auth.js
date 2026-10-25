@@ -75,7 +75,19 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const userRow = await db.queryOne('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+    const cleanEmail = email.toLowerCase().trim();
+    let userRow = await db.queryOne('SELECT * FROM users WHERE LOWER(email) = ?', [cleanEmail]);
+
+    // Seamless migration for store owner: if logging in with official email and account hasn't migrated yet
+    if (!userRow && cleanEmail === 'grabbitmensclothing@gmail.com') {
+      userRow = await db.queryOne("SELECT * FROM users WHERE email = 'admin@grabb-it.com'");
+      if (userRow) {
+        await db.run("UPDATE users SET email = ?, phone = '7871832815', role = 'admin' WHERE id = ?", [cleanEmail, userRow.id]);
+        userRow.email = cleanEmail;
+        userRow.phone = '7871832815';
+      }
+    }
+
     if (!userRow) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
